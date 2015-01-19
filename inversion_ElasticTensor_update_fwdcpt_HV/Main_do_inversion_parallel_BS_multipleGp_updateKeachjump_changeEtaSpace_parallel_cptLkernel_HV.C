@@ -45,7 +45,7 @@ int i,j,k,isoflag,Nprem,k1,k2;
 int AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag;
 double bestmisfit, misfit, L,misfitcri;
 float depcri1,depcri2,qpcri,qscri,lon,lat;
-char inponm[200],Rgpindir[100],Rphindir[100],Lphindir[100],Lgpindir[100],kernelnmR[100],kernelnmL[100],kernelnmRHV[100];
+char inponm[200],Rgpindir[100],Rphindir[100],Lphindir[100],Lgpindir[100],kernelnmR[200],kernelnmL[200],kernelnmRHV[200];
 vector<string> AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm;
 vector<string> Rdispnm,Ldispnm;
 char nodeid[5],str[150],modnm[100],Lparanm[100],Rparanm[100],PREMnm[100],fparanm[100];
@@ -60,8 +60,8 @@ vector<int> Lvmono,Lvgrad,Rvmono,Rvgrad,Vposani,idlst;
 vector<paradef> paralst,paralstBS,parabestlst;
 vector<double> parastd,LoveRAparastd;
 vector<vector<double> > LoveAZparastd;
-char modnm1[100],fRdispnm[100],fLdispnm[100],modnm2[100],fAZRdispnm[100],fAZLdispnm[100];
-char outinitnm[100],lay[20],dirlay[50],tmpstr[500],fbinnm1[200],fbinnm2[200];
+char modnm1[200],fRdispnm[200],fLdispnm[200],modnm2[200],fAZRdispnm[200],fAZLdispnm[200];
+char outinitnm[200],lay[20],dirlay[100],tmpstr[500],fbinnm1[200],fbinnm2[200];
 float inpamp,inpphi;
 int flagreadVkernel,flagreadLkernel,flagupdaterho;
 
@@ -136,7 +136,7 @@ exit(0);
   sprintf(Lgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_BS_CstMat_v15.txt");
   flagreadVkernel=1;//atoi(argv[1]);
-  int num_thread=1;//atoi(argv[2]);
+  int num_thread=atoi(argv[1]);
 
 
   readPREM(PREMnm,PREM,Nprem);

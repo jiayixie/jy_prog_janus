@@ -1372,6 +1372,7 @@ int compute_HVdisp(modeldef &model,paradef para, modeldef refmod, paradef refpar
   vector<vector<double> >  kernel;  
   vector<double> paradiff;
 
+  model.data.Rdisp.hvratio.clear();
   kernel=Vkernel[4]; // the Rayleigh HV kernel
   for(i=0;i<para.npara;i++){
         ppflag=(int)para.para0[i][6];
@@ -1385,7 +1386,7 @@ int compute_HVdisp(modeldef &model,paradef para, modeldef refmod, paradef refpar
 	for(j=0;j<para.npara;j++){
 		tval+=paradiff[j]*kernel[j][i];
 	}
-	model.data.Rdisp.hvratio[i]=tval;
+	model.data.Rdisp.hvratio.push_back(tval);
   }  
   
 
