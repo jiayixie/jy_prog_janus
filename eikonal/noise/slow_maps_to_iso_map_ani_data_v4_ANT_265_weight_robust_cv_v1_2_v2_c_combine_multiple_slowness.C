@@ -1,5 +1,7 @@
 // based on /home/weisen/PROGS_64/EIKONAL/SCRIPT/slow_maps_to_iso_map_ani_data_v4_ANT_265_weight_robust_cv_v1_2
 // reduce the weighting level for ultra high values
+// this version inputs a list of directory that contains slowness  files, and input a list of corresponding station.lst. So it aims to join multiple slowness maps from different datasets together, and produce the iso and ani maps
+//
 #define MAIN
 #include <stdio.h>
 #include <string.h>
