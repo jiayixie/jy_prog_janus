@@ -11,6 +11,7 @@ int para_avg(vector<paradef> &paralst, paradef &paraavg,vector<double> &Rparastd
 // modified Mar12, 2014;For eta parameter,  when the sigma <-5, use the constant c in that group; when sigma>-5and<-3 use constant eta/RAvs; (c measures the non-ellipticity of the tensor)
 //============================
 // in this version, around line 704, change the way dealing with newpara that's outside the model space range. previously, if the newpara is outside the range, then we won't accept it, and will re-generate a newpara until its within the range--> but this makes the prior non-uniform. now, we make a reflection of the para that's outside the model space, we think this will make the prior more uniform
+// this version (HV), change checkParaModel (reorder it in a more reasobale way, add/rm some criteria), change the gen_newpara (take the scaling into account at this step), and para2mod (remove the scaling inside this step, make it a simple para2mod)
 */
 //class paracal{
 //public:
@@ -44,6 +45,169 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	  vector<vector<string> >().swap(para.Rpara0);vector<vector<string> >().swap(para.Lpara0);
 	*/
 	  return 1;
+	}
+//-----------------------------------------------------	 
+	int get_para_numbers(paradef para, int ig, int &countHS, int &countCOS, int &countsigma, int &countISOsigma, int &countANIsigma){
+	//this counts the number of different type of parameters.
+	// the para that describes a hexagonally symmetric medium (vsv-eta,theta,phi); 
+	// the para that described the azimuthal variation of Vsv (Vsvcos, Vsvsin);
+	// the para that will need partial derivative computation.
+	// the para that use isotropic scaling: vsh=vsv, vph=vpv=vpvs*vsv
+	// the para that use anisotropic scaling: based on anisotropy, e.g., VsRA
+	  
+	  int i,intsigma;
+ 	  double sigma;
+	  countHS=0;countCOS=0;countsigma=0;countISOsigma=0;countANIsigma=0;
+
+	  for(i=0;i<para.npara;i++){
+	    p6=(int)para.para0[i][6];//flag of parameters 1--vsv ...
+	    sigma=para.space1[i][2];
+	    p4=(int)para.para0[i][4];//the groups number this para belongs to
+	    if(p4!=ig)continue;
+
+	    if(p6<1 or p6>11){
+		printf("#### checkParaModel/get_para_numbers, the %d th parameter (starts from 0)=%d, is outside the range, should be 1-11, modify the para.in file\n",i,p6);
+		exit(0);
+	    }
+		
+	    if(p6<8)countHS+=1;//
+	    if((p6-10)*(p6-11)==0)countCOS+=1;
+	    if(p6<6){
+		if(sigma*(sigma+0.5)>0 )countsigma+=1;//if sigma>0 or sigma<-0.5 this para will need paratial derivative computation
+		if(sigma<0){
+		  intsigma=(int)sigma;
+		  if(intsigma==-1)countISOsigma+=1;
+		  else countANIsigma+=1;
+		}
+	    }
+ 	  }//for npara	
+	  return 1;
+	}
+//-----------------------------------------------------	 
+	int checkParaModel(paradef para, modeldef model, vector<int> Viso){
+	//check if the para satisfies certain criteria
+	  int i,j;
+	  int p0,flagcpt,gflag,p5,p6,np,countHS,countCOS,countsigma,countISOsigma,countANIsigma;
+	  int ppflagid,nvid;
+	  int k3,k4,k5,k6,k7;
+	  vector<double>::iterator id;
+
+	  if(para.flag<1){
+	  	printf("Use checkParaModel after the para.space1 is filled, i.e., after mod2para\n");
+	  	exit(0);
+	  }//if
+	
+	  //---criterion 
+	  //---modify, Jan 17, 2014 -- require the perlst of  AziampRdisp&AziphiRdisp to be a subset of the perlst of Rdisp, see the Jan 17, 2014 debug record on green:~/NOTE/code_debugging for detail
+	  //just check if the get_index will go through, if yes, then it's fine
+	  vector<int> index;
+	  index=get_index(model.data.Rdisp.pper,model.data.AziampRdisp.pper);
+	  index=get_index(model.data.Rdisp.pper,model.data.AziphiRdisp.pper);
+	  index=get_index(model.data.Ldisp.pper,model.data.AziampLdisp.pper);
+	  index=get_index(model.data.Ldisp.pper,model.data.AziphiLdisp.pper);
+
+	  for(i=0;i<model.ngroup;i++){
+	    flagcpt=model.groups[i].flagcpttype;// tells the forward computation type;
+	    gflag = model.groups[i].flag; //tells the type of the paramters (e.g., lay, gradient, BSpline, grid ...)
+	    np=model.groups[i].np;	
+	    k3=3*np;k4=4*np;k5=5*np;k6=6*np;k7=7*np;
+
+	    //-----------------------------------------------------------------------------------------
+	    //---criterion 
+	    if(flagcpt==1){//do forward computation using Vkernel & Vpara. model is isotropic or TI.
+		//---m.gp.flag !=3 and !=6
+		if((gflag-3)*(gflag-6)==0){
+			printf("#### checkParaModel, group%d, iso/TI model, do not suggest using Bspline that will becomed grids, or use grid model directly. Although this kind of parameterization is acceptable, at this moment, we don't prefer using it.\n",i);
+			exit(0);
+		}	
+	
+		//---#of parameters 
+		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);		
+	    	id=find(Viso.begin(),Viso.end(),i);
+		if(countCOS!=0){printf("#### checkParaModel, group%d, iso or TI model, # of VsvCOSpara =%d, should be %d, modify para.in\n",i,countCOS,0);exit(0);}
+	    	if(id!=Viso.end()){//this is an isotropic group, HSpara=4 (vsv,vsh,vpv,vph); isotropic scaling vsh,vpv,vph;  
+			if(countHS!=k4){printf("#### checkParaModel, group%d, iso model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k4);exit(0);}
+			if(countsigma!=k4){printf("#### checkParaModel, group%d, iso model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k4);exit(0);}
+			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, iso model, # of HSpara that uses isotropic scaling =%d, should be %d, modify para.in\n",i,countISOsigma,k3);exit(0);}
+
+	    	}
+	    	else{// this is a TI group. HSpara=5, 5 para computes partial derivatives
+                        if(countHS!=k5){printf("#### checkParaModel, group%d, TI model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k5);exit(0);}
+                        if(countsigma!=k5){printf("#### checkParaModel, group%d, TI model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k5);exit(0);}
+		}//else	Viso
+	    }//if flagcpt==1
+
+	    //-----------------------------------------------------------------------------------------
+	    //---criterion 
+	    else if (flagcpt==2 or flagcpt==4){
+		//--if the type of parameters are used properly
+		if((gflag-1)*(gflag-2)*(gflag-4)*(gflag-5)==0){
+			printf("#### checkParaModel, group%d, Vkernel-->RAdisp Lkernel-->AZdisp (if flagcpt=2); OR Lkernel--> RAdisp&AZdisp (if flagcpt=4). Can only have m.gp.flag=3 or 6 (Bspline to grid, or grid), but here m.gp.flag=%d, change mod.in\n",i,gflag);
+			exit(0);
+		}
+		//--if there are isotropic groups
+		id=find(Viso.begin(),Viso.end(),i);
+		if (id!=Viso.end()){printf("#### checkParaModel, group%d, anisotropic, whose m.gp.flagcpttype=%d, cannot be isotropic. for isotropic, set flagcpttype=1 or 3\n",i,flagcpt);exit(0);}//has isotropic group
+
+		//---# of parameters
+		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);
+		if(countCOS!=0){printf("#### checkParaModel, group%d, anisotropic, whose m.gp.flagcpttype=%d, # of VsvCOSpara =%d, should be %d, modify para.in\n",i,flagcpt,countCOS,0);exit(0);}
+		if(countHS!=k7){printf("#### checkParaModel, group%d, m.gp.flagcpttype=%d, (uses Lkernel entirely(flagcpt=4) or partially(flagcpt=2)), # of HSpara =%d, should be %d, modify para.in\n",i,flagcpt,countHS,k7);exit(0);}
+		if(countsigma!=k5){printf("#### checkParaModel, group%d, m.gp.flagcpttype=%d, (uses Lkernel entirely(flagcpt=4) or partially(flagcpt=2)), # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,flagcpt,countsigma,k5);exit(0);}		
+	    }// else if flagcpt=2 or 4
+
+	    //-----------------------------------------------------------------------------------------
+	    //---criterion 
+	    else if (flagcpt==3){
+		//--if the type of parameters are used properly
+		if((gflag-3)*(gflag-5)*(gflag-6)==0){printf("#### checkParaModel, group%d,flagcpt=3, Vkernel->RAdiap, Vsvkernel->AZdisp. m.gp.flag cannot be %d (water or grid model.). change mod.in\n",i,gflag);exit(0);}
+		//---# of parameters
+		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);
+		if(countCOS!=k2){printf("#### checkParaModel, group%d, m.gp.flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. # of cos/sin paramters should be %d, but here is %d, modify para.in)\n",i,k2,countCOS);exit(0);}
+		id=find(Viso.begin(),Viso.end(),i);
+		if(id!=Viso.end()){//isotropic group + Vsv azimuthal anisotropy
+			if(countHS!=k4){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k4,countHS);exit(0);}
+			if(countsigma!=k4){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k4,countISOsigma);exit(0);}
+			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of ISOsigma(=-1) should be %d, but not %d modify para.in\n",i,k3,countISOsigma);exit(0);}
+		}
+		else{// anisotropic group + Vsv azimuthal anisotropy
+			if(countHS!=k5){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k5,countHS);exit(0);}
+			if(countsigma!=k5){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k5,countISOsigma);exit(0);}
+		}		
+
+	    }//else if flagcpt=3
+	    else{printf("#### checkParaModel, group%d, unconsidered flagcpttype! %d should be 1-4, modify mod.in\n",i,flagcpt);exit(0);}	
+
+	    //-----------------------------------------------------------------------------------------
+	  }//for ngroup 
+	
+	  //---check the order of parameters ------------
+	  ppflagid=-1;nvid=-1;
+	  for(j=0;j<para.npara;j++){
+		
+		p0=(int)para.para0[j][0];
+		p5=(int)para.para0[j][5];//nv
+		p6=(int)para.para0[j][6];//flag of para
+
+		if(p0!=0)continue;//if para is not value/Bspline
+
+	    	//---criterion, check the order of the layer
+		if(p5>nvid)ppflagid=-1;//reach the next layer in this group
+		else if (p5<nvid){
+			printf("### checkParaModel, in group %d, we require the layer number nv (teh 6th colunm) is increading!\n",(int)para.para0[j][4]);
+			exit(0);
+		}//if	
+		nvid=p5;
+		//---- check the order of parameters within each layer
+		if (p6<=ppflagid){
+	      	  printf("### checkParaModel, in group %d, layer %d,  we require the para's ppflag (the 7th column) is ordered in an increasing order!\n",(int)para.para0[j][4],nvid);
+		  exit(0);
+	        }//if
+	        ppflagid=p6;
+
+	  }//for npara
+
+	  //---criterion 
 	}
 //-----------------------------------------------------	 
 	int checkParaModel(paradef para, modeldef model){
@@ -107,14 +271,14 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 			}
 		}
 
-
+		//===wait to be modified, categorize things according to flagcpttype
 		// this criteria must be used when computing the partial derivatives, but during the computation, if partial derivatives are read from outside, this isn't required; probably need to be modified ...
 	        if(p6==1 and model.groups[i].flagcpttype==3 and para.space1[j][2]*(para.space1[j][2]-0.001)<0. ){
 			printf("### checkParaModel, in group %d, whose flagcpttype=3, the partial derivative of the vsv must be computed, and the sigma should be >0(freely perturb) or <-1(vsv stay constant)!\n",i);
 			exit(0);
 		}
 		
-
+		//===wait to be modified
 		if(para.space1[j][2]<-1. and (p6-2)*(p6-6)*(p6-7)*(p6-10)*(p6-11)==0 ){//this vsh or theta or phi or AZcos or AZsin will be scaled according to other values(the 1st value in that group) during the para2mod process
 			//also,  vsh can be sacled according to the 1st value in that group; to set the same amount of VsRA; if vsv has space<-1, it mean this vsv won't be changed
 			if(p5<1){
@@ -124,6 +288,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		
 		}
 
+		//===wait to be modified
 		if(para.space1[j][2]<-3. and para.space1[j][2]>=-5.){//non-linear scaling based on the 1st value in that group during the para2mod process; modified Mar 12, 2014
 			if((p6-4)*(p6-5)!=0){//only vph and eta has this kind of non-linear scaling (vsh is linear scaling based on the 1st value)
 				printf("### checkParaModel, in group %d, only vph (nv=4) or eta(p6=5) could have this non-linear scaling based on the 1st value (p6=0) of this group! but here p6=%d!\n",i,p6);
@@ -177,7 +342,12 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		    printf("#### checkParaModel, the number of parameters with sigma>0 or <-1 (i.e. will compute Vkernel for this para) in group %d is %d, but should be %d to enable right Love_para forward computation!\n",i,countsigma,N2);
 		    exit(0);
 		}
-	    }//if count
+	    }//if flagcpttpye
+	    
+	    //===wait to be modified
+	    if(model.groups[i].flagcpttype==1){// use Vpara&Vkernel for all forward computation, indicating that this groups of model is isotropic or TI.
+
+	    }
 
 	  }//for i
 	  return 1;
@@ -607,7 +777,7 @@ for i<para.npara
 				
 				}
 			   }//p6==5
-		  else if (p6==6 or p6==10){//theta
+		  else if (p6==6 or p6==10){//theta or cos
 			  if(para.space1[i][2]<-1)//set the theta to the value of the 1st layer in that group
 			  {
 			  	outmodel.groups[ng].thetavalue[nv]=outmodel.groups[ng].thetavalue[0];
@@ -616,7 +786,7 @@ for i<para.npara
 			  else
 			  	{outmodel.groups[ng].thetavalue[nv]=newv;}
 		  	  }//p6=6 or 10	
-		  else if (p6==7 or p6==11){//phi
+		  else if (p6==7 or p6==11){//phi or sin
 			  if(para.space1[i][2]<-1)
 			  {
 			  	outmodel.groups[ng].phivalue[nv]=outmodel.groups[ng].phivalue[0];
@@ -787,6 +957,113 @@ for i<para.npara
 
 	  return 1;
 	}
+
+//----------------------------------------------------- 
+	int gen_newpara_single_v2(vector<vector<double> > space1, vector<double> &parameter,int ip,int pflag){
+	  double newv,min,max,sigma;
+	
+	  mean=parameter[ip];
+	  newv=mean;
+	  min=space1[ip][0];
+	  max=space1[ip][1];
+	  sigma=space1[ip][2];
+
+	  if(sigma<0.001)return 1;
+	  //if(sigma<0.001){printf("Hey, this para %d, (=%g) either does not need any perturbation, or it is perturbed through scaling relationship. Should not be send to this gen_newpara_single_v2 function.\n",ip,mean);exit(0);}
+
+	  if(pflag==0){//uniform
+		newv=gen_random_unif01()*(max-min)+min;}
+	  else if (pflag==1){//normal
+		newv=gen_random_normal(mean,sigma);
+		if(newv>max){newv=max-(newv-max)};
+		else if(newv<min){newv=min+(min-newv);}
+		parameter[ip]=newv;
+	  }
+	  else {printf("### wrong pflag for gen_newpara!!\n");exit(0);}
+	  //removed the section that "the perturbed parameter to have the same perturbation", this is enabled through the value of sigma, fulfilled in the main gen_newpara function
+
+	  return 1;
+	}//gen_newpara_single_v2
+//----------------------------------------------------- 
+	double gen_newpara_single_scale(int flag, modeldef model,int ng,int nv,int p6){
+	//generate parameter based on scaling relationships
+	  double newv,c;
+	  if(flag==-1){
+	  //isotropic scaling, this group is isotropic
+	  //vsh=vsv;vph=vpv=vsv*vpvs
+	  //actually, if para was set properly, eta or theta or phi should not appear here, but i still allow setting eta=0 theta=phi=0 in this function at this moment
+		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
+		else if(p6==2){//vsh
+			newv=model.groups[ng].vsvvalue[nv];}
+		else if(p6==3){//vpv
+			newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
+		else if (p6==4){//vph
+			newv=model.groups[ng].vpvvalue[nv];}
+		else if (p6==5){//eta
+			newv=1.0;}
+		else if (p6==6 or p6==8)newv=0.;//theta or phi
+		else{printf("###inproper para.in, para with p6=%d should not apprear in the isotropic scaling\n",p6);exit(0);}
+	  }
+	  else if (flag==-2){
+	  //anisotropic scaling, this group is anisotropic
+	  //scale based on 1st layer's value, keep constant magnitude of anisotropy throughout this whole group
+		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
+		else if (p6==2){//vsh
+			c=model.groups[ng].vshvalue[0]/model.groups[ng].vsvvalue[0];
+			newv=c*model.groups[ng].vsvvalue[nv];}
+		else if (p6==3){//vpv
+			newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
+		else if (p6==4){//vph
+			c=model.groups[ng].vphvalue[0]/model.groups[ng].vpvvalue[0];
+			newv=c*model.groups[ng].vpvvalue[ng];}
+		else if (p6==5){//eta
+			newv=model.groups[ng].etavalue[nv];}
+		else{printf("###inproper para.in, para with p6=%d should not apprear in the anisotropic scaling 1\n",p6);exit(0);}
+	  }
+	  else if (flag==-3){
+	  //anisotropic scaling, this group is anisotropic
+	  //scale based on a given scaling relationship
+	  //e.g., VpRA=c1*VsRA; eta=c2+c3*VsRA	  
+	  printf("### this anisotropic scaling is still under construction...\n");
+	  exit(0);
+  	  }
+	  return newv;
+	}//gen_newpara_single_scale
+//----------------------------------------------------- 
+	int gen_newpara(paradef inpara, modeldef model, paradef &outpara, int pflag)
+	{
+	  //before using this function, make sure that para&model are consistent with each other
+	  int i;
+	  int p0,intsigma,p0,ng,p6;
+	  double sigma;
+
+	  outpara=inpara;
+
+	  for(i=0;i<inpara.npara;i++){
+		p0=(int)inpara.para0[i][0];
+		ng=(int)inpara.para0[i][4];
+		p6=(int)inpara.para0[i][6];
+		sigma=inpara.space1[i][2];
+	
+		if(p0==0){//value
+		  if(sigma>0)
+			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
+		  else{
+		    intsigma=(int)sigma;
+		    outpara.parameter[i]=gen_newpara_single_scale(intsigma,model,ng,nv,p6);
+		  }//else	
+
+		}
+		else if(p0==1){// thickness parameter
+		  outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);		  
+		}//if p0=1
+		else if (p0==-1)//vpvs
+		  {outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);}
+		else {printf("## gen_newpara, wrong value for p0, should be either -1,1, or0, not %d\n",p0);exit(0);}
+	  }
+	  return 1;
+	}//gen_newpara
+	
 
 //----------------------------------------------------- 
 	int para_avg(vector<paradef> &paralst, paradef &parabest, paradef &paraavg,vector<double> &parastd,vector<double> &LoveRAparastd, vector<vector<double> > &LoveAZparastd,vector<int> &idlst){

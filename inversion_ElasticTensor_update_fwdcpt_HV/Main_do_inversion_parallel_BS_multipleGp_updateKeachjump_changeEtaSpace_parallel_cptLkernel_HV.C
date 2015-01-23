@@ -56,7 +56,7 @@ paradef para0,para1,para2,pararef,paranew,tpara,paraavg1,ttpara,parabest;
 FILE *inpo,*fkernel,*fmisfit;
 vector<vector<double> >  PREM;
 vector<vector<vector<double> > > Vkernel,Lkernel;
-vector<int> Lvmono,Lvgrad,Rvmono,Rvgrad,Vposani,idlst;
+vector<int> Lvmono,Lvgrad,Rvmono,Rvgrad,Vposani,Viso,idlst;
 vector<paradef> paralst,paralstBS,parabestlst;
 vector<double> parastd,LoveRAparastd;
 vector<vector<double> > LoveAZparastd;
@@ -109,6 +109,7 @@ exit(0);
   Lvgrad.push_back(1);
   Vposani.push_back(1);
   Vposani.push_back(2);
+  Viso.push_back(0);
   //Vposani.push_back(1);Vposani.push_back(2);
   k1=0;k2=1;
   //----------------------------------------------------------------------
@@ -241,7 +242,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
     mod2para(model0,para0,para1);////fill both para.R/Lpara0 (they could be inequal if Rf*Lf>0, they are equal if Rf*Lf=0)
 
-    checkParaModel(para1,model0);
+    checkParaModel(para1,model0,isoflag,PosAnic);
 
     /*===check===
     printf("check readpara & mod2para----\n");
