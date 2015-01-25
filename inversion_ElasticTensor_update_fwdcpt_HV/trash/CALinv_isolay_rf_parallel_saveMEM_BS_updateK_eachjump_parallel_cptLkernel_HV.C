@@ -75,7 +75,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   sprintf(str,"%s_effTI",fbinnm);
   outbinRA.open(str,ios_base::out|ios_base::binary);
   }
-  //---get the phi id for crust, the group1's phi_para
+  //---get the phi id for crust, the group1's phi_para,
+  //---Here, I assume that group[1] is crust, should be adjusted for different situations----
   for(int i=0;i<refpara0.npara;i++){
     if((int)refpara0.para0[i][6]==7 and (int)refpara0.para0[i][4]==1){idphiC=i;break;}
   }//for
@@ -119,35 +120,39 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   	printf("do the jump %d/%d\n",i,Njump);
   	FILE *ftemp;
 	char str[100];
-	///*
+
 	sprintf(str,"temp_LMisfit_id%d_loop%d_thread%d.txt",id,iloop,i);
 	if((ftemp=fopen(str,"w"))==NULL){
 		printf("Cannot open temp_LMsifit file to write! %d\n",i);
 		exit(0);
 	}
-	//*/
 	paradef RApara,para1BS,para2BS;
-	modeldef RAmodel,model1;
+	modeldef RAmodel,model1BS,model2BS;
+   	modeldef model1,model2;
   	//-----
 
 	int ijump=i;  
-	//tparalst.clear();
 
 	tpara=refpara;
 	para1=refpara;
 	para2=refpara;
+	model1=refmodel;
+	model2=refmodel;
+
+	para1BS=refparaBS;
+	para2BS=refparaBS;
+	model1BS=refmodelBS;
+	model2BS=refmodelBS;
+
 	oldLL=oldRL=oldL=0.;
 	countacc=0;
 	Tacc=200;
 	NKdid=0;
 	lastiaccp=0;
 
-	para1BS=refparaBS;
-	para2BS=refparaBS;
-
 	//--for each jump, first get the starting para
-	gen_newpara(refparaBS, para1BS,k1);
-	Bsp2Point(refmodelBS,para1BS,model1,para1,flagupdaterho); //para1BS->para1;
+	gen_newpara(refparaBS,refmodelBS, para1BS,k1);
+	Bsp2Point(refmodelBS,para1BS,model1,para1,flagupdaterho); //para1BS->para1; there is para2mod(Bspara,BSmodel,X) inside the Bsp2Point function
 	para2mod(para1,model1,ttmodel);
 
 	
@@ -158,7 +163,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
             ibad=0;
 	    while(positiveAni(ttmodel,Vposani)==0){
 		ibad++;
-		gen_newpara(para2BS, para1BS,k1);
+		gen_newpara(para2BS,para1BS,k1);
 		//para2mod(para1BS,refmodelBS,ttmodel);
 		Bsp2Point(refmodelBS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		para2mod(para1,model1,ttmodel);

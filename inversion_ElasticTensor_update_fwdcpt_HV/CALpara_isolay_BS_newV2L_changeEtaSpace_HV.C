@@ -4,8 +4,7 @@ int checkParaModel(paradef para, modeldef model)
 int readpara(vector<vector<double> > &para0, const char* fname)
 int mod2para(modeldef &model, paradef &inpara, paradef &outpara)
 int para2mod(paradef para, modeldef inmodel, modeldef &outmodel)
-int gen_newpara_single (  vector<vector<double> > space1, vector<double> &parameter, int npara,int pflag)
-int gen_newpara(paradef inpara, paradef &outpara, int pflag )
+int gen_newpara(paradef inpara, modeldef model, paradef &outpara, int pflag)
 int para_avg(vector<paradef> &paralst, paradef &paraavg,vector<double> &Rparastd,vector<double> &Lparastd, vector<int> &idlst)
 // this version ,change the space of eta, require it to be <1.1
 // modified Mar12, 2014;For eta parameter,  when the sigma <-5, use the constant c in that group; when sigma>-5and<-3 use constant eta/RAvs; (c measures the non-ellipticity of the tensor)
@@ -56,6 +55,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	// the para that use anisotropic scaling: based on anisotropy, e.g., VsRA
 	  
 	  int i,intsigma;
+	  int p6,p4;
  	  double sigma;
 	  countHS=0;countCOS=0;countsigma=0;countISOsigma=0;countANIsigma=0;
 
@@ -87,10 +87,10 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	int checkParaModel(paradef para, modeldef model, vector<int> Viso){
 	//check if the para satisfies certain criteria
 	  int i,j;
-	  int p0,flagcpt,gflag,p5,p6,np,countHS,countCOS,countsigma,countISOsigma,countANIsigma;
-	  int ppflagid,nvid;
-	  int k3,k4,k5,k6,k7;
-	  vector<double>::iterator id;
+	  int p0,flagcpt,gflag,p4,p5,p6,np,countHS,countCOS,countsigma,countISOsigma,countANIsigma;
+	  int ppflagid,nvid,ngid;
+	  int k2,k3,k4,k5,k6,k7;
+	  vector<int>::iterator id;
 
 	  if(para.flag<1){
 	  	printf("Use checkParaModel after the para.space1 is filled, i.e., after mod2para\n");
@@ -110,7 +110,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	    flagcpt=model.groups[i].flagcpttype;// tells the forward computation type;
 	    gflag = model.groups[i].flag; //tells the type of the paramters (e.g., lay, gradient, BSpline, grid ...)
 	    np=model.groups[i].np;	
-	    k3=3*np;k4=4*np;k5=5*np;k6=6*np;k7=7*np;
+	    k2=2*np;k3=3*np;k4=4*np;k5=5*np;k6=6*np;k7=7*np;
 
 	    //-----------------------------------------------------------------------------------------
 	    //---criterion 
@@ -183,18 +183,22 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	
 	  //---check the order of parameters ------------
 	  ppflagid=-1;nvid=-1;
+	  ngid=-1;
 	  for(j=0;j<para.npara;j++){
 		
 		p0=(int)para.para0[j][0];
 		p5=(int)para.para0[j][5];//nv
 		p6=(int)para.para0[j][6];//flag of para
+		p4=(int)para.para0[j][4];//ng 
+		
 
 		if(p0!=0)continue;//if para is not value/Bspline
 
+		if(p4!=ngid){nvid=-1;ngid=p4;}//come to next group
 	    	//---criterion, check the order of the layer
 		if(p5>nvid)ppflagid=-1;//reach the next layer in this group
 		else if (p5<nvid){
-			printf("### checkParaModel, in group %d, we require the layer number nv (teh 6th colunm) is increading!\n",(int)para.para0[j][4]);
+			printf("### checkParaModel, in group %d, we require the layer number nv (teh 6th colunm) is increasing!\n",(int)para.para0[j][4]);
 			exit(0);
 		}//if	
 		nvid=p5;
@@ -208,151 +212,8 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	  }//for npara
 
 	  //---criterion 
-	}
-//-----------------------------------------------------	 
-	int checkParaModel(paradef para, modeldef model){
-	  //check if the para satisfies certain criteria: If the model.group.flagcpttype=2 or 4 (part or all of the forward cpt will be through LoveParameters); 
-	  //then the type of model must be layer (i.e., flag=1); 
-	  //all np*5 (vsv~eta) must be in the parameter list, in order to produce partial derivative for all the np*5 parameters, which is required for the computation of Love parameter partial derivatives
-	  int i,j,N,N2,count,countsigma;
-	  int ppflagid,nvid,ngid;
-	  int p0,p5,p6,ng;
-	  // (int)para.para0[j][4]:ng
-	  // (int)para.para0[j][5]:nv
-	  // (int)para.para0[j][6]:type of para
- 	  // use after mod2para
-	  if(para.flag<1){
-	  	printf("Use checkParaModel after the para.space1 is filled, i.e., after mod2para\n");
-	  	exit(0);
-	  }
-
-	  //---modify, Jan 17, 2014 -- require the perlst of  AziampRdisp&AziphiRdisp to be a subset of the perlst of Rdisp, see the Jan 17, 2014 debug record on green:~/NOTE/code_debugging for detail
-	  //just check if the get_index will go through, if yes, then it's fine
-   	  vector<int> index;
-	  index=get_index(model.data.Rdisp.pper,model.data.AziampRdisp.pper);
-	  index=get_index(model.data.Rdisp.pper,model.data.AziphiRdisp.pper);
-	  index=get_index(model.data.Ldisp.pper,model.data.AziampLdisp.pper);
-	  index=get_index(model.data.Ldisp.pper,model.data.AziphiLdisp.pper);
-
-	  for(i=0;i<model.ngroup;i++){
-	    //if(model.groups[i].flagcpttype!=2 and model.groups[i].flagcpttype!=4)continue;
-	    N=model.groups[i].np*7; //number of para required
-	    N2=model.groups[i].np*5; //number of Vkerne need  to compute
-	    count=0;
-	    countsigma=0;
-	    ppflagid=-1;nvid=-1,ngid=-1;
-	
-	    //if(model.groups[i].flag==2 and i<2){ //; BS
-	    //	printf("### checkParaMode, group%d, (by default, <2 is in the crust) has group flag=2, which is an un-considered situation at this time! exit");
-	    if(model.groups[i].flag==2 and model.groups[i].flagcpttype!=1){ // BS model (won't be transferred to grid/point), and not do fwd computation with Vkernel&Vpara
-		printf("#### checkParaModel. group%d, BS model that won't be transferred to grid/point, the fwd computation must be through Vkernel&Vpara, i.e., m.gp.flagcpttype =1, not %d!\n",i,model.groups[i].flagcpttype);
-		exit(0);
-	    }
-
-	    if(model.groups[i].flag==4 and model.groups[i].flagcpttype!=1){
-	      printf("### checkParaModel. group%d, if groups is described by gradient, then the forward cpt must be through Vkernel and Vpara!\n",i);
-	      exit(0);
-	    }
-
-
-	    for(j=0;j<para.npara;j++){
-	      if((int)para.para0[j][4]!=i)continue;
-
-	      p0=(int)para.para0[j][0];    
-     	      p5=(int)para.para0[j][5];//nv
-	      p6=(int)para.para0[j][6];//flag of para     
-	      if(p0==0){//para is value/Bcoeff	 
-
-		//when the model is BS (won't be transferred to grid/point; m.gp.flag==2), there should be no tilt (i.e., the theta and phi should always be 0)
-		if(model.groups[i].flag==2 and (p6-6)*(p6-7)==0  ){// if BS and the para is theta or phi
-			if(para.space1[j][1]>0. and para.space1[j][2]>0.){//if the model space perturbation!=0 and sigma>0 (if sigma<0, then it means this para follows the one in lay1, which should have either delta=0 or sigma=0, which means its value is 0)
-				printf("### checkParaModel, in group %d, para%d,whose m.gp.flag==2 (i.e., BS model that won;t be transferred to grid/point), the model should be either iso or TI. So the theta or phi should not be purterbed! Their model_space/delta should be 0! reset the para.in file\n",i,j);
-				exit(0);
-			}
-		}
-
-		//===wait to be modified, categorize things according to flagcpttype
-		// this criteria must be used when computing the partial derivatives, but during the computation, if partial derivatives are read from outside, this isn't required; probably need to be modified ...
-	        if(p6==1 and model.groups[i].flagcpttype==3 and para.space1[j][2]*(para.space1[j][2]-0.001)<0. ){
-			printf("### checkParaModel, in group %d, whose flagcpttype=3, the partial derivative of the vsv must be computed, and the sigma should be >0(freely perturb) or <-1(vsv stay constant)!\n",i);
-			exit(0);
-		}
-		
-		//===wait to be modified
-		if(para.space1[j][2]<-1. and (p6-2)*(p6-6)*(p6-7)*(p6-10)*(p6-11)==0 ){//this vsh or theta or phi or AZcos or AZsin will be scaled according to other values(the 1st value in that group) during the para2mod process
-			//also,  vsh can be sacled according to the 1st value in that group; to set the same amount of VsRA; if vsv has space<-1, it mean this vsv won't be changed
-			if(p5<1){
-				printf("### checkParaModel, in group %d, only the theta,phi,AZcos, AZsin for the layer(nv)>=1 (start from 0) can be scaled! here nv=%d\n",i,p5);
-				exit(0);
-			}
-		
-		}
-
-		//===wait to be modified
-		if(para.space1[j][2]<-3. and para.space1[j][2]>=-5.){//non-linear scaling based on the 1st value in that group during the para2mod process; modified Mar 12, 2014
-			if((p6-4)*(p6-5)!=0){//only vph and eta has this kind of non-linear scaling (vsh is linear scaling based on the 1st value)
-				printf("### checkParaModel, in group %d, only vph (nv=4) or eta(p6=5) could have this non-linear scaling based on the 1st value (p6=0) of this group! but here p6=%d!\n",i,p6);
-				exit(0);
-			}
-			if(p5<1){
-
-				printf("### checkParaModel, in group %d, only vph,eta for the layer(nv)>=1 (start from 0) can be non-linearly scaled based on the 1st values! here nv=%d\n",i,p5);
-                                exit(0);
-			}
-	
-		}
-		      
-		//---- check the order of the layer     
-		if(p5>nvid){ppflagid=-1;}//reach the next layer in this group
-	        else if (p5<nvid){
-			printf("### checkParaModel, in group %d, we require the layer number nv (teh 6th colunm) is increading!\n",i);
-			exit(0);
-		}//if	
-		nvid=p5;
-
-		//---- check the order within each layer
-		if(p6<1 or p6>11){
-			printf("inproper ppflag(%d,should be within 1-11) for the %dth parameter in para.in input\n",p6,i);
-			exit(0);
-		}
-		if((p6==10 or p6==11) and model.groups[i].flagcpttype!=3){
-			printf("inproper ppflag, ppflag=%d, but m.g.flagcpttype!=3 but =%d\n",p6, model.groups[i].flagcpttype);
-			exit(0);
-		}
-		if (p6<=ppflagid){
-	      	  printf("### checkParaModel, in group %d, layer %d,  we require the para's ppflag (the 7th column) is ordered in an increasing order!\n",i,nvid);
-		  exit(0);
-	        }//if
-	        ppflagid=p6;
-	      }//if p0==0
-	  
-	      //---- count the total number of parameters
-	      if(p6>7)continue;
-	      //parameter belongs to group i, and is one of the five parameters (vsv~eta)
-	      count++;
-	      if(p6<6 and para.space1[j][2]*(para.space1[j][2]+1)>0)//if sigma >0 or sigma<-1, its Vkernel will be computed
-	      {countsigma++;}
-	    }//for j <npara
-
-	    if((model.groups[i].flagcpttype-2)*(model.groups[i].flagcpttype-4)==0){
-		if(count!=N){
-      		    printf("#### checkParaModel, the number of parameters(vsv~eta,theta,phi) in group %d is %d, but should be %d to enable the Love_para forward computation!\n",i,count,N);
-	      	    exit(0);}
-	        if(countsigma!=N2){
-		    printf("#### checkParaModel, the number of parameters with sigma>0 or <-1 (i.e. will compute Vkernel for this para) in group %d is %d, but should be %d to enable right Love_para forward computation!\n",i,countsigma,N2);
-		    exit(0);
-		}
-	    }//if flagcpttpye
-	    
-	    //===wait to be modified
-	    if(model.groups[i].flagcpttype==1){// use Vpara&Vkernel for all forward computation, indicating that this groups of model is isotropic or TI.
-
-	    }
-
-	  }//for i
 	  return 1;
-	}  //checkParaModel;
-
+	}//checkParaModel
 
 //-----------------------------------------------------	 
 //	0		1	2	3	4   5	6	7		8			9		10	
@@ -587,7 +448,7 @@ for i<para.npara
 
 
 */
-	int para2mod_static(paradef para, modeldef inmodel, modeldef &outmodel)
+	int para2mod(paradef para, modeldef inmodel, modeldef &outmodel)
 	{
 	  //this is different from the para2mod defined below this function; it won't modify the para anymore, it just use the given para, and transfer it to model, regardless if space1[i][2]<-1 or not;
 	  // this is used in computing Vkernel!	
@@ -647,7 +508,7 @@ for i<para.npara
 
 //-----------------------------------------------------	 
 
-	int para2mod(paradef &para, modeldef inmodel, modeldef &outmodel)
+	int para2mod_not_in_use(paradef &para, modeldef inmodel, modeldef &outmodel)
 	{
 	  //for a parameteri, if its space[i][2] (i.e., the sigma) <-1,then, use the default RAvp, RAvs, eta relationship to scale vpv,vph,eta according to vsv,vsh;
 	  //ALSO, since I add & in front of para, the para will be changed accordingly (change to the scaled value, so don't need mod2para after para2mod in order to make sure para and mod have the same value)
@@ -949,18 +810,9 @@ for i<para.npara
 	}//gen new para single
 //-----------------------------------------------------
 
-	int gen_newpara(paradef inpara, paradef &outpara, int pflag )
-	{//change the p.parameter[]
-
-	 outpara=inpara;
-	 gen_newpara_single(inpara.space1,outpara.parameter,inpara.npara,pflag);
-
-	  return 1;
-	}
-
 //----------------------------------------------------- 
 	int gen_newpara_single_v2(vector<vector<double> > space1, vector<double> &parameter,int ip,int pflag){
-	  double newv,min,max,sigma;
+	  double newv,min,max,mean,sigma;
 	
 	  mean=parameter[ip];
 	  newv=mean;
@@ -975,7 +827,7 @@ for i<para.npara
 		newv=gen_random_unif01()*(max-min)+min;}
 	  else if (pflag==1){//normal
 		newv=gen_random_normal(mean,sigma);
-		if(newv>max){newv=max-(newv-max)};
+		if(newv>max){newv=max-(newv-max);}
 		else if(newv<min){newv=min+(min-newv);}
 		parameter[ip]=newv;
 	  }
@@ -1034,7 +886,7 @@ for i<para.npara
 	{
 	  //before using this function, make sure that para&model are consistent with each other
 	  int i;
-	  int p0,intsigma,p0,ng,p6;
+	  int intsigma,p0,ng,p6,nv;
 	  double sigma;
 
 	  outpara=inpara;
@@ -1042,6 +894,7 @@ for i<para.npara
 	  for(i=0;i<inpara.npara;i++){
 		p0=(int)inpara.para0[i][0];
 		ng=(int)inpara.para0[i][4];
+		nv=(int)inpara.para0[i][5];
 		p6=(int)inpara.para0[i][6];
 		sigma=inpara.space1[i][2];
 	

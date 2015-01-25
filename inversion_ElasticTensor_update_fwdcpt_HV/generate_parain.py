@@ -8,5 +8,10 @@
 # computation type of each group ( the forward computation is through 1)Vkernel[iso or TI model] 2) Vkernel->RAdisp Lkernel->AZdisp 3)Vk->RAdiap Vsvk->AZdisp 4)Lk->both RAdisp&AZdisp)
 # range, sigma for the given parameters
 
+fgets()
+sscanf()
+
+
+
 
 

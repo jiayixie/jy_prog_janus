@@ -25,13 +25,13 @@ default_random_engine generator (seed);
 #include"./gen_random_cpp.C"
 #include"./INITstructure_BS_HV.h"
 //#include"CALpara_isolay_BS.C"
-#include "CALpara_isolay_BS_newV2L_changeEtaSpace.C"
+#include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
 #include"CALmodel_LVZ_ET_BS_HV.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
 #define _USE_MATH_DEFINES
@@ -95,7 +95,7 @@ exit(0);
   Rmonoc=1;
   Lmonoc=1;
   PosAnic=1;
-  flagreadLkernel=1;
+  flagreadLkernel=0;
   flagupdaterho=0;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -110,6 +110,8 @@ exit(0);
   Vposani.push_back(1);
   Vposani.push_back(2);
   Viso.push_back(0);
+  Viso.push_back(1);
+  Viso.push_back(2);
   //Vposani.push_back(1);Vposani.push_back(2);
   k1=0;k2=1;
   //----------------------------------------------------------------------
@@ -129,14 +131,14 @@ exit(0);
   int num_thread=atoi(argv[10]);
   */
   sprintf(inponm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/point1.txt");
-  sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v15_testHV/P12A_-115.0_39.4_inv_v15_testHV");
-  sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A.mod");
+  sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v1_testHV/P12A_-115.0_39.4_inv_v1_testHV");
+  sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A_iso.mod");
   sprintf(Rphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Rgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Lphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Lgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_BS_CstMat_v15.txt");
-  flagreadVkernel=1;//atoi(argv[1]);
+  sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_v1.txt");
+  flagreadVkernel=0;//atoi(argv[1]);
   int num_thread=atoi(argv[1]);
 
 
@@ -242,7 +244,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
     mod2para(model0,para0,para1);////fill both para.R/Lpara0 (they could be inequal if Rf*Lf>0, they are equal if Rf*Lf=0)
 
-    checkParaModel(para1,model0,isoflag,PosAnic);
+    checkParaModel(para1,model0,Viso);
 
     /*===check===
     printf("check readpara & mod2para----\n");
