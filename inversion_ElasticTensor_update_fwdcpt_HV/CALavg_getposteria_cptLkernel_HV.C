@@ -24,7 +24,7 @@
 // this version, further modified on Nov 23, 2014, compute Lkernel directly instead of using Vkernel2Lkernel
 // change the included files, keep them consistent with those in the Main code, changed the CALforward, CALinv, CALpara, gen_random, CALmodel
 
-// this version (HV), consider the newly added HV dispersion curves.
+// this version (HV), consider the newly added HV dispersion curves.  
 
 
 #include<iostream>
