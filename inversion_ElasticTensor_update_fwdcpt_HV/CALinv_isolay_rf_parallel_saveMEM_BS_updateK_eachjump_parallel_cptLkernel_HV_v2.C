@@ -40,10 +40,10 @@ int temp_writepara(FILE *f, paradef para,modeldef model, int iaccp, int ithread,
 	fprintf(f,"\t\t %g %g",max,sum/n);
 	*/
 	//---check---write the c in the crust layers-------
-	fprintf(f,"c: ");
-	for(int m=10;m<15;m++){
-	float c=model.laym0.rho[m]*(0.125*pow(model.laym0.vph[m],2)+0.125*pow(model.laym0.vpv[m],2)-0.25*model.laym0.eta[m]*(pow(model.laym0.vph[m],2)-2*pow(model.laym0.vsv[m],2))-0.5*pow(model.laym0.vsv[m],2));
-	fprintf(f,"\t%5f %5f %5f %5f %5f %5f   %g",model.laym0.vsv[m],model.laym0.vsh[m],model.laym0.vpv[m],model.laym0.vph[m],model.laym0.eta[m],model.laym0.rho[m],c);}
+	//fprintf(f,"c: ");
+	//for(int m=10;m<15;m++){
+	//float c=model.laym0.rho[m]*(0.125*pow(model.laym0.vph[m],2)+0.125*pow(model.laym0.vpv[m],2)-0.25*model.laym0.eta[m]*(pow(model.laym0.vph[m],2)-2*pow(model.laym0.vsv[m],2))-0.5*pow(model.laym0.vsv[m],2));
+	//fprintf(f,"\t%5f %5f %5f %5f %5f %5f   %g",model.laym0.vsv[m],model.laym0.vsh[m],model.laym0.vpv[m],model.laym0.vph[m],model.laym0.eta[m],model.laym0.rho[m],c);}
 	//-----
 	fprintf(f,"\n");
 	return 1;
@@ -53,7 +53,8 @@ int temp_writepara(FILE *f, paradef para,modeldef model, int iaccp, int ithread,
 //int do_inv_BS(int id,double misfitcri,vector<paradef> &aralst,paradef refparaBS,modeldef refmodelBS,paradef refpara,modeldef refmodel,vector<int> Rvmono,vector<int> Lvmono,vector<int> Rvgrad, vector<int> Lvgrad,vector<vector<double> > PREM, vector<vector<vector<double> > > Vkernel, vector<vector<vector<double> > > Lkernel,int k1,int k2,time_t start,int isoflag, int Rsurflag, int Lsurflag, int AziampRflag, int AziampLflag, int AziphiRflag, int AziphiLflag,int Nprem,int Rmonoc,int Lmonoc, int PosAni, vector<int> Vposani, int iitercri,int ijumpcri,char *fbinnm,float inpamp, float inpphi, int flagupdaterho){
 //int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<paradef> &paralst,const paradef refparaBS,const modeldef refmodelBS,const paradef refpara,const modeldef refmodel,const vector<int> Rvmono,const vector<int> Lvmono,const vector<int> Rvgrad,const vector<int> Lvgrad,const vector<vector<double> > PREM,const  vector<vector<vector<double> > > Vkernel, const vector<vector<vector<double> > > Lkernel,const int k1,const int k2,const time_t start,const int isoflag,const int Rsurflag, const int Lsurflag,const int AziampRflag,const int AziampLflag,const int AziphiRflag,const int AziphiLflag,const int Nprem,const int Rmonoc,const int Lmonoc,const int PosAni, const vector<int> Vposani, const int iitercri,const int ijumpcri,const char *fbinnm,const float inpamp, const float inpphi, const int flagupdaterho){
 int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<paradef> &paralst,const paradef refparaBS,const modeldef refmodelBS, const paradef refpara0, const modeldef refmodel0,const vector<int> Rvmono,const vector<int> Lvmono,const vector<int> Rvgrad,const vector<int> Lvgrad,const vector<vector<double> > PREM, const vector<vector<vector<double> > > Vkernel0, const vector<vector<vector<double> > > Lkernel0,const int k1,const int k2,const time_t start,const int isoflag,const int Rsurflag, const int Lsurflag,const int AziampRflag,const int AziampLflag,const int AziphiRflag,const int AziphiLflag,const int Nprem,const int Rmonoc,const int Lmonoc,const int PosAni, const vector<int> Vposani, const int iitercri,const int ijumpcri,const char *fbinnm,const float inpamp, const float inpphi, const int flagupdaterho){
-  int tflag,iiter,iaccp,ibad,lastiaccp,idphiC;
+  int i;
+  int tflag,iiter,iaccp,ibad,lastiaccp,idphiC,flagidphiC;
   double oldL,oldRL,oldLL,newL,newRL,newLL,oldmisfit,newmisfit;
   double prob,prandom;
   char str[500];
@@ -77,12 +78,16 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   }
   //---get the phi id for crust, the group1's phi_para,
   //---Here, I assume that group[1] is crust, should be adjusted for different situations----
-  for(int i=0;i<refpara0.npara;i++){
+ 
+  for( i=0;i<refpara0.npara;i++){
     if((int)refpara0.para0[i][6]==7 and (int)refpara0.para0[i][4]==1){idphiC=i;break;}
   }//for
-  printf("inv, crust idphi=%d\n",idphiC);
+  if(i==refpara0.npara){printf("This model has no crustal phi value\n");flagidphiC=0;}
+  else
+  {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int accpcri=5000;//5000 ;//3000;
+  const int Nacc_updateK_init = 500;
+  const int accpcri=3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
 
@@ -100,7 +105,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   while(iloop<600 and iaccp<accpcri){
   //maybe, just use Njump jumps all the time. eacho jump itterate iitercri times before it terminates. No break out of the code is necessary then.
   //num_threads(Njump)
-  #pragma omp parallel default(none) shared(flagbreak,idphiC,outbin,outbinRA,paralst,iloop,iiter,iaccp) private(para2,para1,tmodel,oldLL,oldRL,oldL,countitt,countacc,ibad,tflag,newL,newRL,newLL,newmisfit,now,prob,oldmisfit,prandom,refmodel,Vkernel,Lkernel,lastiaccp,refpara,Tacc,NKdid) 
+  #pragma omp parallel default(none) shared(flagidphiC,flagbreak,idphiC,outbin,outbinRA,paralst,iloop,iiter,iaccp) private(para2,para1,tmodel,oldLL,oldRL,oldL,countitt,countacc,ibad,tflag,newL,newRL,newLL,newmisfit,now,prob,oldmisfit,prandom,refmodel,Vkernel,Lkernel,lastiaccp,refpara,Tacc,NKdid) 
   {
   printf("jump threads=%d\n",omp_get_num_threads());//--check---
   #pragma omp for schedule(dynamic,1)
@@ -139,7 +144,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 
 	oldLL=oldRL=oldL=0.;
 	countacc=0;
-	Tacc=200;
+	Tacc=Nacc_updateK_init;//200;
 	NKdid=0;
 	lastiaccp=0;
 
@@ -203,9 +208,11 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			printf("re-compute Vkernel & Lkernel!! iloop=%d ijump=%d countacc=%d\n",iloop,ijump,countacc);
 			lastiaccp=countacc;
 			NKdid++;
-			if(NKdid>=2)Tacc=500;//modified on Mar 13,2014. change the frequency of updating kernel
-			if(NKdid>=4)Tacc=1000;
-			if(NKdid>=10)Tacc=10000;
+			if(NKdid>=2)Tacc=Nacc_updateK_init*2;//500;//modified on Mar 13,2014. change the frequency of updating kernel
+			if(NKdid>=4)Tacc=Nacc_updateK_init*4;//1000;
+			if(NKdid>=10)Tacc=Nacc_updateK_init*10;//10000;
+			if(NKdid>=20)Tacc=Nacc_updateK_init*20;//10000;
+			
 			compute_dispMineos(RAmodel,PREM,Nprem,Rsurflag,Lsurflag,ijump);
 			compute_Vkernel(RApara,RAmodel,Vkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,ijump);
 			//Vkernel2Lkernel(RApara,RAmodel,Vkernel,Lkernel,flagupdaterho);
@@ -213,7 +220,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			RApara.LoveAZparameter=refpara.LoveAZparameter; //set LoveAZparameter_ref to 0!
 			refmodel=RAmodel;
 			refpara=RApara;
-	
+			
+
 			/*----test--- write the reference model
 			float depth=0.;
 			float c=0.;
@@ -229,6 +237,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			fclose(tmpfmod);
 			//----------
 			*/
+			/*
 			char str2[200],str3[200];
 			sprintf(str,"VkernelR_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
 			sprintf(str2,"VkernelL_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
@@ -238,11 +247,13 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			sprintf(str2,"LkernelL_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
 			sprintf(str3,"LkernelLHV_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);// actually this file won;t be wrote, because the Ldisp.fhv==0
 			write_kernel(Lkernel,RAmodel,RApara,str,str2,str3,Rsurflag,Lsurflag);
-			
+			*/
 			//exit(0);
 		}//update kernel
 
   		//---------
+  		//tmodel=model2BS;
+		//para2mod(para2BS,tmodel,model2BS);
 		gen_newpara(para2BS,model2BS,para1BS,k2);
 		para2mod(para1BS,refmodelBS,model1BS);//???
 		Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
@@ -292,7 +303,9 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 
 		//----------Pass criterio, accept para----------------------------------
 		para2BS=para1BS;
+		model2BS=model1BS;
 		para2=para1;
+		model2=model1;
 		oldL=newL;
 		oldRL=newRL;
 		oldLL=newLL;
@@ -305,6 +318,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		}
 		countacc++;		
 		temp_writepara(ftemp,para1,model1,countacc,i,1);
+
 		#pragma omp critical (updateflag_write_model)
 		{
 		  //printf("Hey, write model iaccp %d\n",iaccp);
@@ -318,9 +332,11 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		  Lovepara2Vpara(RApara,tmodel);
 		  para2mod(RApara,tmodel,RAmodel);
 		  updatemodel(RAmodel,flagupdaterho);
-		  RApara.parameter[idphiC]=para1.parameter[idphiC];//################# this is a test ###### this is added for the convience of later average process (this is the only way to seperate different phi groups)
+		  if(flagidphiC>0)
+		    RApara.parameter[idphiC]=para1.parameter[idphiC];//################# this is a test ###### this is added for the convience of later average process (this is the only way to seperate different phi groups)
 		  write_bin(RAmodel,outbinRA,RApara,1,i,iaccp); 
-		  RApara.parameter[idphiC]=0.; //################# this is a test ######
+		  if(flagidphiC>0)
+		    RApara.parameter[idphiC]=0.; //################# this is a test ######
 		  }
 		  else{//--this part is just a test,---check---
 			paralst.push_back(para1BS);

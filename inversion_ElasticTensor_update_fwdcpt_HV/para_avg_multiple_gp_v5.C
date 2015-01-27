@@ -294,14 +294,18 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 
   //---get philst(only from mod with small misfit), and call function seperate_gp to group the philst
   //philst.clear();
+  if(idphi>=0){
   for(i=0;i<Ngood;i++){
 	k=idlst[i];
-	philst.push_back(paralst[k].parameter[idphi]);
-  }  
+	philst.push_back(paralst[k].parameter[idphi]);}  
 
   Ngp=0;
   seperate_gp(philst,Ngp,pkC,indexflaglst);
-  
+  }//if idphi>=0
+  else{
+    Ngp=1; // no idphi informatino, then do not seperate the group
+    for(i=0;i<Ngood;i++)indexflaglst.push_back(1);
+  }
   //--- put the modified (+/-T) phi back into the paralst; and compute the avg for all parameters for each gp(seperated based on philst)
   /*for(i=0;i<Ngood;i++){
 	// since I disabled the &vlst in the seperate_gp function, the philst is not changed, so no need to transfer its value back to paralst; I disabled it only b.c. of the memory problem correlated with the '&'
@@ -316,6 +320,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   //printf("hi 309\n");//--check---
 
   //--since philst is not transfered back, need to modify the phi values here
+  if(idphi>=0){
   pk=pkC;
   if(Ngp==1){//only one group
 	for(i=0;i<Ngood;i++){
@@ -336,6 +341,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		}
 	}//for i
   }//else two groups
+  }//if idphi>=0
   //---
 
 

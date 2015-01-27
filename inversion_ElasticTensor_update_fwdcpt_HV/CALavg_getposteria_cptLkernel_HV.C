@@ -47,14 +47,14 @@ default_random_engine generator (seed);
 #include"./generate_Bs.C"
 #include"./gen_random_cpp.C"
 #include"./INITstructure_BS_HV.h"
-#include"CALpara_isolay_BS_newV2L_changeEtaSpace.C"
+#include"CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
 #include"CALmodel_LVZ_ET_BS_HV.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 #include "para_avg_multiple_gp_v5.C"
 
 //----------------------------------------------------------------
@@ -480,18 +480,16 @@ int i;
   	paraP.LoveRAparameter=paraavg.LoveRAparameter;
   	paraP.LoveAZparameter=paraavg.LoveAZparameter;
  	tmodel=modelP;
-	printf("para2mod\n");
 	para2mod(paraP,tmodel,modelP);
-	printf("para2mod\n");
-	tpara=paraP;
-	mod2para(modelP,tpara,paraP);
+	//tpara=paraP;
+	//mod2para(modelP,tpara,paraP);
 	updatemodel(modelP,flagupdaterho);
 	model0=modelP;para1=paraP;
 	//--use the RA part of the model
 	Vpara2Lovepara(para1,model0,flagupdaterho);
 	RApara=para1;tmodel=model0;
 	Lovepara2Vpara(RApara,tmodel);
-	para2mod_static(RApara,tmodel,RAmodel);
+	para2mod(RApara,tmodel,RAmodel);
 	updatemodel(RAmodel,flagupdaterho);
 	for(i=0;i<RApara.npara;i++)RApara.LoveAZparameter[i][0]=RApara.LoveAZparameter[i][1]=0.;
 	para1=RApara;
@@ -581,6 +579,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 	int k1,k2;
  	k1=0;k2=0;
 	for(int j=0;j<paraall.size();j++){
+		if(idphiC>=0){
 		tphi=convert(paraall[j].parameter[idphiC],pkC,T);
 		if(ig==0){
 		  if(fabs(tphi-pkC)>=0.23*T){
@@ -600,13 +599,14 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 			printf("In CALavg_getposteria_v8.C, haven't considered the situation with Ngroup>2\n");
 			exit(0);
 		}
+		}//idphiC>=0
 		  paraP=pararef;
                   paraP.parameter=paraall[j].parameter;
                   paraP.LoveRAparameter=paraall[j].LoveRAparameter;
                   paraP.LoveAZparameter=paraall[j].LoveAZparameter;
                   para2mod(paraP,modelref,modelP);
-		  tpara=paraP;
-		  mod2para(modelP,tpara,paraP);
+		  //tpara=paraP;
+		  //mod2para(modelP,tpara,paraP);
 		  updatemodel(modelP,flagupdaterho);
 		  get_misfitKernel(modelP,paraP,modelref,pararef,Vkernel,Lkernel,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,inpamp,inpphi,flagupdaterho);
 		  //printf("misfit gp%d mod%d %g->%g\n",ig,j,paraall[j].misfit,paraP.misfit);
@@ -636,8 +636,8 @@ vector<vector<vector<double> > > Vkernel,Lkernel;
   paraP.LoveRAparameter=paraavg.LoveRAparameter;
   paraP.LoveAZparameter=paraavg.LoveAZparameter;
   para2mod(paraP,model0,modelP);
-  para0=paraP;
-  mod2para(modelP,para0,paraP);
+  //para0=paraP;
+  //mod2para(modelP,para0,paraP);
   updatemodel(modelP,flagupdaterho);
 
   /* // from this test, we know that although in paraavg, only the phi in the 1st layer/grid of that group is correct, but after p2m & m2p, all the phi have correct value in paraP
@@ -645,6 +645,7 @@ vector<vector<vector<double> > > Vkernel,Lkernel;
 	printf("%d %8.4f %8.4f\n",i,paraavg.parameter[i],paraP.parameter[i]);
   }//--test---
   */
+  // in iso case, is paraP=pararef? A: yes, paraP=pararef, and modelP.disp=modelref.disp
   get_misfitKernel(modelP,paraP,modelref,pararef,Vkernel,Lkernel,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,inpamp,inpphi,flagupdaterho);
   		 
   sprintf(modnm1,"%s/Animod_%s",dirlay,name);
@@ -789,18 +790,18 @@ int main(int argc, char *argv[])
     readmodAniso(model0,modnm);// both m.g.LV/Rv are filled regardless of flags. (readin iso model)
     readpara(para0,fparanm);
     mod2para(model0,para0,para1);////fill both para.R/Lpara0 (they could be inequal if Rf*Lf>0, they are equal if Rf*Lf=0)
-    checkParaModel(para1,model0);
+    //checkParaModel(para1,model0,Viso); # if this para has been verified in the Main_*.C code, then probably do not need it here; b.c. I need to set Viso again here in this program, which may cause mistake
     Bsp2Point(model0,para1,modelP,paraP,flagupdaterho);   
 
     //---get the phi id for both crust&mantle
     for(i=0;i<paraP.npara;i++){
         if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1){idphiC=i;break;}
     }
+    if(i==paraP.npara){idphiC=-1;} 
     /*for(i=0;i<paraP.npara;i++){
         if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2){idphiM=i;break;}
     }*/
     idphiM=-1;    
-    
 
   //---end of reading information
 

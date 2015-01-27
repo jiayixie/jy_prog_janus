@@ -730,7 +730,7 @@ for i<para.npara
 			{
 			  if(space1[i][2]<0.001)continue;
 			  newv=gen_random_unif01()*(space1[i][1]-space1[i][0])+space1[i][0];//gen_random_unif01 => [0,1)
-			//  printf("$$$$ gen_newpara unif:%d %g %g %g\n",i,inpara.space1[i][0],inpara.space1[i][1],newv);
+			  //printf("$$$$ gen_newpara unif:ipara=%d/%d min=%g max=%g newv=%g\n",i,npara,space1[i][0],space1[i][1],newv);
 			  parameter[i]=newv;
 			}
 	  }//if		  	  
@@ -811,7 +811,7 @@ for i<para.npara
 //-----------------------------------------------------
 
 //----------------------------------------------------- 
-	int gen_newpara_single_v2(vector<vector<double> > space1, vector<double> &parameter,int ip,int pflag){
+	double gen_newpara_single_v2(vector<vector<double> > space1, vector<double> parameter,int ip,int pflag){
 	  double newv,min,max,mean,sigma;
 	
 	  mean=parameter[ip];
@@ -824,17 +824,17 @@ for i<para.npara
 	  //if(sigma<0.001){printf("Hey, this para %d, (=%g) either does not need any perturbation, or it is perturbed through scaling relationship. Should not be send to this gen_newpara_single_v2 function.\n",ip,mean);exit(0);}
 
 	  if(pflag==0){//uniform
-		newv=gen_random_unif01()*(max-min)+min;}
+		newv=gen_random_unif01()*(max-min)+min;
+		}
 	  else if (pflag==1){//normal
 		newv=gen_random_normal(mean,sigma);
 		if(newv>max){newv=max-(newv-max);}
 		else if(newv<min){newv=min+(min-newv);}
-		parameter[ip]=newv;
 	  }
 	  else {printf("### wrong pflag for gen_newpara!!\n");exit(0);}
 	  //removed the section that "the perturbed parameter to have the same perturbation", this is enabled through the value of sigma, fulfilled in the main gen_newpara function
 
-	  return 1;
+	  return newv;
 	}//gen_newpara_single_v2
 //----------------------------------------------------- 
 	double gen_newpara_single_scale(int flag, modeldef model,int ng,int nv,int p6){
@@ -876,20 +876,27 @@ for i<para.npara
 	  //anisotropic scaling, this group is anisotropic
 	  //scale based on a given scaling relationship
 	  //e.g., VpRA=c1*VsRA; eta=c2+c3*VsRA	  
+	  //this kind of scaling need to be dealt with carefully. need to be careful about the updating order of the parameters. the parameters are ordered from vsv->eta, but when doing scaling, may need some later parameters to be updated 1st.
 	  printf("### this anisotropic scaling is still under construction...\n");
 	  exit(0);
   	  }
 	  return newv;
 	}//gen_newpara_single_scale
+
 //----------------------------------------------------- 
 	int gen_newpara(paradef inpara, modeldef model, paradef &outpara, int pflag)
 	{
 	  //before using this function, make sure that para&model are consistent with each other
+	  //once a parameter is changed, need to update the corresponding value in model because I may use this updated value for another scaled parameter.
+	  //within this function, I only generate parameter, the modified model values are not transferred back. should use para2mod after this function to keep para&model consistent with each other
+	  //it is easy to transfer the updated model values back by just using '&model'. But at this points, I just want to keep this function simple
 	  int i;
 	  int intsigma,p0,ng,p6,nv;
-	  double sigma;
+	  double newv,sigma;
+	  modeldef tmodel;
 
 	  outpara=inpara;
+	  tmodel=model;
 
 	  for(i=0;i<inpara.npara;i++){
 		p0=(int)inpara.para0[i][0];
@@ -906,14 +913,38 @@ for i<para.npara
 		    outpara.parameter[i]=gen_newpara_single_scale(intsigma,model,ng,nv,p6);
 		  }//else	
 
-		}
+		  newv=outpara.parameter[i];
+                  if(p6==1)
+                          {model.groups[ng].vsvvalue[nv]=newv;}
+                  else if (p6==2)
+                          {model.groups[ng].vshvalue[nv]=newv;}
+                  else if (p6==3){//vpv
+                           model.groups[ng].vpvvalue[nv]=newv;}
+                  else if (p6==4){//vph
+                           model.groups[ng].vphvalue[nv]=newv;}
+                  else if (p6==5){//eta
+                           model.groups[ng].etavalue[nv]=newv;}
+                  else if (p6==6 or p6==10){//theta
+                           model.groups[ng].thetavalue[nv]=newv;
+                          }//p6=6 or 10 
+                  else if (p6==7 or p6==11){//phi
+                           model.groups[ng].phivalue[nv]=newv;
+                          }//if p6==7 or 11
+
+		}//if p0==0 value
 		else if(p0==1){// thickness parameter
 		  outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);		  
+		  newv=outpara.parameter[i];
+		  model.tthick=model.tthick-model.groups[ng].thick+newv; // the tthick is changing
+                  model.groups[ng].thick=newv;
+
 		}//if p0=1
 		else if (p0==-1)//vpvs
-		  {outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);}
+		  {outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
+		   newv=outpara.parameter[i];
+		   model.groups[ng].vpvs=newv;}
 		else {printf("## gen_newpara, wrong value for p0, should be either -1,1, or0, not %d\n",p0);exit(0);}
-	  }
+	  } //for i
 	  return 1;
 	}//gen_newpara
 	

@@ -87,7 +87,6 @@ exit(0);
   iitercri1=100000;//100000;//12000 (mod1, 1cstlay)
   iitercri2=15000;
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
-  ijumpcri2=5;
   depcri1=20.0;
   depcri2=80.0;
   qpcri=900.;//900.;
@@ -118,7 +117,7 @@ exit(0);
 
   //sprintf(PREMnm,"/home/jiayi/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/prem_noocean.txt");
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
-  /*
+  ///*
   sprintf(inponm,argv[1]);
   sprintf(dirlay,argv[2]);
   sprintf(modnm,argv[3]);//starting model
@@ -129,7 +128,8 @@ exit(0);
   sprintf(fparanm,argv[8]);
   flagreadVkernel=atoi(argv[9]);
   int num_thread=atoi(argv[10]);
-  */
+  //*/
+  /*
   sprintf(inponm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/point1.txt");
   sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v1_testHV/P12A_-115.0_39.4_inv_v1_testHV");
   sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A_iso.mod");
@@ -138,9 +138,9 @@ exit(0);
   sprintf(Lphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Lgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_v1.txt");
-  flagreadVkernel=0;//atoi(argv[1]);
+  flagreadVkernel=1;//atoi(argv[1]);
   int num_thread=atoi(argv[1]);
-
+  */
 
   readPREM(PREMnm,PREM,Nprem);
 
@@ -211,7 +211,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     initpara(pararef);
   
     readdisp(model0,Rdispnm,Ldispnm,AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm,Rsurflag,Lsurflag,AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag); 
-    //==check===
+    /*==check===
     //printf("test-- the number of AZ data: AZRamp.npper=%d AZRamp.pvel.size()=%d AZRamp.pvelo.size=%d\n",model0.data.AziampRdisp.npper,model0.data.AziampRdisp.pvel.size(),model0.data.AziampRdisp.pvelo.size());
     printf("the Rayleigh wave data:\n");
     for(i=0;i<model0.data.Rdisp.npper;i++){
@@ -224,12 +224,12 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     for(i=0;i<model0.data.AziphiRdisp.npper;i++){
     	printf("T=%g vel=%g unc=%g\n",model0.data.AziphiRdisp.pper[i],model0.data.AziphiRdisp.pvelo[i],model0.data.AziphiRdisp.unpvelo[i]);
     }
-    //
+    */
     
     readmodAniso(model0,modnm);// both m.g.LV/Rv are filled regardless of flags. (readin iso model)
     printf("finish read mod\n");
     printf("#########group[0].vsvvalue[0]=%g vshvalue[0]=%g\n",model0.groups[0].vsvvalue[0],model0.groups[0].vshvalue[0]);
-    //===check===
+    /*===check===
     for(i=0;i<model0.ngroup;i++){
     	printf("group %d thick=%f\n",i,model0.groups[i].thick);
 	for(j=0;j<model0.groups[i].np;j++){
@@ -238,7 +238,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     
     }
     //exit(0);
-    //
+    */
     readpara(para0,fparanm);
 
 
