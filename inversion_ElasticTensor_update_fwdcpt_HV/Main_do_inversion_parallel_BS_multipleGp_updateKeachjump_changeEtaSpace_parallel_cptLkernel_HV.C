@@ -25,13 +25,13 @@ default_random_engine generator (seed);
 #include"./gen_random_cpp.C"
 #include"./INITstructure_BS_HV.h"
 //#include"CALpara_isolay_BS.C"
-#include "CALpara_isolay_BS_newV2L_changeEtaSpace.C"
+#include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
 #include"CALmodel_LVZ_ET_BS_HV.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
 #define _USE_MATH_DEFINES
@@ -56,7 +56,7 @@ paradef para0,para1,para2,pararef,paranew,tpara,paraavg1,ttpara,parabest;
 FILE *inpo,*fkernel,*fmisfit;
 vector<vector<double> >  PREM;
 vector<vector<vector<double> > > Vkernel,Lkernel;
-vector<int> Lvmono,Lvgrad,Rvmono,Rvgrad,Vposani,idlst;
+vector<int> Lvmono,Lvgrad,Rvmono,Rvgrad,Vposani,Viso,idlst;
 vector<paradef> paralst,paralstBS,parabestlst;
 vector<double> parastd,LoveRAparastd;
 vector<vector<double> > LoveAZparastd;
@@ -87,7 +87,6 @@ exit(0);
   iitercri1=100000;//100000;//12000 (mod1, 1cstlay)
   iitercri2=15000;
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
-  ijumpcri2=5;
   depcri1=20.0;
   depcri2=80.0;
   qpcri=900.;//900.;
@@ -95,7 +94,7 @@ exit(0);
   Rmonoc=1;
   Lmonoc=1;
   PosAnic=1;
-  flagreadLkernel=1;
+  flagreadLkernel=0;
   flagupdaterho=0;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -109,13 +108,16 @@ exit(0);
   Lvgrad.push_back(1);
   Vposani.push_back(1);
   Vposani.push_back(2);
+  Viso.push_back(0);
+  Viso.push_back(1);
+  Viso.push_back(2);
   //Vposani.push_back(1);Vposani.push_back(2);
   k1=0;k2=1;
   //----------------------------------------------------------------------
 
   //sprintf(PREMnm,"/home/jiayi/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/prem_noocean.txt");
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
-  /*
+  ///*
   sprintf(inponm,argv[1]);
   sprintf(dirlay,argv[2]);
   sprintf(modnm,argv[3]);//starting model
@@ -126,18 +128,19 @@ exit(0);
   sprintf(fparanm,argv[8]);
   flagreadVkernel=atoi(argv[9]);
   int num_thread=atoi(argv[10]);
-  */
+  //*/
+  /*
   sprintf(inponm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/point1.txt");
-  sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v15_testHV/P12A_-115.0_39.4_inv_v15_testHV");
-  sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A.mod");
+  sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v1_testHV/P12A_-115.0_39.4_inv_v1_testHV");
+  sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A_iso.mod");
   sprintf(Rphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Rgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Lphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
   sprintf(Lgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_BS_CstMat_v15.txt");
+  sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_v1.txt");
   flagreadVkernel=1;//atoi(argv[1]);
   int num_thread=atoi(argv[1]);
-
+  */
 
   readPREM(PREMnm,PREM,Nprem);
 
@@ -208,7 +211,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     initpara(pararef);
   
     readdisp(model0,Rdispnm,Ldispnm,AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm,Rsurflag,Lsurflag,AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag); 
-    //==check===
+    /*==check===
     //printf("test-- the number of AZ data: AZRamp.npper=%d AZRamp.pvel.size()=%d AZRamp.pvelo.size=%d\n",model0.data.AziampRdisp.npper,model0.data.AziampRdisp.pvel.size(),model0.data.AziampRdisp.pvelo.size());
     printf("the Rayleigh wave data:\n");
     for(i=0;i<model0.data.Rdisp.npper;i++){
@@ -221,12 +224,12 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     for(i=0;i<model0.data.AziphiRdisp.npper;i++){
     	printf("T=%g vel=%g unc=%g\n",model0.data.AziphiRdisp.pper[i],model0.data.AziphiRdisp.pvelo[i],model0.data.AziphiRdisp.unpvelo[i]);
     }
-    //
+    */
     
     readmodAniso(model0,modnm);// both m.g.LV/Rv are filled regardless of flags. (readin iso model)
     printf("finish read mod\n");
     printf("#########group[0].vsvvalue[0]=%g vshvalue[0]=%g\n",model0.groups[0].vsvvalue[0],model0.groups[0].vshvalue[0]);
-    //===check===
+    /*===check===
     for(i=0;i<model0.ngroup;i++){
     	printf("group %d thick=%f\n",i,model0.groups[i].thick);
 	for(j=0;j<model0.groups[i].np;j++){
@@ -235,13 +238,13 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     
     }
     //exit(0);
-    //
+    */
     readpara(para0,fparanm);
 
 
     mod2para(model0,para0,para1);////fill both para.R/Lpara0 (they could be inequal if Rf*Lf>0, they are equal if Rf*Lf=0)
 
-    checkParaModel(para1,model0);
+    checkParaModel(para1,model0,Viso);
 
     /*===check===
     printf("check readpara & mod2para----\n");

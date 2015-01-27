@@ -546,7 +546,7 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
  if(Rflag>0 and Lflag==0){
 	ddp=para.parameter[i]*dp;
 	newpara.parameter[i]=para.parameter[i]+ddp;
-	para2mod_static(newpara,model,newmodel);
+	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
  	compute_dispMineos(newmodel,PREM,Nprem,1,0,ipara);
 	compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
@@ -564,7 +564,7 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
   else if (Rflag*Lflag>0){
 	ddp=para.parameter[i]*dp;
 	newpara.parameter[i]=para.parameter[i]+ddp;
-	para2mod_static(newpara,model,newmodel);
+	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
         printf("@@@ check, compute_Vkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
  	compute_dispMineos(newmodel,PREM,Nprem,1,1,ipara);
@@ -587,7 +587,7 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
   else if(Rflag==0 and Lflag>0){
 	ddp=para.parameter[i]*dp;
 	newpara.parameter[i]=para.parameter[i]+ddp;
-	para2mod_static(newpara,model,newmodel);
+	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
  	compute_dispMineos(newmodel,PREM,Nprem,0,1,ipara);
 	compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);
@@ -1914,10 +1914,10 @@ int get_misfitMineosRA(modeldef &model,paradef &para, vector<vector<double> > PR
         }
 
 //-----------------------------------------------------
-	int Bsp2Point(modeldef BSmodel,paradef &BSpara,modeldef &Pmodel,paradef &Ppara,int flagupdaterho){//; BS
+	//int Bsp2Point(modeldef BSmodel,paradef &BSpara,modeldef &Pmodel,paradef &Ppara,int flagupdaterho){//; BS
+	int Bsp2Point(modeldef BSmodel,paradef BSpara,modeldef &Pmodel,paradef &Ppara,int flagupdaterho){//; BS
 	// this is used to transfer the Bspline model/para to Point model/para; and this process will make the Vpara2Lpara, Vkernel2Lkernel ... process much easier.
 	// represent the Bspline smooth model with Point (vel(z))    
-	// cannot add & in front of BSpara(then the BSpara may change in the para2mod process), something strange will happen, not sure why.
 	    modeldef ttmodel;
 	    paradef tpara;
 	    int i,count,ng,j,ig,nv,ppflag,id,tid,N,k;
@@ -1925,7 +1925,8 @@ int get_misfitMineosRA(modeldef &model,paradef &para, vector<vector<double> > PR
 	    vector<int> BSng,BSppflag1;
 	    vector<double> tpara0;
 
-    	    para2mod(BSpara,BSmodel,ttmodel);
+    	    //para2mod(BSpara,BSmodel,ttmodel);
+ 	    ttmodel=BSmodel;
 	    updatemodel(ttmodel,flagupdaterho);
 	    Pmodel=ttmodel;
 	    Pmodel.flag=0;//indicate Pmodel in not updated (the value1[] is not filled)
@@ -2077,7 +2078,7 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
 	ddp=para.LoveRAparameter[i]*dp;
 	newpara.LoveRAparameter[i]=para.LoveRAparameter[i]+ddp;
 	L2Vpara(newpara,newmodel,i);//=====
-	para2mod_static(newpara,model,newmodel);
+	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
 	compute_dispMineos(newmodel,PREM,Nprem,1,0,inum);
 	compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
@@ -2096,7 +2097,7 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
         ddp=para.LoveRAparameter[i]*dp;
         newpara.LoveRAparameter[i]=para.LoveRAparameter[i]+ddp;
 	L2Vpara(newpara,newmodel,i);
-        para2mod_static(newpara,model,newmodel);
+        para2mod(newpara,model,newmodel);
         updatemodel(newmodel,flagupdaterho);
         printf("@@@ check, compute_Lkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
         compute_dispMineos(newmodel,PREM,Nprem,1,1,inum);
@@ -2116,7 +2117,7 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
   else if (Rflag==0 and Lflag>0){
 	ddp=para.LoveRAparameter[i]*dp;
         newpara.LoveRAparameter[i]=para.LoveRAparameter[i]+ddp;
-        para2mod_static(newpara,model,newmodel);
+        para2mod(newpara,model,newmodel);
 	L2Vpara(newpara,newmodel,i);
         updatemodel(newmodel,flagupdaterho);
         compute_dispMineos(newmodel,PREM,Nprem,0,1,inum);
