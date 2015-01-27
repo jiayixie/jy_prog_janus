@@ -581,6 +581,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 	int k1,k2;
  	k1=0;k2=0;
 	for(int j=0;j<paraall.size();j++){
+		if(idphiC>=0){
 		tphi=convert(paraall[j].parameter[idphiC],pkC,T);
 		if(ig==0){
 		  if(fabs(tphi-pkC)>=0.23*T){
@@ -600,6 +601,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 			printf("In CALavg_getposteria_v8.C, haven't considered the situation with Ngroup>2\n");
 			exit(0);
 		}
+		}//idphiC
 		  paraP=pararef;
                   paraP.parameter=paraall[j].parameter;
                   paraP.LoveRAparameter=paraall[j].LoveRAparameter;
