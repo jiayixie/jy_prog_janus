@@ -542,7 +542,7 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
  newmodel=model;
  newpara=para;
 
- trkp1.clear();trkg1.clear();tlkp1.clear();tlkg1.clear();
+ trkp1.clear();trkg1.clear();tlkp1.clear();tlkg1.clear();trkhv1.clear();
  if(Rflag>0 and Lflag==0){
 	ddp=para.parameter[i]*dp;
 	newpara.parameter[i]=para.parameter[i]+ddp;
@@ -1389,7 +1389,6 @@ int compute_HVdisp(modeldef &model,paradef para, modeldef refmod, paradef refpar
 	model.data.Rdisp.hvratio.push_back(tval);
   }  
   
-
   return 1;
 }//compute_HVdisp
 //---------------------------------------
@@ -1409,6 +1408,8 @@ int compute_RAdisp(modeldef &model, paradef para, modeldef refmod, paradef refpa
   double Fref,F,Aref, Lref,c,Etaref,dA,dL,dEta,Eta,L,A;//check
   int ppflag; //check
   FILE *ftemp;//check
+  if(Rsurflag>0)Rsurflag/=Rsurflag;
+  if(Lsurflag>0)Lsurflag/=Lsurflag;
 
   //printf("@@@ check, compute_RAdisp\n");
   //-- prepare para and kernel list ---
@@ -1418,7 +1419,6 @@ int compute_RAdisp(modeldef &model, paradef para, modeldef refmod, paradef refpa
 	ppflag=(int)para.para0[i][6];
 	if((int)para.para0[i][8]==1)Rflag[i]=1*Rsurflag; //parai8 could be 2
 	if((int)para.para0[i][9]!=0)Lflag[i]=1*Lsurflag; //parai9 could be -1
-	
 	
 	if(LVflag==1 or model.groups[ng].flagcpttype==2){// compute all with Vkernel, or compute RAdisp with Vkernel
 		if((ppflag-10)*(ppflag-11)==0) // a bug, modified on Nov 5, 2013
@@ -1431,6 +1431,9 @@ int compute_RAdisp(modeldef &model, paradef para, modeldef refmod, paradef refpa
                 for(j=0;j<4;j++)kernel[j][i]=Lkernel[j][i];             
 	}//else
   }//for	
+
+  //----check
+  //--------
 
   /*---check---
   printf("@@@ check, compute_RAdisp, RAparadiff:\n");
@@ -1494,6 +1497,7 @@ int compute_RAdisp(modeldef &model, paradef para, modeldef refmod, paradef refpa
 
 	*(tdisplist[i])=tdisp;
   }//for i
+
 
   return 1;	
 }//compute_RAdisp
@@ -2032,7 +2036,7 @@ int L2Vpara(paradef &para, modeldef model,int ipara){//LoveRA para to Vpara, onl
   idvsv=ipara-(inppflag-1);
   rho=model.groups[inng].rhovalue[innv];
   //--check--- 
-  printf("vsv?(%g vs %g) ng=%d nv=%d ppflag=%d; rho?(%g)\n",para.parameter[idvsv],model.groups[inng].vsvvalue[innv],(int)para.para0[idvsv][4],(int)para.para0[idvsv][5],(int)para.para0[idvsv][6],rho);
+  //printf("vsv?(%g vs %g) ng=%d nv=%d ppflag=%d; rho?(%g)\n",para.parameter[idvsv],model.groups[inng].vsvvalue[innv],(int)para.para0[idvsv][4],(int)para.para0[idvsv][5],(int)para.para0[idvsv][6],rho);
   //
   
   //--only need to do para change for the related parameters----
@@ -2072,7 +2076,7 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
   newmodel=model;
   newpara=para;
   
-  printf("len of parameter=%d LoveRAparameter=%d\n",para.parameter.size(),para.LoveRAparameter.size());//--check--
+  //printf("len of parameter=%d LoveRAparameter=%d\n",para.parameter.size(),para.LoveRAparameter.size());//--check--
   trkp1.clear();trkg1.clear();tlkp1.clear();tlkg1.clear();
   if(Rflag>0 and Lflag==0){
 	ddp=para.LoveRAparameter[i]*dp;
@@ -2099,7 +2103,7 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
 	L2Vpara(newpara,newmodel,i);
         para2mod(newpara,model,newmodel);
         updatemodel(newmodel,flagupdaterho);
-        printf("@@@ check, compute_Lkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
+        //printf("@@@ check, compute_Lkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
         compute_dispMineos(newmodel,PREM,Nprem,1,1,inum);
         compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
         compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);

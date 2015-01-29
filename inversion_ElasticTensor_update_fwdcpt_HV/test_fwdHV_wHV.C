@@ -84,7 +84,7 @@ exit(0);
   inpamp=0.25;//0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
   inpphi=0.25;//0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  iitercri1=20000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1=100000;//100000;//12000 (mod1, 1cstlay)
   iitercri2=15000;
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
@@ -398,6 +398,49 @@ exit(0);
     ttmodel=modelBS;
     para2mod(paraBS,ttmodel,modelBS);
     updatemodel(modelBS,flagupdaterho);
+
+    //-----test fwd computation ----
+    modeldef model1BS,model1K,model1M;
+    paradef para1BS;
+    
+    para1BS=paraBS;
+    for (int kk=4;kk<=18;kk=kk+4)
+  	{para1BS.parameter[kk]=paraBS.parameter[kk]*1.04;
+  	para1BS.parameter[kk+1]=paraBS.parameter[kk+1]*1.04;}
+    //gen_newpara(paraBS,modelBS,para1BS,1);
+    para2mod(para1BS,modelBS,model1BS);
+    Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);
+    updatemodel(model1,flagupdaterho);
+
+    //----
+    model1M=model1;
+    compute_dispMineos(model1M,PREM,Nprem,Rsurflag,Lsurflag,0);  
+    compute_misfitDISP(model1M,Rsurflag,Lsurflag,0,0,0,0,0,0);
+
+  char name[50];
+  sprintf(name,"M");
+  sprintf(modnm1,"%s/Animod_%s",dirlay,name);
+  sprintf(fRdispnm,"%s/Rdisp_%s",dirlay,name);
+  sprintf(fLdispnm,"%s/Ldisp_%s",dirlay,name);
+  sprintf(fAZRdispnm,"%s/AZRdisp_%s",dirlay,name);
+  sprintf(fAZLdispnm,"%s/AZLdisp_%s",dirlay,name);
+  write_ASC(model1M,paraP,modnm1,fRdispnm,fLdispnm,fAZRdispnm,fAZLdispnm,Rsurflag,Lsurflag,AziampRsurflag, AziampLsurflag,AziphiRsurflag, AziphiLsurflag);
+
+    //------
+    model1K=model1;
+    compute_dispKernel(model1K,para1,modelref,pararef,Vkernel,Lkernel,Rsurflag,Lsurflag,max(AziampRsurflag,AziphiRsurflag),max(AziampLsurflag,AziphiLsurflag));
+    compute_misfitDISP(model1K,Rsurflag,Lsurflag,0,0,0,0,0,0);
+  
+  sprintf(name,"K");
+  sprintf(modnm1,"%s/Animod_%s",dirlay,name);
+  sprintf(fRdispnm,"%s/Rdisp_%s",dirlay,name);
+  sprintf(fLdispnm,"%s/Ldisp_%s",dirlay,name);
+  sprintf(fAZRdispnm,"%s/AZRdisp_%s",dirlay,name);
+  sprintf(fAZLdispnm,"%s/AZLdisp_%s",dirlay,name);
+  write_ASC(model1K,paraP,modnm1,fRdispnm,fLdispnm,fAZRdispnm,fAZLdispnm,Rsurflag,Lsurflag,AziampRsurflag, AziampLsurflag,AziphiRsurflag, AziphiLsurflag);
+
+exit(0);
+    //---
 
     float theta;
     printf("test-- do inv\n");

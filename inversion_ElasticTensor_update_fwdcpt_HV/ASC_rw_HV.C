@@ -8,7 +8,8 @@ int write_ASCdisp_single(dispdef disp, FILE *outdisp){
 
   printf("Begin to write ASCdisp single npper=%d ngper=%d nhvper=%d\n",disp.npper,disp.ngper,disp.nhvper);  
   // fill all disp to the same length, to make the writting process easy
-  sizemax=(max(disp.npper,disp.ngper),disp.nhvper);
+  sizemax=max(max(disp.npper,disp.ngper),disp.nhvper);
+  printf("sizemax=%d\n",sizemax);
   for(i=0;i<sizemax-disp.npper;i++){
 	disp.pper.push_back(0);
 	disp.pvelo.push_back(0.);
