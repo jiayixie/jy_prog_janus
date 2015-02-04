@@ -123,12 +123,14 @@ default_random_engine generator (seed);
 
 	  flag=0;
 	  for(th=h0;th<=h+dth;th=th+dth){//thickness
-		if(th>h){//modified on Nov 24, 2013, allow the th to go very close to h 
-			if(flag==0){flag=1;th=h;}
-			else{break;}
+		if(th>h){//make sure that we do do any avg at depth==h
+		  if(flag==0 and fabs(th-h-dth)>1e-4)
+			{flag=1;th=h;}
+		  else{break;}
 		}
-		if(fabs(th-h+dth)<1e-4)th=h;//???
-		vsv=0.;vsh=0.;Ncount=0;fm1=0.;fm2=0.;ani=0.;fm3=0.;tth=0.;
+		tth=th;
+		//if(fabs(th-h+dth)<1e-4)th=h;//???
+		vsv=0.;vsh=0.;Ncount=0;fm1=0.;fm2=0.;ani=0.;fm3=0.;
 		vpv=0.;vph=0.;eta=0.;theta=0.;phi=0.;
 		tvlst.clear();
 		vsvmin=1e10;vsvmax=-1;
@@ -143,13 +145,28 @@ default_random_engine generator (seed);
 	  	  //--the start and end (laym0) id for this group ---
 	  	  if(ng==0)idmin=0;
 	  	  else idmin=IDlst2[i][ng-1]+1;
-	  	  idmax=IDlst2[i][ng]-1;
+	  	  idmax=IDlst2[i][ng];
+		
+		  /*--test----
+		  if(fabs(tth-30.1191)<1E-3){
+		 	if(tth<Deplst2[i][ng] or fabs(tth-Deplst2[i][ng])<1E-4){printf("hi,has, tth=%g, Dep[%d][%d]=%g\n",tth,i,ng,Deplst2[i][ng]);}
+			else {printf("hi, tth=%g > Dep[%d][%d]=%g\n",tth,i,ng,Deplst2[i][ng]);}
+		  }
+		  */
+		  if(tth>Deplst2[i][ng]+1E-4)continue;
 
-		  //----if th > discontinuity, and th_last < discounity
 		  dep1=0;
+		  for(j=0;j<idmin;j++)dep1+=modlst[i].laym0.thick[j];
+		  /*---test---
+		  if(fabs(tth-30.1191)<1E-3){
+			printf("dep1=%g~",dep1);
+			for(j=idmin;j<idmax;j++)dep1+=modlst[i].laym0.thick[j];
+			printf("%g\n",dep1);
+		  }
+		  */
 		  for(j=idmin;j<idmax;j++){
 		    dep1=dep1+modlst[i].laym0.thick[j];// for grid-model, this is the depth for the j+1 th grid
-			if(dep1>tth or fabs(dep1-tth)<0.01 ){//  the interpolation, there was a bug here (for smooth model, though it works for layered model), changed on Aug27, 2012. another bug modified on Oct 8, 2013
+			if(dep1>tth or fabs(dep1-tth)<1E-4){//  the interpolation, there was a bug here (for smooth model, though it works for layered model), changed on Aug27, 2012. another bug modified on Oct 8, 2013
 				tvsv=(modlst[i].laym0.vsv[j+1]-modlst[i].laym0.vsv[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vsv[j];
 				tvsh=(modlst[i].laym0.vsh[j+1]-modlst[i].laym0.vsh[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vsh[j];
 				tvpv=(modlst[i].laym0.vpv[j+1]-modlst[i].laym0.vpv[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vpv[j];
@@ -159,7 +176,8 @@ default_random_engine generator (seed);
 				tphi=(modlst[i].laym0.phi[j+1]-modlst[i].laym0.phi[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.phi[j];	
 				
 				if(tvsv<0 or tvsv>5){
-					printf("test--- th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);}
+					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
+
 				tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
@@ -188,6 +206,16 @@ default_random_engine generator (seed);
 			}//if dep>tth
 		  }//for j Nlay
 		}//for i Nmodel,size
+		if (Ncount==0){
+			printf("Ncount==0, h=%g\n",tth);
+			dep1=0;
+		  i=0;
+                  for(j=0;j<idmin;j++)dep1+=modlst[i].laym0.thick[j];
+		  printf("%d-%d,mod%d,dep1=%g~",idmin,idmax,i,dep1);
+		  for(j=idmin;j<idmax;j++)dep1+=modlst[i].laym0.thick[j];
+		  printf("%g\n",dep1);
+			exit(0);
+		}
 		vsv=vsv/Ncount;
 		vsh=vsh/Ncount;
 		ani=ani/Ncount;
@@ -371,7 +399,7 @@ default_random_engine generator (seed);
 	  Hmohostd=sqrt(fm2/size);
 	  Hmoho=Hmoho+Hsed; // *********  the previous Hmoho is the thickness of crust not the depth of Moho; modified on Oct 10, 2012; 
 	  depmax=Hmoho+Hmat;
-	  printf("test-- Hsed=%g Hsedstd=%g\n",Hsed,Hsedstd);
+	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
 	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
 	  cout<<"finish sed\n";//--test
@@ -701,7 +729,7 @@ int main(int argc, char *argv[])
   vector<paradef> parabestlst;
   vector<int> idminlst;
   double oldmisfit,misfit,inpamp,inpphi;
-  float lon,lat;
+  float lon,lat,foldmis,fnewmis;
   double pkC;  
   int flagreadVkernel,flagreadLkernel;
 
@@ -724,7 +752,7 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  Rsurflag=5;Lsurflag=0;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Rsurflag=1;Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -888,7 +916,9 @@ int main(int argc, char *argv[])
 	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
 	if((fmis=fopen(str,"r"))==NULL){printf("### Cannot open %s to read new misfit\n",str);exit(0);}
 	for(j=0;j<N;j++){
-		if((fscanf(fmis,"%f %f",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
+		//if((fscanf(fmis,"%g %g",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
+		if((fscanf(fmis,"%f %f",&fnewmis,&foldmis))==EOF){printf("## strange end of file\n");exit(0);}
+		misfit=(double)fnewmis;oldmisfit=(double)foldmis;
 		newmisfitlst.push_back(misfit);
 		//printf("%d new1 %f old1 %f old2 %f \n",j,misfit,oldmisfit,paraall[j].misfit);
 	}

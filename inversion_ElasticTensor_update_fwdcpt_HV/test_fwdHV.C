@@ -74,7 +74,7 @@ exit(0);
 
   //----------------PARAMETERS-----------------------------------------
   isoflag=1; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
-  Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
+  Rsurflag=5; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=0;
   AziampRsurflag=0;
   AziphiRsurflag=0;
@@ -95,7 +95,7 @@ exit(0);
   Lmonoc=1;
   PosAnic=1;
   flagreadLkernel=0;
-  flagupdaterho=0;
+  flagupdaterho=1;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
   //Rvmono.push_back(2);
@@ -169,8 +169,8 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     Rdispnm.clear();
     sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
-    //sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
-    //Rdispnm.push_back(str);
+    sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    Rdispnm.push_back(str);
 
     Ldispnm.clear();
     sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);
@@ -404,10 +404,11 @@ exit(0);
     paradef para1BS;
     
     para1BS=paraBS;
-    for (int kk=4;kk<=18;kk=kk+4)
+    /*for (int kk=4;kk<=18;kk=kk+4)
   	{para1BS.parameter[kk]=paraBS.parameter[kk]*1.04;
   	para1BS.parameter[kk+1]=paraBS.parameter[kk+1]*1.04;}
-    //gen_newpara(paraBS,modelBS,para1BS,1);
+    */
+   // gen_newpara(paraBS,modelBS,para1BS,1);
     para2mod(para1BS,modelBS,model1BS);
     Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);
     updatemodel(model1,flagupdaterho);
