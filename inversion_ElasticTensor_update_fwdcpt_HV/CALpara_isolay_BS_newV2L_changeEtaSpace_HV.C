@@ -76,7 +76,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		if(sigma*(sigma+0.5)>0 )countsigma+=1;//if sigma>0 or sigma<-0.5 this para will need paratial derivative computation
 		if(sigma<0){
 		  intsigma=(int)sigma;
-		  if(intsigma==-1)countISOsigma+=1;
+		  if(intsigma==-1 or intsigma==-3)countISOsigma+=1;
 		  else countANIsigma+=1;
 		}
 	    }
@@ -123,17 +123,21 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	
 		//---#of parameters 
 		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);		
+		if(countHS+countCOS+countsigma+countISOsigma+countANIsigma==0){
+			printf("group%d has no para to be purterbed.\n",i);
+			continue;
+		}
 	    	id=find(Viso.begin(),Viso.end(),i);
 		if(countCOS!=0){printf("#### checkParaModel, group%d, iso or TI model, # of VsvCOSpara =%d, should be %d, modify para.in\n",i,countCOS,0);exit(0);}
 	    	if(id!=Viso.end()){//this is an isotropic group, HSpara=4 (vsv,vsh,vpv,vph); isotropic scaling vsh,vpv,vph;  
 			if(countHS!=k4){printf("#### checkParaModel, group%d, iso model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k4);exit(0);}
-			if(countsigma!=k4){printf("#### checkParaModel, group%d, iso model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k4);exit(0);}
+			if(countsigma!=k4  ){printf("#### checkParaModel, group%d, iso model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k4);exit(0);}
 			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, iso model, # of HSpara that uses isotropic scaling =%d, should be %d, modify para.in\n",i,countISOsigma,k3);exit(0);}
 
 	    	}
 	    	else{// this is a TI group. HSpara=5, 5 para computes partial derivatives
                         if(countHS!=k5){printf("#### checkParaModel, group%d, TI model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k5);exit(0);}
-                        if(countsigma!=k5){printf("#### checkParaModel, group%d, TI model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k5);exit(0);}
+                        if(countsigma!=k5  ){printf("#### checkParaModel, group%d, TI model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k5);exit(0);}
 		}//else	Viso
 	    }//if flagcpt==1
 
@@ -151,9 +155,13 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 
 		//---# of parameters
 		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);
+		if(countHS+countCOS+countsigma+countISOsigma+countANIsigma==0){
+			printf("group%d has no para to be purterbed.\n",i);
+			continue;
+		}
 		if(countCOS!=0){printf("#### checkParaModel, group%d, anisotropic, whose m.gp.flagcpttype=%d, # of VsvCOSpara =%d, should be %d, modify para.in\n",i,flagcpt,countCOS,0);exit(0);}
 		if(countHS!=k7){printf("#### checkParaModel, group%d, m.gp.flagcpttype=%d, (uses Lkernel entirely(flagcpt=4) or partially(flagcpt=2)), # of HSpara =%d, should be %d, modify para.in\n",i,flagcpt,countHS,k7);exit(0);}
-		if(countsigma!=k5){printf("#### checkParaModel, group%d, m.gp.flagcpttype=%d, (uses Lkernel entirely(flagcpt=4) or partially(flagcpt=2)), # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,flagcpt,countsigma,k5);exit(0);}		
+		if(countsigma!=k5  ){printf("#### checkParaModel, group%d, m.gp.flagcpttype=%d, (uses Lkernel entirely(flagcpt=4) or partially(flagcpt=2)), # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,flagcpt,countsigma,k5);exit(0);}		
 	    }// else if flagcpt=2 or 4
 
 	    //-----------------------------------------------------------------------------------------
@@ -163,16 +171,20 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		if((gflag-3)*(gflag-5)*(gflag-6)==0){printf("#### checkParaModel, group%d,flagcpt=3, Vkernel->RAdiap, Vsvkernel->AZdisp. m.gp.flag cannot be %d (water or grid model.). change mod.in\n",i,gflag);exit(0);}
 		//---# of parameters
 		get_para_numbers(para,i,countHS,countCOS,countsigma,countISOsigma,countANIsigma);
+		if(countHS+countCOS+countsigma+countISOsigma+countANIsigma==0){
+			printf("group%d has no para to be purterbed.\n",i);
+			continue;
+		}
 		if(countCOS!=k2){printf("#### checkParaModel, group%d, m.gp.flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. # of cos/sin paramters should be %d, but here is %d, modify para.in)\n",i,k2,countCOS);exit(0);}
 		id=find(Viso.begin(),Viso.end(),i);
 		if(id!=Viso.end()){//isotropic group + Vsv azimuthal anisotropy
 			if(countHS!=k4){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k4,countHS);exit(0);}
-			if(countsigma!=k4){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k4,countISOsigma);exit(0);}
+			if(countsigma!=k4  ){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k4,countISOsigma);exit(0);}
 			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of ISOsigma(=-1) should be %d, but not %d modify para.in\n",i,k3,countISOsigma);exit(0);}
 		}
 		else{// anisotropic group + Vsv azimuthal anisotropy
 			if(countHS!=k5){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k5,countHS);exit(0);}
-			if(countsigma!=k5){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k5,countISOsigma);exit(0);}
+			if(countsigma!=k5  ){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k5,countISOsigma);exit(0);}
 		}		
 
 	    }//else if flagcpt=3
@@ -839,7 +851,7 @@ for i<para.npara
 //----------------------------------------------------- 
 	double gen_newpara_single_scale(int flag, modeldef model,int ng,int nv,int p6){
 	//generate parameter based on scaling relationships
-	  double newv,c;
+	  double newv,c,ts;
 	  if(flag==-1){
 	  //isotropic scaling, this group is isotropic
 	  //vsh=vsv;vph=vpv=vsv*vpvs
@@ -869,10 +881,30 @@ for i<para.npara
 			c=model.groups[ng].vphvalue[0]/model.groups[ng].vpvvalue[0];
 			newv=c*model.groups[ng].vpvvalue[ng];}
 		else if (p6==5){//eta
-			newv=model.groups[ng].etavalue[nv];}
+			newv=model.groups[ng].etavalue[0];}
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the anisotropic scaling 1\n",p6);exit(0);}
 	  }
 	  else if (flag==-3){
+		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
+               else if(p6==2){//vsh
+                       newv=model.groups[ng].vsvvalue[nv];}
+               else if(p6==3){//vpv
+		       ts=model.groups[ng].vsvvalue[nv];
+                       newv=0.9409 + 2.0947*ts - 0.8206*ts*ts + 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;}
+                else if (p6==4){//vph
+                       newv=model.groups[ng].vpvvalue[nv];}
+                else if (p6==5){//eta
+                        newv=1.0;}
+                else if (p6==6 or p6==8)newv=0.;//theta or phi
+                else{printf("###inproper para.in, para with p6=%d should not apprear in the isotropic scaling\n",p6);exit(0);}
+          }
+	
+//tp = 0.9409 + 2.0947*ts - 0.8206*ts*ts + \
+//                 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;
+//                 trho = 1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
+
+
+	  else if (flag==-4){
 	  //anisotropic scaling, this group is anisotropic
 	  //scale based on a given scaling relationship
 	  //e.g., VpRA=c1*VsRA; eta=c2+c3*VsRA	  

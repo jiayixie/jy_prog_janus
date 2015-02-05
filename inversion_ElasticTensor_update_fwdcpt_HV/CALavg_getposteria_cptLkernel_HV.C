@@ -72,44 +72,65 @@ default_random_engine generator (seed);
 	}//para_best
 
 //-----------------------------------------------------	
-	int model_avg_sub(vector<vector<float> > &vlst,vector<vector<float> > &stdlst,vector<float> &hlst,vector<modeldef> &modlst,int ng,float h0,float h,float dth)
+	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
 	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,  vsvmin~phimin,  vsvmax~phimax];
 	  //stdlst[ithick]=[vsvstd~phistd]
+	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
 
-	  vector<float> tv,dep2lst,dep1lst;
-	  vector<int> iddep1lst;
-	  float th,tth,fm1,fm2,dep;
-	  float vsv,vsh,dep1,dep2,vsvmin,vsvmax,vshmin,vshmax;
-	  float tvsh,tvsv,tani,ani,animin,animax;
-	  float fm3;
+	  vector<double> tv;
+	  vector<int> iv;
+	  double th,tth,fm1,fm2,dep;
+	  double vsv,vsh,dep1,dep2,vsvmin,vsvmax,vshmin,vshmax;
+	  double tvsh,tvsv,tani,ani,animin,animax;
+	  double fm3;
 	  char str[500];
-	  int i,j,Ncount,size,k,flag;
-	  vector<vector<float> > tvlst;
-	  float vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax;
-	  float tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi;
+	  int i,j,Ncount,size,k,flag,Ngp,idmin,idmax;
+	  vector<vector<double> > tvlst;
+	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax;
+	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi;
+	  vector<vector<double> > Deplst2;//record the end depth of each group for every model
+	  vector<vector<int> > IDlst2;// record the id (in laym0) of the end-depth of each group, for every model
 
 	  hlst.clear();vlst.clear();stdlst.clear();tvlst.clear();
 		  
 	  size=modlst.size();
+	  Ngp=modlst[0].ngroup;	
+
+	  //----obtain the end depth of each group, for every model. Deplst2[imod][igp]
+	  for(i=0;i<size;i++){	
+		tv.clear();
+		dep=0;
+		for(j=0;j<Ngp;j++){dep+=modlst[i].groups[j].thick;tv.push_back(dep);}
+		Deplst2.push_back(tv);
+	  }//for i
+	  //----obtain the id for the depth of each group, for every model. IDlst2[imod][igp] 
+	  for(i=0;i<size;i++){
+		iv.clear();
+		for(j=0;j<Ngp;j++){
+		  dep=Deplst2[i][j];
+		  dep1=0.;
+		  for(k=0;k<modlst[i].laym0.nlayer;k++){
+			if(fabs(dep1-dep)<1e-4){iv.push_back(k);break;}
+			dep1+=modlst[i].laym0.thick[k];
+		  }//for k
+		}//for j
+		IDlst2.push_back(iv);
+	  }//for i
 	
-	  for(i=0;i<size;i++){	// obtain the end depth for this mod_avg
-	    dep2=0.;  
-	    for(k=0;k<=ng;k++){dep2=dep2+modlst[i].groups[k].thick;}
-	    dep2lst.push_back(dep2);
-	    dep1lst.push_back(0.);
-	    iddep1lst.push_back(0);
-	  }
+	  
+
 	  flag=0;
 	  for(th=h0;th<=h+dth;th=th+dth){//thickness
-		//printf("th=%g h=%g dep1[0]=%g dep2[0]=%g\n",th,h,dep1lst[0],dep2lst[0]);//---test---
-		if(th>h){//modified on Nov 24, 2013, allow the th to go very close to h 
-			if(flag==0){flag=1;th=h-0.001;}
-			else{break;}
+		if(th>h){//make sure that we do do any avg at depth==h
+		  if(flag==0 and fabs(th-h-dth)>1e-4)
+			{flag=1;th=h;}
+		  else{break;}
 		}
-		if(fabs(th-h+dth)<1e-4)th=h;
-		vsv=0.;vsh=0.;Ncount=0;fm1=0.;fm2=0.;ani=0.;fm3=0.;tth=0.;
+		tth=th;
+		//if(fabs(th-h+dth)<1e-4)th=h;//???
+		vsv=0.;vsh=0.;Ncount=0;fm1=0.;fm2=0.;ani=0.;fm3=0.;
 		vpv=0.;vph=0.;eta=0.;theta=0.;phi=0.;
 		tvlst.clear();
 		vsvmin=1e10;vsvmax=-1;
@@ -121,18 +142,31 @@ default_random_engine generator (seed);
 		thetamin=1e10;thetamin=-1.;
 		phimin=1e10;phimax=-1.;
 		for(i=0;i<size;i++){//iterate within model list
-		  //dep2=0.;
-		  //for(k=0;k<=ng;k++){dep2=dep2+modlst[i].groups[k].thick;}
-		  dep2=dep2lst[i];// end depth
-		  //dep1=dep2-modlst[i].groups[ng].thick;//dep1--upper of the layer; dep2--lower of the layer
-		  if(th>dep2)continue;//tth=dep2; //tth = min(dep2,th) ####if th>dep2, continue, skip present mod, jumpt to next mod??, this means th is outside the present layer of present model, so skip.
-		  else tth=th;
+	  	  //--the start and end (laym0) id for this group ---
+	  	  if(ng==0)idmin=0;
+	  	  else idmin=IDlst2[i][ng-1]+1;
+	  	  idmax=IDlst2[i][ng];
+		
+		  /*--test----
+		  if(fabs(tth-30.1191)<1E-3){
+		 	if(tth<Deplst2[i][ng] or fabs(tth-Deplst2[i][ng])<1E-4){printf("hi,has, tth=%g, Dep[%d][%d]=%g\n",tth,i,ng,Deplst2[i][ng]);}
+			else {printf("hi, tth=%g > Dep[%d][%d]=%g\n",tth,i,ng,Deplst2[i][ng]);}
+		  }
+		  */
+		  if(tth>Deplst2[i][ng]+1E-4)continue;
+
 		  dep1=0;
-		  for(j=0;j<modlst[i].laym0.nlayer-1;j++){ // modeified on Aug 27, 2012. For the smooth model, the thickness of the last layer is 0 
-		    dep1=dep1+modlst[i].laym0.thick[j];
-		  //for(j=iddep1lst[i];j<modlst[i].laym0.nlayer;j++){
-		//	dep1=dep1+dep1lst[i]+modlst[i].laym0.thick[j];
-			if(dep1>=tth ){//  the interpolation, there was a bug here (for smooth model, though it works for layered model), changed on Aug27, 2012. another bug modified on Oct 8, 2013
+		  for(j=0;j<idmin;j++)dep1+=modlst[i].laym0.thick[j];
+		  /*---test---
+		  if(fabs(tth-30.1191)<1E-3){
+			printf("dep1=%g~",dep1);
+			for(j=idmin;j<idmax;j++)dep1+=modlst[i].laym0.thick[j];
+			printf("%g\n",dep1);
+		  }
+		  */
+		  for(j=idmin;j<idmax;j++){
+		    dep1=dep1+modlst[i].laym0.thick[j];// for grid-model, this is the depth for the j+1 th grid
+			if(dep1>tth or fabs(dep1-tth)<1E-4){//  the interpolation, there was a bug here (for smooth model, though it works for layered model), changed on Aug27, 2012. another bug modified on Oct 8, 2013
 				tvsv=(modlst[i].laym0.vsv[j+1]-modlst[i].laym0.vsv[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vsv[j];
 				tvsh=(modlst[i].laym0.vsh[j+1]-modlst[i].laym0.vsh[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vsh[j];
 				tvpv=(modlst[i].laym0.vpv[j+1]-modlst[i].laym0.vpv[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.vpv[j];
@@ -142,7 +176,8 @@ default_random_engine generator (seed);
 				tphi=(modlst[i].laym0.phi[j+1]-modlst[i].laym0.phi[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.phi[j];	
 				
 				if(tvsv<0 or tvsv>5){
-					printf("test--- th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);}
+					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
+
 				tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
@@ -167,12 +202,20 @@ default_random_engine generator (seed);
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
 				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi);
 				tvlst.push_back(tv);
-			//	dep1lst[i]=dep1-modlst[i].laym0.thick[j];//
-			//	iddep1lst[i]=j;//
 				break;
 			}//if dep>tth
 		  }//for j Nlay
 		}//for i Nmodel,size
+		if (Ncount==0){
+			printf("Ncount==0, h=%g\n",tth);
+			dep1=0;
+		  i=0;
+                  for(j=0;j<idmin;j++)dep1+=modlst[i].laym0.thick[j];
+		  printf("%d-%d,mod%d,dep1=%g~",idmin,idmax,i,dep1);
+		  for(j=idmin;j<idmax;j++)dep1+=modlst[i].laym0.thick[j];
+		  printf("%g\n",dep1);
+			exit(0);
+		}
 		vsv=vsv/Ncount;
 		vsh=vsh/Ncount;
 		ani=ani/Ncount;
@@ -181,7 +224,7 @@ default_random_engine generator (seed);
 		eta/=Ncount;
 		theta/=Ncount;
 		phi/=Ncount;
-		if (isnan(vsv) or isnan(vsh) or isnan(ani) or isnan(vpv) or isnan(vph) or isnan(eta) or isnan(theta) or isnan(phi)){
+		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi)){
 			printf("Hey, NaN happen!!! something wrong!!\n Ncount=%d th=%g tth=%g h0=%g h=%g\n",Ncount,th,tth,h0,h);
 			sprintf(str,"echo WRONG Ncount = %d >> point_finished_Ani.txt ",Ncount);
 			system(str);
@@ -228,72 +271,71 @@ default_random_engine generator (seed);
 		
 		stdlst.push_back(tv);
 	  }//for th
-        vector<vector<float> >().swap(tvlst);
-	vector<float>().swap(tv);
-	vector<float>().swap(dep2lst);
-	vector<float>().swap(dep1lst);
-	vector<int>().swap(iddep1lst);
+        vector<vector<double> >().swap(tvlst);
+        vector<vector<double> >().swap(Deplst2);
+        vector<vector<int> >().swap(IDlst2);
+	vector<double>().swap(tv);
 	return 1;
 	}//mod avg sub
 
 //-----------------------------------------------------------------
-	int connect_modmin(vector<vector<float> > &out,vector<float> hlst,vector<vector<float> > vlst,vector<vector<float> > stdlst,float h1,float h2, int id)
+	int connect_modmin(vector<vector<double> > &out,vector<double> hlst,vector<vector<double> > vlst,vector<vector<double> > stdlst,double h1,double h2, int id)
 	{// can choose output avg-std or the min; 
 	 //the vlst has info of min (column 7~13), info of avg is column 0~6; info of max is 14~20
-	  int i;vector<float> tv;
-	  float h,v;
+	  int i;vector<double> tv;
+	  double h,v;
  	  for(i=0;i<vlst.size();i++){
 	  	h=hlst[i];
-		if (h<h1)continue;
-		else if (h>=h2)break;
+		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id]-stdlst[i][id];//avg-std
 		//v=vlst[i][7+id];//min
 		tv.push_back(h);tv.push_back(v);
 		out.push_back(tv);
+		}
 	  }
-	  vector<float>().swap(tv);
+	  vector<double>().swap(tv);
 	  return 1;
 	}//connect_modmin
 //-----------------------------------------------------------------
-	int connect_modmid(vector<vector<float> > &out,vector<float> hlst,vector<vector<float> > vlst,vector<vector<float> > stdlst,float h1,float h2, int id)
+	int connect_modmid(vector<vector<double> > &out,vector<double> hlst,vector<vector<double> > vlst,vector<vector<double> > stdlst,double h1,double h2, int id)
 	{// modified on Aug 28, 2012. add the std into vector, and output it. previous version has some problems (the hlst for Vmin, Vmid, Vmax could be different, so when read the output file, obtaining unc using Vid-Vmin is incorrect!!)
-	  int i;vector<float> tv;
-	  float h,v;
+	  int i;vector<double> tv;
+	  double h,v;
  	  for(i=0;i<vlst.size();i++){
 	  	h=hlst[i];
-		if (h<h1)continue;
-		else if (h>=h2)break;
+		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id];
 		tv.push_back(h);tv.push_back(v);tv.push_back(stdlst[i][id]);
 		out.push_back(tv);
+		}
 	  }
-	  vector<float>().swap(tv);
+	  vector<double>().swap(tv);
 	  return 1;
 	}//connect_modmin
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
-	int connect_modmax(vector<vector<float> > &out,vector<float> hlst,vector<vector<float> > vlst,vector<vector<float> > stdlst,float h1,float h2, int id)
+	int connect_modmax(vector<vector<double> > &out,vector<double> hlst,vector<vector<double> > vlst,vector<vector<double> > stdlst,double h1,double h2, int id)
 	{
-	  int i;vector<float> tv;
-	  float h,v;
+	  int i;vector<double> tv;
+	  double h,v;
  	  for(i=0;i<vlst.size();i++){
 	  	h=hlst[i];
-		if (h<h1)continue;
-		else if (h>=h2) break;
+		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id]+stdlst[i][id];//avg+std
 		//v=vlst[i][14+id];//max
 		tv.push_back(h);tv.push_back(v);
 		out.push_back(tv);
+		}
 	  }
-	  vector<float>().swap(tv);
+	  vector<double>().swap(tv);
 	  return 1;
 	}//connect_modmin
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
-	int write_modavg( const char *foutnm,vector<vector<float> > &Vsv1,vector<vector<float> > &Vsv2,vector<vector<float> > &Vsv3,float Hsed,float Hsedstd,float Hmoho,float Hmohostd )
+	int write_modavg( const char *foutnm,vector<vector<double> > &Vsv1,vector<vector<double> > &Vsv2,vector<vector<double> > &Vsv3,double Hsed,double Hsedstd,double Hmoho,double Hmohostd )
 	{// attention, the hlst for Vmin, Vmid, Vmax could be different in many cases. So, use the associated hlst while plotting/reading ...
 // this writting method has some problems, since the size of Vmin,Vmid,Vmax is different, I only write to the min(len(V)). In this case, the V with the largest size cannot be fully written out (cannot reach the maximum depth).
  	
@@ -321,13 +363,13 @@ default_random_engine generator (seed);
  	  paradef para;
 	  modeldef mod;
 	  char str[200];
-	  float depmax; 
+	  double depmax; 
 	  char vsvnm[200],vshnm[200];
-	  float Hsed=0.,Hmoho=0.,Hmat=0.,Hsedstd,Hmohostd,fm1=0.,fm2=0.;
-	  vector<vector<float> > v1lst,v2lst,v3lst,std1lst,std2lst,std3lst;
-	  vector<vector<float> > Vsvmin,Vsvmid,Vsvmax,Vshmin,Vshmid,Vshmax;
-	  vector<vector<float> > Animin,Animid,Animax;
-	  vector<float> h1lst,h2lst,h3lst,tv;
+	  double Hsed=0.,Hmoho=0.,Hmat=0.,Hsedstd,Hmohostd,fm1=0.,fm2=0.;
+	  vector<vector<double> > v1lst,v2lst,v3lst,std1lst,std2lst,std3lst;
+	  vector<vector<double> > Vsvmin,Vsvmid,Vsvmax,Vshmin,Vshmid,Vshmax;
+	  vector<vector<double> > Animin,Animid,Animax;
+	  vector<double> h1lst,h2lst,h3lst,tv;
 	  vector<modeldef> modlst;
 	  time_t start;
 	  //cout<<"---begin! "<<time(0)<<endl;
@@ -357,7 +399,7 @@ default_random_engine generator (seed);
 	  Hmohostd=sqrt(fm2/size);
 	  Hmoho=Hmoho+Hsed; // *********  the previous Hmoho is the thickness of crust not the depth of Moho; modified on Oct 10, 2012; 
 	  depmax=Hmoho+Hmat;
-	  printf("test-- Hsed=%g Hsedstd=%g\n",Hsed,Hsedstd);
+	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
 	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
 	  cout<<"finish sed\n";//--test
@@ -384,29 +426,29 @@ default_random_engine generator (seed);
 	  write_modavg(fnmlst[i].c_str(),Vsvmin,Vsvmid,Vsvmax,Hsed,Hsedstd,Hmoho,Hmohostd);
 	  }//for i 		  
 
-          vector<float>().swap(h1lst);
-          vector<float>().swap(h2lst);
-          vector<float>().swap(h3lst);
-          vector<float>().swap(tv);
-          vector<vector<float> >().swap(v1lst);
-          vector<vector<float> >().swap(v2lst);
-          vector<vector<float> >().swap(v3lst);
-          vector<vector<float> >().swap(std1lst);
-          vector<vector<float> >().swap(std2lst);
-          vector<vector<float> >().swap(std3lst);
+          vector<double>().swap(h1lst);
+          vector<double>().swap(h2lst);
+          vector<double>().swap(h3lst);
+          vector<double>().swap(tv);
+          vector<vector<double> >().swap(v1lst);
+          vector<vector<double> >().swap(v2lst);
+          vector<vector<double> >().swap(v3lst);
+          vector<vector<double> >().swap(std1lst);
+          vector<vector<double> >().swap(std2lst);
+          vector<vector<double> >().swap(std3lst);
 
 	  //cout<<"----write model avg----"<<time(0)-start<<"\n";//----test----
 	  
 
-          vector<vector<float> >().swap(Vsvmin);
-          vector<vector<float> >().swap(Vsvmid);
-          vector<vector<float> >().swap(Vsvmax);
-          vector<vector<float> >().swap(Vshmin);
-          vector<vector<float> >().swap(Vshmid);
-          vector<vector<float> >().swap(Vshmax);
-          vector<vector<float> >().swap(Animin);
-          vector<vector<float> >().swap(Animid);
-          vector<vector<float> >().swap(Animax);
+          vector<vector<double> >().swap(Vsvmin);
+          vector<vector<double> >().swap(Vsvmid);
+          vector<vector<double> >().swap(Vsvmax);
+          vector<vector<double> >().swap(Vshmin);
+          vector<vector<double> >().swap(Vshmid);
+          vector<vector<double> >().swap(Vshmax);
+          vector<vector<double> >().swap(Animin);
+          vector<vector<double> >().swap(Animid);
+          vector<vector<double> >().swap(Animax);
 	  vector<modeldef>().swap(modlst);
 
 	  return 1;
@@ -547,7 +589,7 @@ int i;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, float T, float inpamp, float inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
@@ -623,7 +665,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 }//recompute_misfit
 //-----------------------------------
 //compute the kernel for this para, compute its disp (RA and AZ), write the disp 
-paradef compute_dispM_writeASC(paradef paraavg, paradef para0,modeldef model0,vector<vector<double> > PREM, float inpamp, float inpphi,int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel,int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *name){
+paradef compute_dispM_writeASC(paradef paraavg, paradef para0,modeldef model0,vector<vector<double> > PREM, double inpamp, double inpphi,int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel,int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *name){
 
 paradef paraP,pararef; 
 modeldef modelP,modelref;
@@ -681,12 +723,13 @@ int main(int argc, char *argv[])
   vector<string> fnmlst;
   FILE *inpo, *out,*fmis;
   int Nprem,npoint,i,j,RAflag,idmin,N;
-  float tvsv,tvsh,tani,T;
-  vector<float> anilst;	  
+  double tvsv,tvsh,tani,T;
+  vector<double> anilst;	  
   paradef paraavg,parabest,parastd;
   vector<paradef> parabestlst;
   vector<int> idminlst;
-  float oldmisfit,misfit,lon,lat,inpamp,inpphi;
+  double oldmisfit,misfit,inpamp,inpphi;
+  float lon,lat,foldmis,fnewmis;
   double pkC;  
   int flagreadVkernel,flagreadLkernel;
 
@@ -709,7 +752,7 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  Rsurflag=5;Lsurflag=0;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Rsurflag=1;Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -873,7 +916,9 @@ int main(int argc, char *argv[])
 	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
 	if((fmis=fopen(str,"r"))==NULL){printf("### Cannot open %s to read new misfit\n",str);exit(0);}
 	for(j=0;j<N;j++){
-		if((fscanf(fmis,"%f %f",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
+		//if((fscanf(fmis,"%g %g",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
+		if((fscanf(fmis,"%f %f",&fnewmis,&foldmis))==EOF){printf("## strange end of file\n");exit(0);}
+		misfit=(double)fnewmis;oldmisfit=(double)foldmis;
 		newmisfitlst.push_back(misfit);
 		//printf("%d new1 %f old1 %f old2 %f \n",j,misfit,oldmisfit,paraall[j].misfit);
 	}
@@ -943,7 +988,7 @@ int main(int argc, char *argv[])
 	idmin=idminlst[ig];
     	sprintf(str,"%s_phigp%d",fmodBnm,ig);
     	if((out=fopen(str,"w"))==NULL){printf("### Cannot open %s to write!!\n",fmodBnm);exit(0);};
-    	float h=0.;
+    	double h=0.;
     	printf("idmin=%d,misfit=%g\n",idmin,paraall[idmin].misfit);//---check---
     	for(i=0;i<modelall[idmin].laym0.nlayer;i++){
 		fprintf(out,"%8g  %8g %8g %8g %8g %8g %8g %8g\n",h,modelall[idmin].laym0.vsv[i],modelall[idmin].laym0.vsh[i],modelall[idmin].laym0.vpv[i],modelall[idmin].laym0.vph[i],modelall[idmin].laym0.eta[i],modelall[idmin].laym0.theta[i],modelall[idmin].laym0.phi[i]);

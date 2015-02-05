@@ -566,6 +566,7 @@ column:	0		1			2				3			4				5				....			N-1
           int i,j,tnlay=0; //flagupdaterho;
 	  double tvsvvalue,tvshvalue,tvpvvalue,tvphvalue,tetavalue,tthetavalue,tphivalue,trhovalue;
 	  double tthick,tvpvs,tdep=0.,tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tqs,tqp;
+	  double tvpvscpt,ts;
 	  model.laym0.vsv.clear();model.laym0.vsh.clear(); model.laym0.vpv.clear();model.laym0.vph.clear();model.laym0.eta.clear();model.laym0.theta.clear();model.laym0.phi.clear();
 	  model.laym0.vpvs.clear();model.laym0.rho.clear();model.laym0.qs.clear();model.laym0.qp.clear();model.laym0.thick.clear();
 
@@ -591,7 +592,7 @@ column:	0		1			2				3			4				5				....			N-1
 			  tdep=tdep+tthick;
 			  if(model.groups[i].flag==5)//water layer
 			  {
-				tvpvs=-1.;
+				tvpvs=tvpvscpt=-1.;
 				tvsh=0.;
 			        tvsv=0.;
 				tvpv=tvpvvalue;
@@ -610,11 +611,18 @@ column:	0		1			2				3			4				5				....			N-1
 				tvsh=tvshvalue;
 				tvpv=tvpvvalue;
 				tvph=tvphvalue;
+				tvpvscpt=(tvph+tvpv)/(tvsv+tvsh);
 				teta=tetavalue;
 				ttheta=tthetavalue;
 				tphi=tphivalue;
 				//tvp=tvpvs*tvs;
-				tqp=160.; tqs=80.; trho=0.541+0.3601*(tvpv+tvph)/2.;
+				tqp=160.; tqs=80.; 
+				//trho=0.541+0.3601*(tvpv+tvph)/2.;
+				ts=(tvsv+tvsh)/2.;
+                                trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
+
+				//tvpv=tvph = 0.9409 + 2.0947*ts - 0.8206*ts*ts + 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;//-----test------
+				//tvpvscpt=(tvph+tvpv)/(tvsv+tvsh);//-----test----
 			  }
 			  else//crust and mantle
 			  {
@@ -623,6 +631,7 @@ column:	0		1			2				3			4				5				....			N-1
 				tvsh=tvshvalue;
 				tvpv=tvpvvalue;
 				tvph=tvphvalue;
+				tvpvscpt=(tvph+tvpv)/(tvsv+tvsh);
 				teta=tetavalue;
 				ttheta=tthetavalue;
 				tphi=tphivalue;
@@ -634,10 +643,20 @@ column:	0		1			2				3			4				5				....			N-1
                                         {tqp=900.;tqs=400.;}
 				else 
 					{tqp=200.;tqs=80.;} // there was a bug here, fixed on Dec. 27,2011
-				if((tvpv+tvph)/2.0<7.5){trho=0.541+0.3601*(tvpv+tvph)/2.0;} 
-				else{trho=3.35;} //# Kaban, M. K et al. (2003), Density of the continental roots: Compositional and thermal contributions
+				//if((tvpv+tvph)/2.0<7.5){trho=0.541+0.3601*(tvpv+tvph)/2.0;} 
+				//else{trho=3.35;} //# Kaban, M. K et al. (2003), Density of the continental roots: Compositional and thermal contributions
+				if(i==1){//by default group 1 is crust
+					ts=(tvsv+tvsh)/2.;
+					trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
+					//tvpv=tvph = 0.9409 + 2.0947*ts - 0.8206*ts*ts + 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;//-----test------
+					//tvpvscpt=(tvph+tvpv)/(tvsv+tvsh);//-----test----
+				}
+				else if (i==2){//by default group 2 is mantle
+					trho = 3.42+0.01*100*((tvsv+tvsh)/2.-4.5)/4.5;
+				}
 			  }//else
 
+			  if(fabs(tvpvs-tvpvscpt)>1E-4)tvpvs=tvpvscpt;//if model's vpvs has been changed, then follow the value computed from vp/vs, instead of the input m.g.vpvs
 			  model.laym0.vpvs.push_back(tvpvs);
 			  model.laym0.vsv.push_back(tvsv);
 			  model.laym0.vsh.push_back(tvsh);
@@ -839,12 +858,12 @@ column:	0		1			2				3			4				5				....			N-1
 		///*
 	      //--------------revised; newly added, Jun 2, 2012--------
 	      //require the slope in mantle part larger than 70.
-	     for(i=0;i<model.groups[2].nlay-1;i++){
+	     /*for(i=0;i<model.groups[2].nlay-1;i++){
 	         gradient=(model.groups[2].thick1[i])/(model.groups[2].vsvvalue1[i]-model.groups[2].vsvvalue1[i+1]);
 		 if(gradient>0. and gradient <50.){
 			 //printf("mantle grad !\n");
 			 return 0;}
-	     }
+	     }*/
 	     // require the vel at all depth (the maximum = g.tthcik, which comes from the input) to be smaller than 4.9 ---- revised on Aug 23, 2012------
 		//*/
 	     for (i=0;i<model.groups[2].nlay;i++){
@@ -865,6 +884,7 @@ column:	0		1			2				3			4				5				....			N-1
 	      ///*
 	      //-------- revised; newly added, Apr 22, 2014. constrains on the Vp/Vs=(vph+vpv)/(vsh+vsv)
 	      for(i=1;i<model.ngroup;i++){//skip the sedimentary layer; by default, the sediment is group0
+		
 		for(j=0;j<model.groups[i].nlay-1;j++){
 			var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
 			if(var<1.65 or var>1.85){
@@ -886,9 +906,10 @@ column:	0		1			2				3			4				5				....			N-1
               for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
               {
                 j=*id;
-                for(i=0;i<model.groups[j].nlay-1;i++)
+                /*for(i=0;i<model.groups[j].nlay-1;i++)
 		    { gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
 		      if(gradient>0. and gradient <70.)return 0; }
+		*/
 	     }//for id
               for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
               {

@@ -1367,6 +1367,7 @@ int Lovepara2Vpara(paradef &para, modeldef model)
 //---------------------------------------
 int compute_HVdisp(modeldef &model,paradef para, modeldef refmod, paradef refpara, vector<vector<vector<double> > > Vkernel){
   // compute the HVratio dispersion curve with the Vkernel
+  // actually, this HV disp can be computed from Lkernel if desired, but I didn't write the code this way right now
   int i,j,ppflag;
   double tval; 
   vector<vector<double> >  kernel;  

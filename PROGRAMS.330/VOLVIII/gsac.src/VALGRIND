@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec valgrind --skin=memcheck --leak-check=yes -v gsac
