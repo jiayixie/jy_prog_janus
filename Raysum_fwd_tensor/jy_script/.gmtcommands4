@@ -1,0 +1,10 @@
+# GMT common arguments shelf
+-Ba20f10:time (sec):/a90f10:azimuth (deg)::.test:WSen
+-JS0/90/15c
+-JX10/20
+-R0/60/-10/380
+-Y5
+-y5
+-jX10/20
+EOF
+
