@@ -1,5 +1,5 @@
 # this read in the trace geometry file and the trace file, output each trace is separate files (time, azimuth, amplitude)
-# traces in Cartesian coodinates, Tr_cart(:,1) being N-S, 2 E-W, and 3 vertical.
+# the output trace from Raysum is rotated, R T Z
 import os
 import sys
 
@@ -11,7 +11,7 @@ Ntrace=0
 azilst=[];NSsftlst=[];EWsftlst=[]
 for line in open(fgeom):
 	if ("#" in line):
-		print line
+		#print line
 		continue
 	l=line.rstrip().split()
 	azi=float(l[0])
@@ -38,8 +38,8 @@ for line in open(ftrace):
 		l=line.rstrip().split()
 		idtrace=int(l[3])
 		print "find trace %d"%idtrace
-		fout1=open("%s/trace_%d.N.txt"%(outdir,idtrace),"w")
-		fout2=open("%s/trace_%d.E.txt"%(outdir,idtrace),"w")
+		fout1=open("%s/trace_%d.R.txt"%(outdir,idtrace),"w")
+		fout2=open("%s/trace_%d.T.txt"%(outdir,idtrace),"w")
 		fout3=open("%s/trace_%d.Z.txt"%(outdir,idtrace),"w")
 		#continue
 

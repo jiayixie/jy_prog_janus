@@ -1,0 +1,13 @@
+these are copied from dir /media/JAPAN/jiayi/RF_WChina/RF_test_ReMv/data_prep
+1]
+gen_email_iris_difevt.py // change the "w" into "a" for SAC_ch file, in order to handle stnm repeatance in station_info.lst
+2]
+do_rdseed.csh
+3]
+do_chHEADER.csh
+4]
+do_decimate.csh
+5]
+do_rot.csh
+6]
+do_RFiter.csh

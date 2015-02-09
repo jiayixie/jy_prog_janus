@@ -1,0 +1,87 @@
+ 
+Making the bin directory
+ 
+ 
+Building the library
+ 
+f77 -g  -c -o ask.o ask.f
+f77 -g  -c -o asktxt.o asktxt.f
+f77 -g  -c -o blank.o blank.f
+f77 -g  -c -o coef8.o coef8.f
+f77 -g  -c -o coefsh.o coefsh.f
+f77 -g  -c -o coord.o coord.f
+f77 -g  -c -o daymo.o daymo.f
+f77 -g  -c -o dfftr.o dfftr.f
+f77 -g  -c -o diffr.o diffr.f
+f77 -g  -c -o dot.o dot.f
+f77 -g  -c -o doy.o doy.f
+f77 -g  -c -o fft.o fft.f
+f77 -g  -c -o fsorce.o fsorce.f
+f77 -g  -c -o g1.o g1.f
+f77 -g  -c -o g2.o g2.f
+f77 -g  -c -o h12.o h12.f
+f77 -g  -c -o iask.o iask.f
+f77 -g  -c -o iniocm.o iniocm.f
+f77 -g  -c -o juli.o juli.f
+f77 -g  -c -o locast.o locast.f
+f77 -g  -c -o lpyr.o lpyr.f
+f77 -g  -c -o max.o max.f
+f77 -g  -c -o minmax.o minmax.f
+f77 -g  -c -o npowr2.o npowr2.f
+f77 -g  -c -o qrbd.o qrbd.f
+f77 -g  -c -o rdlyrs.o rdlyrs.f
+f77 -g  -c -o rotate.o rotate.f
+f77 -g  -c -o sacio.o sacio.f
+f77 -g  -c -o seisio.o seisio.f
+f77 -g  -c -o sinc.o sinc.f
+f77 -g  -c -o sit2.o sit2.f
+f77 -g  -c -o svdrs.o svdrs.f
+f77 -g  -c -o yesno.o yesno.f
+f77 -g  -c -o zero.o zero.f
+ar cr subs.a ask.o asktxt.o blank.o coef8.o coefsh.o coord.o daymo.o dfftr.o diffr.o dot.o doy.o fft.o fsorce.o g1.o g2.o h12.o iask.o iniocm.o juli.o locast.o lpyr.o max.o minmax.o npowr2.o qrbd.o rdlyrs.o rotate.o sacio.o seisio.o sinc.o sit2.o svdrs.o yesno.o zero.o 
+ranlib subs.a
+/bin/rm *.o
+ 
+Compiling the deconvolution program
+ 
+f77 -g -o ../../bin/pwaveqn pwaveqn.f ../Subs/subs.a /home/jiayi/sac/lib/libsac.a
+ 
+Compiling the forward-modeling program
+ 
+f77 -g  -c -o respknt.o respknt.f
+f77 -g  -c -o kntfun.o kntfun.f
+f77 -g  -c -o rcvrfn.o rcvrfn.f
+f77 -g  -c -o ifmat.o ifmat.f
+f77 -g  -c -o abm.o abm.f
+f77 -g -o ../../bin/respknt  respknt.o kntfun.o rcvrfn.o ifmat.o abm.o ../Subs/subs.a /home/jiayi/sac/lib/libsac.a
+/bin/rm *.o
+ 
+Compiling the common utilities
+ 
+f77 -g  -c -o icmod.o icmod.f
+f77 -g -o ../../bin/icmod icmod.f \
+	../Subs/subs.a  /home/jiayi/sac/lib/libsac.a
+f77 -g -o ../../bin/stacksac stacksac.f /home/jiayi/sac/lib/libsac.a ../Subs/subs.a
+ 
+Compiling the inversion programs
+ 
+f77 -g   -c -o manyinv.o manyinv.f
+f77 -g   -c -o jinv.o jinv.f
+f77 -g   -c -o getmodl.o getmodl.f
+f77 -g   -c -o getseis.o getseis.f
+f77 -g   -c -o jsoln.o jsoln.f
+f77 -g   -c -o wrtsoln.o wrtsoln.f
+f77 -g   -c -o putsyn.o putsyn.f
+f77 -g   -c -o putpartl.o putpartl.f
+f77 -g   -c -o sacin.o sacin.f
+f77 -g   -c -o sacout.o sacout.f
+f77 -g   -c -o rftn_partials.o rftn_partials.f
+f77 -g   -c -o putseis.o putseis.f
+f77 -g   -c -o bufilter.o bufilter.f
+f77 -g   -c -o putsvalues.o putsvalues.f
+f77 -g   -c -o pratio_utils.o pratio_utils.f
+f77 -g  manyinv.o jinv.o getmodl.o getseis.o jsoln.o wrtsoln.o putsyn.o putpartl.o sacin.o sacout.o rftn_partials.o putseis.o bufilter.o putsvalues.o pratio_utils.o -o ../bin/manyinv ../RForward/Subs/subs.a /home/jiayi/sac/lib/libsac.a
+/bin/rm *.o  
+ 
+Executables are in the directory ./bin
+ 

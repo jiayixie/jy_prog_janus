@@ -5,6 +5,7 @@
 import sys
 import string
 import os
+import os.path
 from numpy import * 
 
 def norm_range(psi,n):

@@ -5,11 +5,12 @@
 #
 
 set title = test
-set ftr = sample.tr
+set ftr = test.tr
 set fgeom = sample.geom
 set outdir =  test
 set outps = test.ps
-set comp = Z
+set comp1 = N
+set comp2 = Z
 
 mkdir -p $outdir
 python get_traces.py $fgeom $ftr $outdir
@@ -17,24 +18,43 @@ python get_traces.py $fgeom $ftr $outdir
 echo plotting $outps
 set Ntrace = `awk '{if(NR==2)print $1}' $ftr`
 set N = 1
+echo "Ntrace=$Ntrace"
 
 set REG = -R0/60/-10/380 
-set SCA = -JX10/20
+set SCA = -JX8/20
 set Z = -Z0.2
 set p = 0.5
+set x = 9
 
+set comp = $comp1
 while ( $N <= $Ntrace ) 
 	echo trace $N
 	set ftrace = $outdir/trace_${N}.${comp}.txt
 
 	if ( $N == 1 ) then 
-		pswiggle $ftrace $REG $SCA $Z -Ba20f10:"time (sec)":/a90f10:"azimuth (deg)"::."$title":WSen -Gred  -T0.5p/black -K -P -Y 5  -W${p}p/black > $outps
+		pswiggle $ftrace $REG $SCA $Z -Ba20f10:"time (sec)":/a90f10:"azimuth (deg)"::."$title $comp":WSen -Gred  -T0.5p/black -K -P -Y5  -W${p}p/black > $outps
 	else
 		pswiggle $ftrace -R -J $Z -Gred -T0.5p/black -K -O -W${p}p/black >> $outps
 	endif
 
 	@ N = $N + 1
 end
+
+set comp = $comp2
+set N = 1
+while ( $N <= $Ntrace )
+        echo trace $N
+        set ftrace = $outdir/trace_${N}.${comp}.txt
+
+        if ( $N == 1 ) then
+                pswiggle $ftrace $REG $SCA $Z -Ba20f10:"time (sec)":/a90f10:"azimuth (deg)"::."$title $comp":WSen -Gred  -T0.5p/black -K -O -Y0 -X$x  -W${p}p/black >> $outps
+        else
+                pswiggle $ftrace -R -J $Z -Gred -T0.5p/black -K -O -W${p}p/black >> $outps
+        endif
+
+        @ N = $N + 1
+end
+
 
 
 pwd | psxy -R -J -O >> $outps
