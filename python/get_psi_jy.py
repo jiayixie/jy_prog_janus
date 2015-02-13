@@ -310,7 +310,7 @@ for i in range(Npoint):
 	#---write file for each point ---------- the azi[X] are in rad	(no unc info)
 	if (outpointdir !="NO"):
 		outpoint=open("%s/point_%.1f_%.1f.txt"%(outpointdir,lon,lat),"w")
-		outpoint.write("%s %s\n"%(id,str2))  
+		outpoint.write("%s %s %5g %d\n"%(id,str2,chi2,num))  
 		for j in range(int(num)):
 			# for 2psi, T=pi; if fit 1psi, then change T to 2pi
 			while(azi[j]>2*pi):
