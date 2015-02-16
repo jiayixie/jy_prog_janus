@@ -48,7 +48,10 @@ c after Farra et al, 1991
             LL=rho(ilay)*(beta(ilay) + d_b/2.)**2.
             NN=rho(ilay)*(beta(ilay) - d_b/2.)**2.
             FF=eta*(AA-2.*LL)
-c            write (*,*) 'Anis. params are:',AA,CC,FF,LL,NN
+            write (*,*) "Vpv,Vph",alpha(ilay)-d_a/2.,alpha(ilay)+d_a/2
+            write (*,*) "Vsv,Vsh",beta(ilay)-d_b/2.,beta(ilay)+d_b/2
+            write (*,*) "eta,rho",eta,rho(ilay)
+            write (*,*) 'Anis. params are:',AA,CC,FF,LL,NN
 c Get tensor with unrotated axes
             call tritensr(a_temp,AA,CC,FF,LL,NN,rho(ilay))
 c Rotate axes:
