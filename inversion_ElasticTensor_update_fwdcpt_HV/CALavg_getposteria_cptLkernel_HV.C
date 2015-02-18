@@ -797,8 +797,10 @@ int main(int argc, char *argv[])
     Rdispnm.clear();
     sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
+    if(Rsurflag==5){
     sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
+    }
 
     Ldispnm.clear();
     sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);

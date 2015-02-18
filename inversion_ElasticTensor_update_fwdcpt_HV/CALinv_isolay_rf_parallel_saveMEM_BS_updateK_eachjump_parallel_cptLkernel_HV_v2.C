@@ -23,7 +23,7 @@ int temp_writepara(FILE *f, paradef para,modeldef model, int iaccp, int ithread,
 //
 // (1)ithread (2)flag (3)iaccp  (4)'L' (5)m.d.L  (6)'RL' (7)m.d.R.L  (8)m.d.AZampR.L (9)m.d.AZphiR.L (10)'LL' (11)m.d.L.L  (12)m.d.AZampL.L  (13)m.d.AZphiL.L  (14)'misfit' (15)m.d.misfit  (16)'Rm' (17)m.d.R.misfit  (18)m.d.AZampR.misfit  (19)m.d.AZphiR.misfit  (20)'Lm' (21)m.d.L.m   (22)m.d.AZampL.m  (23)m.d.AZphiL.m	
 	int i;
-	fprintf(f,"%d %d %d L %8g  RL %8g %8g %8g LL %8g %8g %8g  misfit %8g Rm %8g %8g %8g Lm %8g %8g %8g\t\t",ithread,flag,iaccp,model.data.L,model.data.Rdisp.L,model.data.AziampRdisp.L,model.data.AziphiRdisp.L,model.data.Ldisp.L, model.data.AziampLdisp.L,model.data.AziphiLdisp.L,  model.data.misfit, model.data.Rdisp.misfit, model.data.AziampRdisp.misfit, model.data.AziphiRdisp.misfit,model.data.Ldisp.misfit, model.data.AziampLdisp.misfit,model.data.AziphiLdisp.misfit);
+	fprintf(f,"%d %d %d L %8g  RL %8g %8g %8g %8g LL %8g %8g %8g  misfit %8g Rm %8g %8g %8g %8g Lm %8g %8g %8g\t\t",ithread,flag,iaccp,model.data.L,model.data.Rdisp.L,model.data.AziampRdisp.L,model.data.AziphiRdisp.L, model.data.Rdisp.hvL,model.data.Ldisp.L, model.data.AziampLdisp.L,model.data.AziphiLdisp.L,  model.data.misfit, model.data.Rdisp.misfit, model.data.AziampRdisp.misfit, model.data.AziphiRdisp.misfit,model.data.Rdisp.hvmisfit,model.data.Ldisp.misfit, model.data.AziampLdisp.misfit,model.data.AziphiLdisp.misfit);
 	
 	for(i=0;i<para.npara;i++)
 	{ fprintf(f,"%8g ",para.parameter[i]);
@@ -165,7 +165,9 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		para2mod(para1BS,refmodelBS,model1BS);//???
 		Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		updatemodel(model1,flagupdaterho);
-		if(ibad>10000){printf("######POSITIVE ANISO MODEL CANNOT BE SATISFIED !!!! ijump=%d\n",i);break;}
+		if(ibad%10000==0){printf("######POSITIVE ANISO MODEL CANNOT BE SATISFIED !!!! ijump=%d\n",i);
+		break;
+		}
 	    }	
 	}//if PosAni>0
 	/*--check--
@@ -181,7 +183,9 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		 para2mod(para1BS,refmodelBS,model1BS);//???
 		 Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		 updatemodel(model1,flagupdaterho);
-		 if(ibad>10000){printf("##### ibad=%d GOOD MODEL CANNOT BE SATISFIED UNDER MONOC==1!! ijump=%d\n",ibad,ijump);break;}
+		 if(ibad%10000==0){printf("##### ibad=%d GOOD MODEL CANNOT BE SATISFIED UNDER MONOC==1!! ijump=%d\n",ibad,ijump);
+		  break;
+		   }
 		}//while	  
 	}//if monoc  
 	//printf("\n\n\ntest--begin get misfit Kernel\n");
@@ -195,7 +199,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	for(countitt=0;countitt<iitercri;countitt++){
 		if(iiter%10000==0){
 			printf("iiter=%d iaccp=%d dtime=%.1f ijump=%d iloop=%d;  ",iiter,iaccp,(float)(time(0)-start),i,iloop);
-			if((float)(time(0)-start)>3600.*3)
+			if((float)(time(0)-start)>3600.*2)
 			{	printf("exceed 3hr limit! break\n");
 				flagbreak=1;
 				break;} //break the search after 50min. modified Mar 13, 2014
@@ -203,6 +207,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		}
 	  	iiter++;
 		//if (iaccp%500==0 and iaccp>0 and iaccp!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
+		 //----test prior------
 		if(countacc>1000)break;//2500//modified on Mar 13, 2014
 		if (countacc%Tacc==0 and countacc>0 and countacc!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 			printf("re-compute Vkernel & Lkernel!! iloop=%d ijump=%d countacc=%d\n",iloop,ijump,countacc);
@@ -221,36 +226,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			refmodel=RAmodel;
 			refpara=RApara;
 			
-
-			/*----test--- write the reference model
-			float depth=0.;
-			float c=0.;
-			FILE *tmpfmod;
-			sprintf(str,"refmod_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			tmpfmod=fopen(str,"w");
-			fprintf(tmpfmod,"depth vsv   vsh   vpv   vph   eta   rho   c     thick\n");
-			for(int m=0;m<RAmodel.laym0.nlayer;m++){
-				c=RAmodel.laym0.rho[m]*(0.125*pow(RAmodel.laym0.vph[m],2)+0.125*pow(RAmodel.laym0.vpv[m],2)-0.25*RAmodel.laym0.eta[m]*(pow(RAmodel.laym0.vph[m],2)-2*pow(RAmodel.laym0.vsv[m],2))-0.5*pow(RAmodel.laym0.vsv[m],2));
-				fprintf(tmpfmod,"%5f %5f %5f %5f %5f %5f %5f %5f %5f\n",depth,RAmodel.laym0.vsv[m],RAmodel.laym0.vsh[m],RAmodel.laym0.vpv[m],RAmodel.laym0.vph[m],RAmodel.laym0.eta[m],RAmodel.laym0.rho[m],c,RAmodel.laym0.thick[m]);
-				depth=depth+RAmodel.laym0.thick[m];
-			}
-			fclose(tmpfmod);
-			//----------
-			*/
-			/*
-			char str2[200],str3[200];
-			sprintf(str,"VkernelR_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			sprintf(str2,"VkernelL_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			sprintf(str3,"VkernelRHV_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			write_kernel(Vkernel,RAmodel,RApara,str,str2,str3,Rsurflag,Lsurflag);
-			sprintf(str,"LkernelR_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			sprintf(str2,"LkernelL_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);
-			sprintf(str3,"LkernelLHV_iloop%d_ijump%d_iacc%d_iit%d.txt",iloop,ijump,countacc,iiter);// actually this file won;t be wrote, because the Ldisp.fhv==0
-			write_kernel(Lkernel,RAmodel,RApara,str,str2,str3,Rsurflag,Lsurflag);
-			*/
-			//exit(0);
 		}//update kernel
-
+		
   		//---------
   		//tmodel=model2BS;
 		//para2mod(para2BS,tmodel,model2BS);
@@ -263,6 +240,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
             		updatemodel(model1,flagupdaterho);
             		if(positiveAni(model1,Vposani)==0){
 		    		tflag=1;
+				//temp_writepara(ftemp,para1,model1,countacc,i,-1);//---test
 		    		continue;
             		}
 
@@ -272,6 +250,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
             		if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    		if(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0){
 	    		tflag=2;	
+			//temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
     	    		continue;}
         	}//if monoc 
 
@@ -286,7 +265,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 
 		
 		//----------Criteria 2, acceptable L-----------------------------------
-		if(misfitcri<-1){
+		// ---test prior ---
+  		if(misfitcri<-1){
 	  	    if(newL<oldL){
 	    		prob=(oldL-newL)/oldL;
 	   		prandom=gen_random_unif01();
@@ -300,7 +280,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		else {
 			if(newmisfit>misfitcri)continue;
 		}
-
+		
 		//----------Pass criterio, accept para----------------------------------
 		para2BS=para1BS;
 		model2BS=model1BS;

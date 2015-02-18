@@ -3,6 +3,7 @@
 // this version, use the para_avg_multiple_gp_v3.C, which enables the computation of parabest for each phi group, so there are multiple parabest output
 // this version, use CALinv_isolay_rf_parallel_saveMEM_BS_updateK.C, which updated the Vkernel&Lkernel during the inversion
 // this version, use CALpara_isolay_BS_newV2L_changeEtaSpace.C, which require eta<=1.1
+// this Tibet version is for the Tibet's Elastic tensor inversion
 
 #include<iostream>
 #include<algorithm>

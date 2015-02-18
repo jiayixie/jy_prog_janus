@@ -837,13 +837,22 @@ column:	0		1			2				3			4				5				....			N-1
 	  vector<int>::iterator id;
 	  double gradient;
 	  if(isoflag>0 or Rflag>0){ // iso case, R and L have the same model.g.value1
-	      for(i=0;i<model.ngroup-1;i++)//between groups, require positive vel jump
+	      //---between groups, require positive vel jump---
+	      for(i=0;i<model.ngroup-1;i++)
 		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back()) 
 			{//cout<<"case 1\n"; //---test----
        			return 0;}
 		}  	 
 
-	      for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
+	      //---at each depth, require the VsRA and VpRA have the same sign---
+	      for(i=0;i<model.ngroup;i++){
+		for(j=0;j<model.groups[i].nlay;j++){
+			if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0)return 0;
+		}
+	      }
+
+	      //---monotonic velocity change in group vmono[?]
+	      for(id=vmono.begin();id<vmono.end();id++)
               {
 	    	j=*id;
 	    	for(i=0;i<model.groups[j].nlay-1;i++)
@@ -864,7 +873,7 @@ column:	0		1			2				3			4				5				....			N-1
 			 //printf("mantle grad !\n");
 			 return 0;}
 	     }*/
-	     // require the vel at all depth (the maximum = g.tthcik, which comes from the input) to be smaller than 4.9 ---- revised on Aug 23, 2012------
+	     //---require the vel at all depth (the maximum = g.tthcik, which comes from the input) to be smaller than 4.9 ---- revised on Aug 23, 2012------
 		//*/
 	     for (i=0;i<model.groups[2].nlay;i++){
 	     if(model.groups[2].vsvvalue1[i]>4.9 or model.groups[2].vshvalue1[i]>4.9){
@@ -881,7 +890,7 @@ column:	0		1			2				3			4				5				....			N-1
 		    return 0;}
 	      } 
 
-	      ///*
+	      /*
 	      //-------- revised; newly added, Apr 22, 2014. constrains on the Vp/Vs=(vph+vpv)/(vsh+vsv)
 	      for(i=1;i<model.ngroup;i++){//skip the sedimentary layer; by default, the sediment is group0
 		
@@ -890,12 +899,12 @@ column:	0		1			2				3			4				5				....			N-1
 			if(var<1.65 or var>1.85){
 				//printf("reject ig=%d ilay=%d vp/vs=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);
 				return 0;}
-	     	/*//---put upper limit on the amp of Vp and Vs anisotropy. //---test---
-	     	if(fabs(2*(model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]))>0.15 or fabs(2*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])/(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j]))>0.1){
-			return 0;}*/
+	     	//---put upper limit on the amp of Vp and Vs anisotropy. //---test---
+	     	//if(fabs(2*(model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]))>0.15 or fabs(2*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])/(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j]))>0.1){
+		//	return 0;}
 		}
 	      }//vp/vs constraint
-	     //*/
+	     */
 	  }//if isoflag or Rflag>0
 
 	  
@@ -906,10 +915,12 @@ column:	0		1			2				3			4				5				....			N-1
               for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
               {
                 j=*id;
-                /*for(i=0;i<model.groups[j].nlay-1;i++)
-		    { gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
-		      if(gradient>0. and gradient <70.)return 0; }
-		*/
+                for(i=0;i<model.groups[j].nlay-1;i++){ 
+			//gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
+		        //if(gradient>0. and gradient <70.)return 0; 
+		 	if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]){return 0;}
+		}//for i
+		
 	     }//for id
               for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
               {
@@ -925,14 +936,14 @@ column:	0		1			2				3			4				5				....			N-1
 //-----------------------------------------------------	
 	int positiveAni( modeldef model, vector<int> vmono)
 	{// require the L to be always faster than R in group vmono[?]
+	 // in goodmodel, we require that VsRA and VpRA have the same sign, so only need to check the sign of VsRA
 	  vector<int>::iterator id;
 	  int i,j;
 	  for(id=vmono.begin();id<vmono.end();id++){
 		j=*id;
 		for(i=0;i<model.groups[j].nlay;i++){
-			if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] or (model.groups[j].vphvalue1[i]<model.groups[j].vpvvalue1[i])){
-			//if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] ){ //rm the VpRA>0 constraint, ---test---
-				//printf("--@@@ ng=%d, nv=%d, vsh=%g, vsv=%g\n",j,i,model.groups[j].vshvalue1[i],model.groups[j].vsvvalue1[i]);
+			
+			if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] ){ //rm the VpRA>0 constraint, ---test---
 				return 0;
 			}
 		}//for i

@@ -879,7 +879,7 @@ for i<para.npara
 			newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
 		else if (p6==4){//vph
 			c=model.groups[ng].vphvalue[0]/model.groups[ng].vpvvalue[0];
-			newv=c*model.groups[ng].vpvvalue[ng];}
+			newv=c*model.groups[ng].vpvvalue[nv];}
 		else if (p6==5){//eta
 			newv=model.groups[ng].etavalue[0];}
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the anisotropic scaling 1\n",p6);exit(0);}
