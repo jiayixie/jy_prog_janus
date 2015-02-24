@@ -75,9 +75,10 @@ default_random_engine generator (seed);
 	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
-	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,  vsvmin~phimin,  vsvmax~phimax];
+	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs  vsvmin~phimin~vpvsmin,  vsvmax~phimax~vpvsmax];
 	  //stdlst[ithick]=[vsvstd~phistd]
 	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
+	  //Feb19, 2015, modified this function, added rho & vpvs
 
 	  vector<double> tv;
 	  vector<int> iv;
@@ -90,6 +91,7 @@ default_random_engine generator (seed);
 	  vector<vector<double> > tvlst;
 	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax;
 	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi;
+	  double rho,vpvs,rhomin,rhomax,vpvsmin,vpvsmax,trho,tvpvs,tvpvs1,tvpvs2;
 	  vector<vector<double> > Deplst2;//record the end depth of each group for every model
 	  vector<vector<int> > IDlst2;// record the id (in laym0) of the end-depth of each group, for every model
 
@@ -131,7 +133,7 @@ default_random_engine generator (seed);
 		tth=th;
 		//if(fabs(th-h+dth)<1e-4)th=h;//???
 		vsv=0.;vsh=0.;Ncount=0;fm1=0.;fm2=0.;ani=0.;fm3=0.;
-		vpv=0.;vph=0.;eta=0.;theta=0.;phi=0.;
+		vpv=0.;vph=0.;eta=0.;theta=0.;phi=0.;rho=0.;vpvs=0.;
 		tvlst.clear();
 		vsvmin=1e10;vsvmax=-1;
 		vshmin=1e10;vshmax=-1;
@@ -141,6 +143,8 @@ default_random_engine generator (seed);
 		etamin=1e10;etamax=-1.;
 		thetamin=1e10;thetamin=-1.;
 		phimin=1e10;phimax=-1.;
+		rhomin=1e10;rhomax=-1;
+		vpvsmin=1e10;vpvsmax=-1.;
 		for(i=0;i<size;i++){//iterate within model list
 	  	  //--the start and end (laym0) id for this group ---
 	  	  if(ng==0)idmin=0;
@@ -174,6 +178,10 @@ default_random_engine generator (seed);
 				teta=(modlst[i].laym0.eta[j+1]-modlst[i].laym0.eta[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.eta[j];
 				ttheta=(modlst[i].laym0.theta[j+1]-modlst[i].laym0.theta[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.theta[j];
 				tphi=(modlst[i].laym0.phi[j+1]-modlst[i].laym0.phi[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.phi[j];	
+				trho=(modlst[i].laym0.rho[j+1]-modlst[i].laym0.rho[j])/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+modlst[i].laym0.rho[j];
+				tvpvs2=(modlst[i].laym0.vpv[j+1]+modlst[i].laym0.vph[j+1])/(modlst[i].laym0.vsv[j+1]+modlst[i].laym0.vsh[j+1]);	
+				tvpvs1=(modlst[i].laym0.vpv[j]+modlst[i].laym0.vph[j])/(modlst[i].laym0.vsv[j]+modlst[i].laym0.vsh[j]);
+				tvpvs=(tvpvs2-tvpvs1)/(modlst[i].laym0.thick[j])*(tth-dep1+modlst[i].laym0.thick[j])+tvpvs1;	
 				
 				if(tvsv<0 or tvsv>5){
 					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
@@ -187,6 +195,8 @@ default_random_engine generator (seed);
 				eta=eta+teta;
 				theta=theta+ttheta;
 				phi=phi+tphi;
+				rho=rho+trho;
+				vpvs+=tvpvs;
 				Ncount++;	
 				if (tvsv>vsvmax)vsvmax=tvsv;
 				if(tvsv<vsvmin)vsvmin=tvsv;
@@ -198,9 +208,14 @@ default_random_engine generator (seed);
 				if(teta>etamax)etamax=teta;if(teta<etamin)etamin=teta;
 				if(ttheta>thetamax)thetamax=ttheta;if(ttheta<thetamin)thetamin=ttheta;
 				if(tphi>phimax)phimax=tphi;if(tphi<phimin)phimin=tphi;
+				rhomax=(trho>rhomax?trho:rhomax);
+				rhomin=(trho<rhomin?trho:rhomin);
+				vpvsmax=(tvpvs>vpvsmax?tvpvs:vpvsmax);
+				vpvsmin=(tvpvs<vpvsmin?tvpvs:vpvsmin);
 				//---tvlst: vsv,vsh ..., phi
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
-				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi);
+				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi); 
+				tv.push_back(trho);tv.push_back(tvpvs);
 				tvlst.push_back(tv);
 				break;
 			}//if dep>tth
@@ -224,18 +239,23 @@ default_random_engine generator (seed);
 		eta/=Ncount;
 		theta/=Ncount;
 		phi/=Ncount;
-		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi)){
+		rho/=Ncount;
+		vpvs/=Ncount;
+		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi) or isnan((float)rho) or isnan((float)vpvs)){
 			printf("Hey, NaN happen!!! something wrong!!\n Ncount=%d th=%g tth=%g h0=%g h=%g\n",Ncount,th,tth,h0,h);
 			sprintf(str,"echo WRONG Ncount = %d >> point_finished_Ani.txt ",Ncount);
 			system(str);
 			//exit(0);
 		}
-		//---vlst: vsv~phi, vsvmin~phimin, vsvmax~phimax---
+		//---vlst: vsv~phi~vpvs, vsvmin~phimin~vpvsmin, vsvmax~phimax~vpvsmax---
 		tv.clear();
 		//tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vsvmin);tv.push_back(vsvmax);tv.push_back(vshmin);tv.push_back(vshmax);tv.push_back(ani);tv.push_back(animin);tv.push_back(animax);
 		tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vpv);tv.push_back(vph);tv.push_back(eta);tv.push_back(theta);tv.push_back(phi);
+		tv.push_back(rho);tv.push_back(vpvs);
 		tv.push_back(vsvmin);tv.push_back(vshmin);tv.push_back(vpvmin);tv.push_back(vphmin);tv.push_back(etamin);tv.push_back(thetamin);tv.push_back(phimin);
+		tv.push_back(rhomin);tv.push_back(vpvsmin);
 		tv.push_back(vsvmax);tv.push_back(vshmax);tv.push_back(vpvmax);tv.push_back(vphmax);tv.push_back(etamax);tv.push_back(thetamax);tv.push_back(phimax);
+		tv.push_back(rhomax);tv.push_back(vpvsmax);
 
 		vlst.push_back(tv);
 		hlst.push_back(th);
@@ -268,7 +288,15 @@ default_random_engine generator (seed);
 		fm2=sqrt(fm2/Ncount);
 		fm3=sqrt(fm3/Ncount);
 		tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
-		
+		fm1=0.;fm2=0.;
+		for(i=0;i<Ncount;i++){
+			fm1=fm1+pow(tvlst[i][7]-rho,2);
+			fm2=fm2+pow(tvlst[i][8]-vpvs,2);
+		}		
+		fm1=sqrt(fm1/Ncount);
+		fm2=sqrt(fm2/Ncount);
+		tv.push_back(fm1);tv.push_back(fm2);
+
 		stdlst.push_back(tv);
 	  }//for th
         vector<vector<double> >().swap(tvlst);
@@ -281,7 +309,6 @@ default_random_engine generator (seed);
 //-----------------------------------------------------------------
 	int connect_modmin(vector<vector<double> > &out,vector<double> hlst,vector<vector<double> > vlst,vector<vector<double> > stdlst,double h1,double h2, int id)
 	{// can choose output avg-std or the min; 
-	 //the vlst has info of min (column 7~13), info of avg is column 0~6; info of max is 14~20
 	  int i;vector<double> tv;
 	  double h,v;
  	  for(i=0;i<vlst.size();i++){
@@ -289,7 +316,7 @@ default_random_engine generator (seed);
 		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id]-stdlst[i][id];//avg-std
-		//v=vlst[i][7+id];//min
+		//v=vlst[i][Nparanm+id];//min
 		tv.push_back(h);tv.push_back(v);
 		out.push_back(tv);
 		}
@@ -313,7 +340,7 @@ default_random_engine generator (seed);
 	  }
 	  vector<double>().swap(tv);
 	  return 1;
-	}//connect_modmin
+	}//connect_modmid
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 	int connect_modmax(vector<vector<double> > &out,vector<double> hlst,vector<vector<double> > vlst,vector<vector<double> > stdlst,double h1,double h2, int id)
@@ -325,14 +352,14 @@ default_random_engine generator (seed);
 		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id]+stdlst[i][id];//avg+std
-		//v=vlst[i][14+id];//max
+		//v=vlst[i][Nparanm*2+id];//max
 		tv.push_back(h);tv.push_back(v);
 		out.push_back(tv);
 		}
 	  }
 	  vector<double>().swap(tv);
 	  return 1;
-	}//connect_modmin
+	}//connect_modmax
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 	int write_modavg( const char *foutnm,vector<vector<double> > &Vsv1,vector<vector<double> > &Vsv2,vector<vector<double> > &Vsv3,double Hsed,double Hsedstd,double Hmoho,double Hmohostd )
@@ -368,7 +395,7 @@ default_random_engine generator (seed);
 	  double Hsed=0.,Hmoho=0.,Hmat=0.,Hsedstd,Hmohostd,fm1=0.,fm2=0.;
 	  vector<vector<double> > v1lst,v2lst,v3lst,std1lst,std2lst,std3lst;
 	  vector<vector<double> > Vsvmin,Vsvmid,Vsvmax,Vshmin,Vshmid,Vshmax;
-	  vector<vector<double> > Animin,Animid,Animax;
+	  //vector<vector<double> > Animin,Animid,Animax;
 	  vector<double> h1lst,h2lst,h3lst,tv;
 	  vector<modeldef> modlst;
 	  time_t start;
@@ -409,7 +436,7 @@ default_random_engine generator (seed);
 	  cout<<"finish mant\n";//---test
 	  
 	  cout<<"---connect model min/mid/max time_used="<<time(0)-start<<"\n";//---test---
-	  for(i=0;i<7;i++){
+	  for(i=0;i<fnmlst.size();i++){
 	  printf("i=%d, fnm=%s\n",i,fnmlst[i].c_str());
 	  Vsvmin.clear();Vsvmid.clear();Vsvmax.clear();
 	  connect_modmin(Vsvmin,h1lst,v1lst,std1lst,0,Hsed+Hsedstd,i);
@@ -446,20 +473,20 @@ default_random_engine generator (seed);
           vector<vector<double> >().swap(Vshmin);
           vector<vector<double> >().swap(Vshmid);
           vector<vector<double> >().swap(Vshmax);
-          vector<vector<double> >().swap(Animin);
-          vector<vector<double> >().swap(Animid);
-          vector<vector<double> >().swap(Animax);
+          //vector<vector<double> >().swap(Animin);
+          //vector<vector<double> >().swap(Animid);
+          //vector<vector<double> >().swap(Animax);
 	  vector<modeldef>().swap(modlst);
 
 	  return 1;
 	}// model_avg2
 //-----------------------------------
 int get_posteriaDist(double depmin, double depmax, double depstep, vector<double> rho, vector<double> vsv, vector<double> vsh, vector<double> vpv, vector<double> vph, vector<double> eta, vector<double> theta, vector<double> phi, vector<double> thick, FILE *out)
-{//for each input model, write out the vsv~phi value from depmin(1st para) to depmax(2ed para) at depdx(3rd) interval.
+{//for each input model, write out the vsv~phi~vpvs value from depmin(1st para) to depmax(2ed para) at depdx(3rd) interval.
   int i,size;
   double dep,h;
   vector<double> hlst;
-  double tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho;
+  double tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tvpvs,tvpvs1,tvpvs2;
 
   size=vsv.size();
   dep=0.;
@@ -498,7 +525,10 @@ int get_posteriaDist(double depmin, double depmax, double depstep, vector<double
 		// for theta&phi, the average isn't appropriate, so, the angels near the discountinuity doesn't make sence---need modification
 		ttheta=(theta[i]-theta[i-1])/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+theta[i-1];
 		tphi=(phi[i]-phi[i-1])/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+phi[i-1];
-		fprintf(out,"%8g %8g %8g %8g %8g %8g %8g %8g",tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho);break;}
+		tvpvs1=(vph[i]+vpv[i])/(vsh[i]+vsv[i]);
+		tvpvs2=(vph[i-1]+vpv[i-1])/(vsh[i-1]+vsv[i-1]);
+		tvpvs=(tvpvs2-tvpvs1)/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+tvpvs1;
+		fprintf(out,"%8g %8g %8g %8g %8g %8g %8g %8g %8g",tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tvpvs);break;}
     }
   }
 //*/
@@ -709,6 +739,7 @@ vector<vector<vector<double> > > Vkernel,Lkernel;
   return paraP;
 }// compute_dispM_writeASC
 //-----------------------------------
+int Nparanm; //global variable
 int main(int argc, char *argv[])
 {
 // this version, we will calculate the uncertainty of anisotropy------	
@@ -719,6 +750,7 @@ int main(int argc, char *argv[])
   char inponm[300],dirbin[300],fbname[200],foutnm[300],fvsvnm[300],fvshnm[300],nodeid[10],outdir[300],str[200];
   char fvpvnm[300],fvphnm[300],fetanm[300],fthetanm[300],fphinm[300],fparanm[300],fmodBnm[300];
   char faninm[300];
+  char frhonm[300],fvpvsnm[300];
   //char fnmlst[7][300];
   vector<string> fnmlst;
   FILE *inpo, *out,*fmis;
@@ -865,6 +897,8 @@ int main(int argc, char *argv[])
     sprintf(fetanm,"%s/eta_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fthetanm,"%s/theta_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(frhonm,"%s/rho_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt",outdir,lon,lat);
     }
@@ -879,6 +913,8 @@ int main(int argc, char *argv[])
     sprintf(fetanm,"%s/eta_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fthetanm,"%s/theta_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(frhonm,"%s/rho_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     }
@@ -887,6 +923,8 @@ int main(int argc, char *argv[])
       return 0;
     }
     fnmlst.push_back(fvsvnm);fnmlst.push_back(fvshnm);fnmlst.push_back(fvpvnm);fnmlst.push_back(fvphnm);fnmlst.push_back(fetanm);fnmlst.push_back(fthetanm);fnmlst.push_back(fphinm);
+    fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);
+    Nparanm=fnmlst.size();
     ifstream mff(fbname);
     if (! mff.good()){
 	printf("Cannot access file %s\n",fbname);
@@ -1016,4 +1054,3 @@ int main(int argc, char *argv[])
 
 
 
->>>>>>> e6f8571062342d858b0082d719f0e0a49b70cced

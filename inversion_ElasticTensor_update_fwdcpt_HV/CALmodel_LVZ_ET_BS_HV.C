@@ -839,7 +839,8 @@ column:	0		1			2				3			4				5				....			N-1
 	  if(isoflag>0 or Rflag>0){ // iso case, R and L have the same model.g.value1
 	      //---between groups, require positive vel jump---
 	      for(i=0;i<model.ngroup-1;i++)
-		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back()) 
+		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() )
+		//{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() or model.groups[i+1].vpvvalue1[0]<model.groups[i].vpvvalue1.back() ) 
 			{//cout<<"case 1\n"; //---test----
        			return 0;}
 		}  	 
@@ -861,7 +862,8 @@ column:	0		1			2				3			4				5				....			N-1
 		      {//printf("V1=%g h1=%g V2=%g h2=%g\n",model.groups[j].vsvvalue1[i],model.groups[j].vsvvalue1[i+1],model.groups[j].thick1[i],model.groups[j].thick1[i+1]);
 		       return 0;}*/
 		
-			if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1]){return 0;}
+			if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] ){return 0;}
+			//if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] or model.groups[j].vpvvalue1[i]>model.groups[j].vpvvalue1[i+1] ){return 0;}
 		    }//for i
 	     }//for id
 		///*
@@ -885,7 +887,8 @@ column:	0		1			2				3			4				5				....			N-1
 	     for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
 	      {
 	        j=*id;
-	        if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0])
+	        if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] )
+	        //if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] or model.groups[j].vpvvalue1[1]<model.groups[j].vpvvalue1[0] )
 		{ //cout<<"1st two value gradient\n"; //---test----
 		    return 0;}
 	      } 
@@ -909,8 +912,9 @@ column:	0		1			2				3			4				5				....			N-1
 
 	  
 	  else if (Lflag>0){
-              for(i=0;i<model.ngroup-1;i++)//between layers
+              for(i=0;i<model.ngroup-1;i++)//between groups
                 {if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back())
+                //{if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back() or model.groups[i+1].vphvalue1[0]<model.groups[i].vphvalue1.back())
                  return 0;} 
               for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
               {
@@ -919,13 +923,15 @@ column:	0		1			2				3			4				5				....			N-1
 			//gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
 		        //if(gradient>0. and gradient <70.)return 0; 
 		 	if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]){return 0;}
+		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]  or model.groups[j].vphvalue1[i]>model.groups[j].vphvalue1[i+1] ){return 0;}
 		}//for i
 		
 	     }//for id
               for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
               {
                 j=*id;
-                if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0])
+		if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0])
+                //if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0] or model.groups[j].vphvalue1[1]<model.groups[j].vphvalue1[0] )
                     return 0;
               }			
 	  
