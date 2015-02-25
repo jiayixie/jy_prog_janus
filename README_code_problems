@@ -1,0 +1,7 @@
+CALmodel_LVZ_ET_BS_HV.C:
+#	inside every version of CALmodel, the way to scale rho may be different between the readmodAniso & updatemodel functions.
+	this may not be important, since during the inversion, and before any forward computation, we always update the model with updatemodel function. So the rho always follows the scaling function in updatemodel, but not in readmodAniso.
+
+#	the updatemodel function, by default, I assume that group1 is crust, and group2 is mantle. The scaling relationship I used may be different between these two groups.
+
+

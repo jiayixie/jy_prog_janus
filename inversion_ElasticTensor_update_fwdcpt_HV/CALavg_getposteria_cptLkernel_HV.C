@@ -40,6 +40,7 @@
 using namespace std;
 using namespace Eigen;
 
+int Nparanm; //global variable
 unsigned seed=chrono::system_clock::now().time_since_epoch().count();
 default_random_engine generator (seed);
 
@@ -316,7 +317,7 @@ default_random_engine generator (seed);
 		if(fabs(h-h1)<1e-3 or fabs(h-h2)<1e-3 or ( h>h1 and h<h2 ) ){
 		tv.clear();
 		v=vlst[i][id]-stdlst[i][id];//avg-std
-		//v=vlst[i][Nparanm+id];//min
+		//v=vlst[i][Nparanm+id];//min; 
 		tv.push_back(h);tv.push_back(v);
 		out.push_back(tv);
 		}
@@ -739,7 +740,6 @@ vector<vector<vector<double> > > Vkernel,Lkernel;
   return paraP;
 }// compute_dispM_writeASC
 //-----------------------------------
-int Nparanm; //global variable
 int main(int argc, char *argv[])
 {
 // this version, we will calculate the uncertainty of anisotropy------	
@@ -784,7 +784,7 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  Rsurflag=1;Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Rsurflag=5;Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");

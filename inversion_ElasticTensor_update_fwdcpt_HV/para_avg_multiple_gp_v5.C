@@ -283,6 +283,8 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   printf("@@@ para_avg mismin=%g\n",mismin);
   //mismin=mismin+0.5;
   mismin=(mismin*2>(mismin+1.0))?mismin*2:(mismin+1.0); //arbitrary selection criteria
+  //mismin=1e10;
+  printf("@@@ selection criter, misfit<%g\n",mismin);
   Ngood=0;
   idlst.clear();
   for(i=0;i<size;i++){
@@ -402,13 +404,17 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		}
 		idminlst.push_back(idmin);
 		parabestlst.push_back(paralst[idmin]);
-		mismin=mismin+0.5;
+		//mismin=mismin+0.5;
+		mismin=(mismin*2>(mismin+1.0))?mismin*2:(mismin+0.5); //arbitrary selection criteria
+  		//printf("@@@ selection criter, misfit<%g\n",mismin);
+		//mismin=1e10;//this is for prior distribution generation
 
   		//--prepare the new idlst
   		for(k=0;k<Ngood;k++){
 			if(paralst[idlst[k]].misfit<mismin and indexflaglst[k]==i+1 and indexflaglstM[k]==j+1)idlstnew.push_back(idlst[k]);
+			//idlstnew.push_back(idlst[k]);
 		}//for k<Ngood
-		printf("====the %dth group has %d models,mismin(after+0.5)=%g=====\n",i*Ngp+j,idlstnew.size(),mismin);//--check--
+		printf("====the %dth group has %d models,mismin=%g selection criteria=====%g\n",i*Ngp+j,idlstnew.size(),paralst[idmin].misfit,mismin);//--check--
 		if(flag==1)paraavg.parameter=compute_paraavg(paralst,idlstnew,parastd.parameter,1);
 		else if(flag==3){
 			paraavg.parameter=compute_paraavg(paralst,idlstnew,parastd.parameter,1);

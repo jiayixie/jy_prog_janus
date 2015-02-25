@@ -129,10 +129,10 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		}
 	    	id=find(Viso.begin(),Viso.end(),i);
 		if(countCOS!=0){printf("#### checkParaModel, group%d, iso or TI model, # of VsvCOSpara =%d, should be %d, modify para.in\n",i,countCOS,0);exit(0);}
-	    	if(id!=Viso.end()){//this is an isotropic group, HSpara=4 (vsv,vsh,vpv,vph); isotropic scaling vsh,vpv,vph;  
+	    	if(id!=Viso.end()){//this is an isotropic group, HSpara=4 (vsv,vsh,vpv,vph); isotropic scaling vsh,vpv,vph or vsh, vph 
 			if(countHS!=k4){printf("#### checkParaModel, group%d, iso model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k4);exit(0);}
 			if(countsigma!=k4  ){printf("#### checkParaModel, group%d, iso model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k4);exit(0);}
-			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, iso model, # of HSpara that uses isotropic scaling =%d, should be %d, modify para.in\n",i,countISOsigma,k3);exit(0);}
+			if(countISOsigma!=k3 and countISOsigma!=k2){printf("#### checkParaModel, group%d, iso model, # of HSpara that uses isotropic scaling =%d, should be %d, modify para.in\n",i,countISOsigma,k3);exit(0);}
 
 	    	}
 	    	else{// this is a TI group. HSpara=5, 5 para computes partial derivatives
@@ -180,7 +180,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 		if(id!=Viso.end()){//isotropic group + Vsv azimuthal anisotropy
 			if(countHS!=k4){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k4,countHS);exit(0);}
 			if(countsigma!=k4  ){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of non-zero sigma should be %d, but not %d modify para.in\n",i,k4,countISOsigma);exit(0);}
-			if(countISOsigma!=k3){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of ISOsigma(=-1) should be %d, but not %d modify para.in\n",i,k3,countISOsigma);exit(0);}
+			if(countISOsigma!=k3 and countISOsigma!=k2){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. isotropic group, # of ISOsigma(=-1) should be %d, but not %d modify para.in\n",i,k3,countISOsigma);exit(0);}
 		}
 		else{// anisotropic group + Vsv azimuthal anisotropy
 			if(countHS!=k5){printf("#### checkParaModel, group%d, flagcpttype=3, (Vkernel->RAdiap, Vsvkernel->AZdisp. anisotropic group, # HSpara should be %d, but not %d modify para.in\n",i,k5,countHS);exit(0);}

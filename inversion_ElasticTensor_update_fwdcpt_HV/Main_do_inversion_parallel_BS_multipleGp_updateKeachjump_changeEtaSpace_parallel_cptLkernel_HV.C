@@ -27,11 +27,13 @@ default_random_engine generator (seed);
 //#include"CALpara_isolay_BS.C"
 #include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
-#include"CALmodel_LVZ_ET_BS_HV.C"
+//#include"CALmodel_LVZ_ET_BS_HV.C"
+#include"CALmodel_LVZ_ET_BS_HV_vpconstr.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_genprior.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
 #define _USE_MATH_DEFINES
@@ -73,7 +75,7 @@ exit(0);
 */
 
   //----------------PARAMETERS-----------------------------------------
-  isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
+  isoflag=atoi(argv[11]); //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
   Rsurflag=5; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
   AziampRsurflag=0;
@@ -84,21 +86,23 @@ exit(0);
   inpamp=0.25;//0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
   inpphi=0.25;//0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  iitercri1=120000;//100000;//12000 (mod1, 1cstlay)
+  if(isoflag==1)
+  iitercri1=200000;//200000;//100000;//12000 (mod1, 1cstlay)
+  else{iitercri1=400000;} //anisotropic case, need deeper search
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
-  depcri1=20.0;
-  depcri2=80.0;
-  qpcri=900.;//900.;
-  qscri=250.;
+  //depcri1=20.0;
+  //depcri2=80.0;
+  //qpcri=900.;//900.;
+  //qscri=250.;
   Rmonoc=1;
   Lmonoc=1;
   PosAnic=0;
   flagreadLkernel=0;
   flagupdaterho=1;
-  //Rvmono.push_back(0);
+  Rvmono.push_back(0);
   Rvmono.push_back(1);
   //Rvmono.push_back(2);
-  //Lvmono.push_back(0);
+  Lvmono.push_back(0);
   Lvmono.push_back(1);
   //Lvmono.push_back(2);
   //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
@@ -106,14 +110,14 @@ exit(0);
   //Rvgrad.push_back(2);
   //Lvgrad.push_back(0);
   Lvgrad.push_back(1);
-  /*
-  Vposani.push_back(0);
-  Vposani.push_back(1);
-  Vposani.push_back(2);
+  //Vposani.push_back(0);
+  //Vposani.push_back(1);
+  //Vposani.push_back(2);
+  if(isoflag==1){
   Viso.push_back(0);
   Viso.push_back(1);
   Viso.push_back(2);
-  */
+  }
   //Vposani.push_back(1);Vposani.push_back(2);
   k1=0;k2=1;
   //----------------------------------------------------------------------

@@ -86,8 +86,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   else
   {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int Nacc_updateK_init = 500;
-  const int accpcri=3000;//5000 ;//3000;
+  const int Nacc_updateK_init = 200; //500;
+  const int accpcri=1000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
 
@@ -207,6 +207,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		}
 	  	iiter++;
 		//if (iaccp%500==0 and iaccp>0 and iaccp!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
+		///*
 		 //----test prior------
 		if(countacc>1000)break;//2500//modified on Mar 13, 2014
 		if (countacc%Tacc==0 and countacc>0 and countacc!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
@@ -227,7 +228,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			refpara=RApara;
 			
 		}//update kernel
-		
+		//*/
   		//---------
   		//tmodel=model2BS;
 		//para2mod(para2BS,tmodel,model2BS);

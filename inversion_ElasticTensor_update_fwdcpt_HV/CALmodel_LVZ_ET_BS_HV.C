@@ -408,6 +408,7 @@ column:	0		1			2				3			4				5				....			N-1
 	int readmodAniso(modeldef &model,const char *name){
 	  string line;
 	  int iid,size,i=0,tnp,pflag,nn;
+	  double ts;
 	  ifstream mff;
 	  vector<string> v;
 	  mff.open(name);
@@ -545,9 +546,15 @@ column:	0		1			2				3			4				5				....			N-1
 			  if(model.groups[iid].flag==5){//water layer
 			  	model.groups[iid].rhovalue.push_back(1.02);}
 			  else if((iid==0 and model.groups[0].flag!=5) or (iid==1 and model.groups[0].flag==5)){// layer1 sediment OR layer2 seidment (the layer1 is water)
-				 model.groups[iid].rhovalue.push_back(0.541+0.3601*.5*(model.groups[iid].vpvvalue[i]+model.groups[iid].vphvalue[i])); }
+				 //model.groups[iid].rhovalue.push_back(0.541+0.3601*.5*(model.groups[iid].vpvvalue[i]+model.groups[iid].vphvalue[i])); 
+				 ts=0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i]);
+				 model.groups[iid].rhovalue.push_back(1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts);
+			  }
 			  else{// crust or mantle ########### this part may need modification. in the updatemodel, there is a vp<7.5km/s criteria, but here, since vpv,vph value can be B-spline, criteria is not clear;
-			  	model.groups[iid].rhovalue.push_back(0.541+0.3601*.5*(model.groups[iid].vpvvalue[i]+model.groups[iid].vphvalue[i]));}
+			  	////model.groups[iid].rhovalue.push_back(0.541+0.3601*.5*(model.groups[iid].vpvvalue[i]+model.groups[iid].vphvalue[i]));
+				ts=0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i]);
+				model.groups[iid].rhovalue.push_back(1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts);
+			  }//else
 			  
 			 }//for i<np
 
