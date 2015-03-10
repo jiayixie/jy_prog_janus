@@ -28,7 +28,7 @@ default_random_engine generator (seed);
 //#include"CALpara_isolay_BS.C"
 #include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
-#include"CALmodel_LVZ_ET_BS_HV.C"
+#include"CALmodel_LVZ_ET_BS_HV_vpconstr.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
@@ -77,8 +77,8 @@ exit(0);
   isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
   Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
-  AziampRsurflag=0;
-  AziphiRsurflag=0;
+  AziampRsurflag=1;
+  AziphiRsurflag=1;
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
@@ -91,25 +91,25 @@ exit(0);
   depcri2=80.0;
   qpcri=900.;//900.;
   qscri=250.;
-  Rmonoc=1;
-  Lmonoc=1;
-  PosAnic=0;
-  flagreadLkernel=0;
-  flagupdaterho=1;
+  Rmonoc=0;
+  Lmonoc=0;
+  PosAnic=1;
+  flagreadLkernel=0;//############
+  flagupdaterho=0;
   //Rvmono.push_back(0);
-  Rvmono.push_back(1);
+  //Rvmono.push_back(1);
   //Rvmono.push_back(2);
-  Lvmono.push_back(1);
+  //Lvmono.push_back(1);
   //Lvmono.push_back(2);
   //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
   Rvgrad.push_back(1);
   //Rvgrad.push_back(2);
   //Lvgrad.push_back(0);
   Lvgrad.push_back(1);
-  /*
-  Vposani.push_back(0);
+  //Vposani.push_back(0);
   Vposani.push_back(1);
   Vposani.push_back(2);
+  /*
   Viso.push_back(0);
   Viso.push_back(1);
   Viso.push_back(2);
@@ -170,31 +170,31 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     bestmisfit=1e10;
 
     Rdispnm.clear();
-    sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
     if(Rsurflag==5)
     {sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);}
 
     Ldispnm.clear();
-    sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Lphindir,lon,lat);
     Ldispnm.push_back(str);
 
     AziampRdispnm.clear();
-    sprintf(str,"%s/aziamp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Rphindir,lon,lat);
     AziampRdispnm.push_back(str);
 
     AziphiRdispnm.clear();
-    sprintf(str,"%s/aziphi.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Rphindir,lon,lat);
     //sprintf(str,"%s/aziphi_restore_unc/aziphi_%.1f_%.1f.txt",Rphindir,lon,lat);//#############HEY TEMPERARY########## TEST
     AziphiRdispnm.push_back(str);
 
     AziampLdispnm.clear();
-    sprintf(str,"%s/aziamp_%.1f_%.1f.txt",Lphindir,lon,lat);
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Lphindir,lon,lat);
     AziampLdispnm.push_back(str);
 
     AziphiLdispnm.clear();
-    sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Lphindir,lon,lat);
     AziphiLdispnm.push_back(str);
 
 

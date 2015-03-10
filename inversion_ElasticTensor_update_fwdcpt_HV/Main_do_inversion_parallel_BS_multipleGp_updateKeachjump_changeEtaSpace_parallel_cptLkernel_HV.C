@@ -76,7 +76,7 @@ exit(0);
 
   //----------------PARAMETERS-----------------------------------------
   isoflag=atoi(argv[11]); //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
-  Rsurflag=5; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
+  Rsurflag=atoi(argv[12]); //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
   AziampRsurflag=0;
   AziphiRsurflag=0;
@@ -415,7 +415,7 @@ exit(0);
 	system(str);
     	continue;
     }
-   printf("test-- END of inversion\n");
+   printf("test-- END of inversion %s %.1f %.1f\n",nodeid,lon,lat);
 
      
   }//while1

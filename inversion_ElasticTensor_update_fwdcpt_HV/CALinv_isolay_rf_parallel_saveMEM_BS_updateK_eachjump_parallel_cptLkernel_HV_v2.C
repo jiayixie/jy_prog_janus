@@ -86,8 +86,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   else
   {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int Nacc_updateK_init = 200; //500;
-  const int accpcri=1000;//5000 ;//3000;
+  const int Nacc_updateK_init = 505;//500; //500;
+  const int accpcri=5000;//3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
 
@@ -152,7 +152,11 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	gen_newpara(refparaBS,refmodelBS, para1BS,k1);
 	para2mod(para1BS,refmodelBS,model1BS);
 	Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho); //para1BS->para1; there is mod2para(Pmodel,Ppara) inside the Bsp2Point function
-
+	/*for(int n=0;n<para1BS.npara;n++){
+		printf("para%d=%g->%g\n",n,refparaBS.parameter[n],para1BS.parameter[n]);
+	}
+	exit(0);
+	*/
 	
 	if(PosAni>0){//require the L always faster than R
 	    //cout<<"check posAni\n";//test---
@@ -166,7 +170,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		updatemodel(model1,flagupdaterho);
 		if(ibad%10000==0){printf("######POSITIVE ANISO MODEL CANNOT BE SATISFIED !!!! ijump=%d\n",i);
-		break;
+		//break;//---test---
 		}
 	    }	
 	}//if PosAni>0
@@ -184,7 +188,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		 Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		 updatemodel(model1,flagupdaterho);
 		 if(ibad%10000==0){printf("##### ibad=%d GOOD MODEL CANNOT BE SATISFIED UNDER MONOC==1!! ijump=%d\n",ibad,ijump);
-		  break;
+		  //break; //---test---
 		   }
 		}//while	  
 	}//if monoc  
@@ -219,14 +223,19 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			if(NKdid>=10)Tacc=Nacc_updateK_init*10;//10000;
 			if(NKdid>=20)Tacc=Nacc_updateK_init*20;//10000;
 			
-			compute_dispMineos(RAmodel,PREM,Nprem,Rsurflag,Lsurflag,ijump);
+			if(compute_dispMineos(RAmodel,PREM,Nprem,Rsurflag,Lsurflag,ijump)!=0){// only if this model does give reasonable Mineos output, will i use it as new reference model
+				
 			compute_Vkernel(RApara,RAmodel,Vkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,ijump);
 			//Vkernel2Lkernel(RApara,RAmodel,Vkernel,Lkernel,flagupdaterho);
 			compute_Lkernel(RApara,RAmodel,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,ijump);
 			RApara.LoveAZparameter=refpara.LoveAZparameter; //set LoveAZparameter_ref to 0!
 			refmodel=RAmodel;
 			refpara=RApara;
-			
+			}// if compute_dispMineos
+			else{
+				printf("update kernel skipped!\n");
+			}
+			//RAmodel is the RA part of model model2BS; RApara is the RApart & point version of para2BS
 		}//update kernel
 		//*/
   		//---------
@@ -241,19 +250,21 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
             		updatemodel(model1,flagupdaterho);
             		if(positiveAni(model1,Vposani)==0){
 		    		tflag=1;
-				//temp_writepara(ftemp,para1,model1,countacc,i,-1);//---test
+				temp_writepara(ftemp,para1,model1,countacc,i,-1);//---test
 		    		continue;
             		}
 
           	}//if PosAni>0
 	
+		//printf("pass posAni ijump=%d\n",ijump);//---test---
 	 	if(Rmonoc+Lmonoc>0){
             		if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    		if(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0){
 	    		tflag=2;	
-			//temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
+			temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
     	    		continue;}
         	}//if monoc 
+		//printf("pass goodmodel ijump=%d\n",ijump);//---test---
 
 		get_misfitKernel(model1,para1,refmodel,refpara,Vkernel,Lkernel,Rsurflag,Lsurflag,AziampRflag,AziampLflag,AziphiRflag,AziphiLflag,inpamp,inpphi,flagupdaterho);
 		if (std::isnan(model1.data.L) or std::isnan(model1.data.Rdisp.L) or std::isnan(model1.data.Ldisp.L)){
@@ -273,7 +284,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	   		prandom=gen_random_unif01();
 	    		if(prandom<prob) { 
 		    		tflag=3;
-				//temp_writepara(ftemp,para1,model1,countacc,i,-3);//---test
+				temp_writepara(ftemp,para1,model1,countacc,i,-3);//---test
 		    		continue; }
 	  	    }	
 
@@ -283,6 +294,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		}
 		
 		//----------Pass criterio, accept para----------------------------------
+		// para1 is the point model version of para1BS
 		para2BS=para1BS;
 		model2BS=model1BS;
 		para2=para1;

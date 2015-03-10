@@ -774,7 +774,7 @@ int main(int argc, char *argv[])
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
 
-  if(argc!=12){
+  if(argc!=13){
     printf("Usage: XX 1]point_file 2]bin_dir 3]out_dir\n1]point_file: nodeid lon lat\n2]bin_dir: bindir/ani(vsv)_nodeid_lon_lat.bin\n3]out_dir: outdir/vsv(vsh)_lon_lat.txt\n4]compute_avg for flat vel(1) or titled vel(2; the vel from the effective TI medium)\n");
     exit(0);
   }
@@ -784,7 +784,8 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  Rsurflag=5;Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  //Rsurflag=5;
+  Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -813,7 +814,7 @@ int main(int argc, char *argv[])
     //if(fscanf(inpo,"%s %f %f %d",&nodeid[0],&lon,&lat,&ktopo)==EOF)
         break;
     npoint++;
-    printf("=====begin working on point: %d %s %f %f===\n",npoint,nodeid,lon,lat);
+    printf("=====CALavg begin working on point: %d %s %f %f===\n",npoint,nodeid,lon,lat);
   
     //---read in disp, para and mod information, used for the misfit computation---
 
@@ -825,6 +826,7 @@ int main(int argc, char *argv[])
     sprintf(Lphindir,argv[i++]);
     sprintf(Lgpindir,argv[i++]);//
     sprintf(fparanm,argv[i++]);//
+    Rsurflag=atoi(argv[i++]);
 
     Rdispnm.clear();
     sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);

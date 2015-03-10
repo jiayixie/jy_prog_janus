@@ -149,12 +149,19 @@ int write_modMineos(modeldef &model, const char *outname,vector<vector<double> >
 int interpolate(dispdef indisp,dispdef &outdisp)
 { // based on given period (the input period) and Mineos_T and Mineos_vel, interpolat Mineos_vel into values at the given periods
   // here, require that both pper and gper are sorted list(Increasing). Otherwise this code need to be changed (use id=find(period1.begin(),period1.end(),model.data.disp.gper[i]);like what we did for the Hermman inversion code) 
+  // I modified this function a little bit, in case that Mineos does not give a proper dispersion curves (e.g., the period range does not cover that of the reference period) the output disp would be constant (=0.)
+  //
   vector<double> inper,refperiod;
   double Tref,tpvel,tgvel,thvratio;
   int i,j,k,n,m;
-
+  double c,c2;
   inper=indisp.pper;//same as indisp.gper, the per from Mineos is decreasing. While the refperiod is increasing
   outdisp.pvel.clear();outdisp.gvel.clear();
+   
+  c=1.0;
+  c2=0.1;
+
+  int flag=1;
 
   if(outdisp.fphase>0){
     refperiod=outdisp.pper;
@@ -164,8 +171,11 @@ int interpolate(dispdef indisp,dispdef &outdisp)
     {  
 	printf("#### in interpolate, the range of refperiod is outside that of Mineos period!\nReset para for Mineos\n");
 	printf("#### refT_min=%g refT_max=%g inT[0]=%g inT[k-1]=%g\n",refperiod[0],refperiod[n-1],inper[0],inper[k-1]);
-	exit(0);
+	for(i=0;i<n;i++){outdisp.pvel.push_back(c);}
+	//exit(0);
+	flag=0;
     }
+    else{
     m=0;
     for(i=0;i<n;i++){
       Tref=refperiod[i];
@@ -179,6 +189,7 @@ int interpolate(dispdef indisp,dispdef &outdisp)
       }//for j
     }//for i
     if(m!=n){printf("### in interpolate phase, inconsistancy between output disp.size() and inputT.size()!\n### outdisp.size()=%d inT.size()=%d\n",m,n);exit(0);}
+    }//else
   }//if fphase
 
   refperiod.clear();
@@ -190,8 +201,12 @@ int interpolate(dispdef indisp,dispdef &outdisp)
     {
         printf("#### in interpolate group, the range of refperiod is outside that of Mineos period!\nReset para for Mineos\n");
         printf("#### refT_min=%g refT_max=%g\n",refperiod[0],refperiod[n-1]);
-        exit(0);
+        //exit(0);
+        for(i=0;i<n;i++){outdisp.gvel.push_back(c);}
+        //return 0;
+        flag=0;
     }
+    else{
     m=0;
     for(i=0;i<n;i++){
       Tref=refperiod[i];
@@ -205,6 +220,7 @@ int interpolate(dispdef indisp,dispdef &outdisp)
       }//for j
     }//for i
     if(m!=n){printf("### in interpolate, inconsistancy between output disp.size() and inputT.size()!\n### outdisp.size()=%d inT.size()=%d\n",m,n);exit(0);}
+  }//else
   }// if fgroup
 
   //---- deal with H/V ratio dispersion curve ----
@@ -219,8 +235,12 @@ int interpolate(dispdef indisp,dispdef &outdisp)
     {
         printf("#### in interpolate HV ratio, the range of refperiod is outside that of Mineos period!\nReset para for Mineos\n");
         printf("#### refT_min=%g refT_max=%g\n",refperiod[0],refperiod[n-1]);
-        exit(0);
+        //exit(0);
+        for(i=0;i<n;i++){outdisp.hvratio.push_back(c2);}
+        //return 0;
+        flag=0;
     }        
+    else{
     m=0;
     for(i=0;i<n;i++){
       Tref=refperiod[i];
@@ -233,9 +253,10 @@ int interpolate(dispdef indisp,dispdef &outdisp)
 	break;
       }//for j
     }//for i
+    }//else
   }//if fhv
 
-  return 1;
+  return flag;
 }//interpolate
 //--------------------------------------
 /*int interpolate_model(layermoddef inlay, layermoddef &outlay, double dh)
@@ -369,7 +390,7 @@ int read_dispMineos(dispdef &indisp,const char* Moutputnm, const char* HVoutputn
   }// if indisp.fhv>0
 
   //interpolate the tdisp into specified period list, and store the vel in indisp
-  interpolate(tdisp,indisp);
+  if (interpolate(tdisp,indisp)==0){return 0;}
 /*  **** CHECK HERE ********
   FILE *tempf;
   if((tempf=fopen("temp_disp1.txt","w"))==NULL)cout<<"cannot open file to write\n";
@@ -403,6 +424,7 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
   char Minmodnm[200],Moutputnm[200],HVoutputnm[200];
   char str[500],moddir[100],modnm[100];
   dispdef Rdisp,Ldisp;
+  int flagL=1,flagR=1;
   //******parameters********
   wmin=1000./100.;//1000./70.;
   wmax=1000./6.;
@@ -422,7 +444,7 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
      system(str);
      sprintf(Moutputnm,"%s_T",modnm);
      sprintf(HVoutputnm,"%s_HV_T",modnm);
-     read_dispMineos(model.data.Ldisp,Moutputnm,HVoutputnm,Nmod);  	
+     flagL=read_dispMineos(model.data.Ldisp,Moutputnm,HVoutputnm,Nmod);  	
      model.data.AziampLdisp.pvel.clear();model.data.AziampLdisp.gvel.clear();model.data.AziphiLdisp.pvel.clear();model.data.AziphiLdisp.gvel.clear();
 
      // bug fixed on Oct 30 2013. modification
@@ -449,7 +471,7 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
      sprintf(Moutputnm,"%s_S",modnm);
      sprintf(HVoutputnm,"%s_HV_S",modnm);
      //cout<<"ok000\n";
-     read_dispMineos(model.data.Rdisp,Moutputnm,HVoutputnm,Nmod);//according to Moutputnm, store pvel and gvel into m.d.R/Ldisp.pvel/gvel
+     flagR=read_dispMineos(model.data.Rdisp,Moutputnm,HVoutputnm,Nmod);//according to Moutputnm, store pvel and gvel into m.d.R/Ldisp.pvel/gvel
      //cout<<"ok00\n";
      model.data.AziampRdisp.pvel.clear();model.data.AziphiRdisp.pvel.clear();model.data.AziampRdisp.gvel.clear();model.data.AziphiRdisp.gvel.clear();
      //cout<<"ok0\n";
@@ -467,7 +489,7 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
   }//if Rsurflag
 
   
-  return 1; 
+  return flagL*flagR; 
 }//compute_dispMineos
 
 //--------------------------------------
@@ -548,7 +570,9 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
 	newpara.parameter[i]=para.parameter[i]+ddp;
 	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
- 	compute_dispMineos(newmodel,PREM,Nprem,1,0,ipara);
+ 	if(compute_dispMineos(newmodel,PREM,Nprem,1,0,ipara)==0){
+		newmodel.data.Rdisp=model.data.Rdisp;// will give kernel=0
+	}
 	compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
 	for(j=0;j<model.data.Rdisp.npper;j++)
 		trkp1.push_back(DRpvel[j][3]/ddp);
@@ -566,8 +590,11 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
 	newpara.parameter[i]=para.parameter[i]+ddp;
 	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
-        printf("@@@ check, compute_Vkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
- 	compute_dispMineos(newmodel,PREM,Nprem,1,1,ipara);
+        printf("@@@ check, compute_Vkernel_single_para, para %d %g -->%g\n",i,para.parameter[i],newpara.parameter[i]);
+ 	if(compute_dispMineos(newmodel,PREM,Nprem,1,1,ipara)==0){
+		newmodel.data.Rdisp=model.data.Rdisp;
+		newmodel.data.Ldisp=model.data.Ldisp;
+	}
 	compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
 	compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);	
 	//---check--
@@ -589,7 +616,9 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
 	newpara.parameter[i]=para.parameter[i]+ddp;
 	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
- 	compute_dispMineos(newmodel,PREM,Nprem,0,1,ipara);
+ 	if(compute_dispMineos(newmodel,PREM,Nprem,0,1,ipara)==0){
+		newmodel.data.Ldisp=model.data.Ldisp;
+	}
 	compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);
 	for(j=0;j<model.data.Rdisp.npper;j++)
 		trkp1.push_back(0.);
@@ -2085,7 +2114,9 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
 	L2Vpara(newpara,newmodel,i);//=====
 	para2mod(newpara,model,newmodel);
 	updatemodel(newmodel,flagupdaterho);
-	compute_dispMineos(newmodel,PREM,Nprem,1,0,inum);
+	if(compute_dispMineos(newmodel,PREM,Nprem,1,0,inum)==0){
+		newmodel.data.Rdisp=model.data.Rdisp;
+	}
 	compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
 	for(j=0;j<model.data.Rdisp.npper;j++)
                 trkp1.push_back(DRpvel[j][3]/ddp);
@@ -2105,7 +2136,10 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
         para2mod(newpara,model,newmodel);
         updatemodel(newmodel,flagupdaterho);
         //printf("@@@ check, compute_Lkernel_single_para, para %g -->%g\n",para.parameter[i],newpara.parameter[i]);
-        compute_dispMineos(newmodel,PREM,Nprem,1,1,inum);
+        if(compute_dispMineos(newmodel,PREM,Nprem,1,1,inum)==0){
+		newmodel.data.Rdisp=model.data.Rdisp;
+		newmodel.data.Ldisp=model.data.Ldisp;
+	}
         compute_diff(newmodel.data.Rdisp,model.data.Rdisp,DRpvel,DRgvel,DRhvratio);
         compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);
         for(j=0;j<model.data.Rdisp.npper;j++)
@@ -2125,7 +2159,9 @@ int compute_Lkernel_single_para(paradef para, int i, modeldef model,  vector<vec
         para2mod(newpara,model,newmodel);
 	L2Vpara(newpara,newmodel,i);
         updatemodel(newmodel,flagupdaterho);
-        compute_dispMineos(newmodel,PREM,Nprem,0,1,inum);
+        if(compute_dispMineos(newmodel,PREM,Nprem,0,1,inum)==0){
+		newmodel.data.Ldisp=model.data.Ldisp;
+	}
         compute_diff(newmodel.data.Ldisp,model.data.Ldisp,DLpvel,DLgvel,DLdump);
         for(j=0;j<model.data.Rdisp.npper;j++)
                 trkp1.push_back(0.);

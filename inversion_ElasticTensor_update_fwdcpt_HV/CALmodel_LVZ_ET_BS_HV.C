@@ -900,21 +900,22 @@ column:	0		1			2				3			4				5				....			N-1
 		    return 0;}
 	      } 
 
-	      /*
+	      ///*
 	      //-------- revised; newly added, Apr 22, 2014. constrains on the Vp/Vs=(vph+vpv)/(vsh+vsv)
-	      for(i=1;i<model.ngroup;i++){//skip the sedimentary layer; by default, the sediment is group0
+	      for(i=0;i<model.ngroup;i++){//skip the sedimentary layer; by default, the sediment is group0
 		
 		for(j=0;j<model.groups[i].nlay-1;j++){
 			var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
-			if(var<1.65 or var>1.85){
+			if (var<1.70)return 0;
+			//if(var<1.65 or var>1.85){
 				//printf("reject ig=%d ilay=%d vp/vs=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);
-				return 0;}
+			//	return 0;
 	     	//---put upper limit on the amp of Vp and Vs anisotropy. //---test---
 	     	//if(fabs(2*(model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]))>0.15 or fabs(2*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])/(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j]))>0.1){
 		//	return 0;}
-		}
-	      }//vp/vs constraint
-	     */
+		}//for j
+	      }//for i vp/vs constraint 
+	     //*/
 	  }//if isoflag or Rflag>0
 
 	  

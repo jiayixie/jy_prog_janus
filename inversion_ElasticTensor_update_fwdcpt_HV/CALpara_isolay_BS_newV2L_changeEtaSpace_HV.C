@@ -137,7 +137,7 @@ vector<int> get_index(vector<double> motherlst, vector<double> kidlst){
 	    	}
 	    	else{// this is a TI group. HSpara=5, 5 para computes partial derivatives
                         if(countHS!=k5){printf("#### checkParaModel, group%d, TI model, # of HSpara =%d, should be %d, modify para.in\n",i,countHS,k5);exit(0);}
-                        if(countsigma!=k5  ){printf("#### checkParaModel, group%d, TI model, # of para that computes partial derivatives =%d, should be %d, modify para.in\n",i,countsigma,k5);exit(0);}
+                        if(countsigma!=k4 and countsigma!=k5  ){printf("#### checkParaModel, group%d, TI model, # of para that computes partial derivatives =%d, should be %d or %d, modify para.in\n",i,countsigma,k4,k5);exit(0);}
 		}//else	Viso
 	    }//if flagcpt==1
 
@@ -849,10 +849,12 @@ for i<para.npara
 	  return newv;
 	}//gen_newpara_single_v2
 //----------------------------------------------------- 
-	double gen_newpara_single_scale(int flag, modeldef model,int ng,int nv,int p6){
+	double gen_newpara_single_scale(double flag, modeldef model,int ng,int nv,int p6){
 	//generate parameter based on scaling relationships
 	  double newv,c,ts;
-	  if(flag==-1){
+	  int intflag,gpnum;
+	  intflag=(int)flag;
+	  if(intflag==-1){
 	  //isotropic scaling, this group is isotropic
 	  //vsh=vsv;vph=vpv=vsv*vpvs
 	  //actually, if para was set properly, eta or theta or phi should not appear here, but i still allow setting eta=0 theta=phi=0 in this function at this moment
@@ -865,26 +867,33 @@ for i<para.npara
 			newv=model.groups[ng].vpvvalue[nv];}
 		else if (p6==5){//eta
 			newv=1.0;}
-		else if (p6==6 or p6==8)newv=0.;//theta or phi
+		else if (p6==6 or p6==7)newv=0.;//theta or phi
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the isotropic scaling\n",p6);exit(0);}
 	  }
-	  else if (flag==-2){
+	  else if (intflag==-2){
 	  //anisotropic scaling, this group is anisotropic
-	  //scale based on 1st layer's value, keep constant magnitude of anisotropy throughout this whole group
+	  //scale based on gpnum layer's value, keep constant magnitude of anisotropy throughout this whole group
+	  //if flag=-2.0 then scaled based on the layer0's value
+	  //if flag=-2.2 then scale based on the layer2's vaue	
+		gpnum=((int)(flag*10)%10);
 		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
 		else if (p6==2){//vsh
-			c=model.groups[ng].vshvalue[0]/model.groups[ng].vsvvalue[0];
+			c=model.groups[ng].vshvalue[gpnum]/model.groups[ng].vsvvalue[gpnum];
 			newv=c*model.groups[ng].vsvvalue[nv];}
 		else if (p6==3){//vpv
 			newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
 		else if (p6==4){//vph
-			c=model.groups[ng].vphvalue[0]/model.groups[ng].vpvvalue[0];
+			c=model.groups[ng].vphvalue[gpnum]/model.groups[ng].vpvvalue[gpnum];
 			newv=c*model.groups[ng].vpvvalue[nv];}
 		else if (p6==5){//eta
-			newv=model.groups[ng].etavalue[0];}
+			newv=model.groups[ng].etavalue[gpnum];}
+		else if (p6==6 ){//theta
+			newv=model.groups[ng].thetavalue[gpnum];}
+		else if (p6==7){//phi
+			newv=model.groups[ng].phivalue[gpnum];}
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the anisotropic scaling 1\n",p6);exit(0);}
 	  }
-	  else if (flag==-3){
+	  else if (intflag==-3){
 		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
                else if(p6==2){//vsh
                        newv=model.groups[ng].vsvvalue[nv];}
@@ -895,7 +904,7 @@ for i<para.npara
                        newv=model.groups[ng].vpvvalue[nv];}
                 else if (p6==5){//eta
                         newv=1.0;}
-                else if (p6==6 or p6==8)newv=0.;//theta or phi
+                else if (p6==6 or p6==7)newv=0.;//theta or phi
                 else{printf("###inproper para.in, para with p6=%d should not apprear in the isotropic scaling\n",p6);exit(0);}
           }
 	
@@ -904,14 +913,35 @@ for i<para.npara
 //                 trho = 1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
 
 
-	  else if (flag==-4){
+	  else if (intflag==-4){
 	  //anisotropic scaling, this group is anisotropic
 	  //scale based on a given scaling relationship
 	  //e.g., VpRA=c1*VsRA; eta=c2+c3*VsRA	  
 	  //this kind of scaling need to be dealt with carefully. need to be careful about the updating order of the parameters. the parameters are ordered from vsv->eta, but when doing scaling, may need some later parameters to be updated 1st.
-	  printf("### this anisotropic scaling is still under construction...\n");
-	  exit(0);
+	 	if(p6==4){//vph --> [(vph-vpv)/vpv]/[(vsh-vsv)/vsv]=c
+			if(ng==0){c=1.0;}//in sediment VpRA=VsRA;
+			else{c=0.5;}//in cst & mat VpRA=0.5*VsRA
+			c=c*model.groups[ng].vpvvalue[nv]/model.groups[ng].vsvvalue[nv];
+			newv=c*(model.groups[ng].vshvalue[nv]-model.groups[ng].vsvvalue[nv])+model.groups[ng].vpvvalue[nv];
+		}
+		else if (p6==5){//eta --> eta=1.0-4.2*vsRA
+			c=(model.groups[ng].vshvalue[nv]-model.groups[ng].vsvvalue[nv])/model.groups[ng].vsvvalue[nv];
+			newv=1.0-4.2*c;
+		}
+		else{
+	  	printf("### this anisotropic scaling is still under construction...\n");
+	  	exit(0);
+		}
   	  }
+	  else if (intflag==-5){
+	  // vpvs scaling, this group can be isotropic or anisotropic
+	  // scale the the vpv based on 1st layer's vsv and vpv0/vsv0
+	  	if(p6==3){//vpv
+			c=model.groups[ng].vpvvalue[0]/model.groups[ng].vsvvalue[0];
+			newv=model.groups[ng].vsvvalue[nv]*c;
+		}
+		else{printf("###inproper para.in, para with p6=%d should not apprear in the vpvs scaling\n",p6);exit(0);}
+	  }
 	  return newv;
 	}//gen_newpara_single_scale
 
@@ -938,12 +968,13 @@ for i<para.npara
 		sigma=inpara.space1[i][2];
 	
 		if(p0==0){//value
-		  if(sigma>0)
+		  if(sigma>1e-5)
 			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
-		  else{
-		    intsigma=(int)sigma;
-		    outpara.parameter[i]=gen_newpara_single_scale(intsigma,model,ng,nv,p6);
+		  else if (sigma<-1e-5){
+		    //intsigma=(int)sigma;
+		    outpara.parameter[i]=gen_newpara_single_scale(sigma,model,ng,nv,p6);
 		  }//else	
+		  // then else indicate sigma==0; keep parameter unchanged
 
 		  newv=outpara.parameter[i];
                   if(p6==1)
