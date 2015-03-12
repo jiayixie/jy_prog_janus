@@ -1190,6 +1190,8 @@ int getGroupVPara(groupdef group, vector<vector<double> > &Vparameter2, int flag
 	exit(0);
   }
   Vparameter2.clear();
+  /*
+// removing this section, should put rho in the para.in, specifying what do we want to do with it. keep it the way it is, or change it according to something (change it in the gen_newpara function/flag)
   if(flagupdaterho){
     for (i=0;i<group.np;i++){
 	tparameter.clear();
@@ -1214,7 +1216,7 @@ int getGroupVPara(groupdef group, vector<vector<double> > &Vparameter2, int flag
 	Vparameter2.push_back(tparameter);
     }//for  
   }//if
-  else{
+  else{*/
     for (i=0;i<group.np;i++){
 	tparameter.clear();
 	tparameter.push_back(group.vsvvalue[i]);
@@ -1228,7 +1230,7 @@ int getGroupVPara(groupdef group, vector<vector<double> > &Vparameter2, int flag
 	//tparameter.push_back(group.ratio[i]*group.thick);
 	Vparameter2.push_back(tparameter);
     }  
-  }//else
+  //}//else
   return 1; 
 }// getGroupVPara
 //---------------------------------------

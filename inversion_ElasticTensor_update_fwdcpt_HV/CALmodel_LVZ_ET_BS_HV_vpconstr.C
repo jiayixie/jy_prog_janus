@@ -552,8 +552,14 @@ column:	0		1			2				3			4				5				....			N-1
 			  }
 			  else{// crust or mantle ########### this part may need modification. in the updatemodel, there is a vp<7.5km/s criteria, but here, since vpv,vph value can be B-spline, criteria is not clear;
 			  	//model.groups[iid].rhovalue.push_back(0.541+0.3601*.5*(model.groups[iid].vpvvalue[i]+model.groups[iid].vphvalue[i]));
+				if(iid==2){//mantle default, assume this is mantle!!! THIS NEED TO BE MODIFIED IF GROUP2 IS NOT MANTLE
+				ts=0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i]);
+				model.groups[iid].rhovalue.push_back( 3.42+0.01*100*(ts-4.5)/4.5);
+				}//if iid
+				else{
 				ts=0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i]);
 				model.groups[iid].rhovalue.push_back(1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts);
+				}//else iid
 			  }//else
 			  
 			 }//for i<np
@@ -572,13 +578,14 @@ column:	0		1			2				3			4				5				....			N-1
 	  //the updatemodel, the vel values in the layer is the value when the ET is flat, i.e., the effect of theta is not taken into account, it's not the vel of the effective TI medium, but the vel of the un-rotated medium
           int i,j,tnlay=0; //flagupdaterho;
 	  double tvsvvalue,tvshvalue,tvpvvalue,tvphvalue,tetavalue,tthetavalue,tphivalue,trhovalue;
-	  double tthick,tvpvs,tdep=0.,tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tqs,tqp;
+	  double tthick,tvpvs,tdep=0.,tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,tqs,tqp;//trho
 	  double tvpvscpt,ts;
 	  model.laym0.vsv.clear();model.laym0.vsh.clear(); model.laym0.vpv.clear();model.laym0.vph.clear();model.laym0.eta.clear();model.laym0.theta.clear();model.laym0.phi.clear();
 	  model.laym0.vpvs.clear();model.laym0.rho.clear();model.laym0.qs.clear();model.laym0.qp.clear();model.laym0.thick.clear();
 
 	  //------------- chose if update rho based on vp or not; if not, the rho would be the rho computed from the initial model (from the readmodAniso step);
 	  //flagupdaterho=1;
+	  //should have set the initial rho in the readmodAniso function, so do not set it again here
 	  //-------------
 
 	  for(i=0;i<model.ngroup;i++)
@@ -607,7 +614,7 @@ column:	0		1			2				3			4				5				....			N-1
 				teta=1.0;
 				ttheta=0.0;
 				tphi=0.0;
-				trho=1.02;
+				//trho=1.02;
 				tqs=10000.;
 				tqp=57822.;
 			  }
@@ -626,7 +633,7 @@ column:	0		1			2				3			4				5				....			N-1
 				tqp=160.; tqs=80.; 
 				//trho=0.541+0.3601*(tvpv+tvph)/2.;
 				ts=(tvsv+tvsh)/2.;
-                                trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
+                                //trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
 
 				//tvpv=tvph = 0.9409 + 2.0947*ts - 0.8206*ts*ts + 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;//-----test------
 				//tvpvscpt=(tvph+tvpv)/(tvsv+tvsh);//-----test----
@@ -652,7 +659,7 @@ column:	0		1			2				3			4				5				....			N-1
 					{tqp=200.;tqs=80.;} // there was a bug here, fixed on Dec. 27,2011
 				//if((tvpv+tvph)/2.0<7.5){trho=0.541+0.3601*(tvpv+tvph)/2.0;} 
 				//else{trho=3.35;} //# Kaban, M. K et al. (2003), Density of the continental roots: Compositional and thermal contributions
-				if(i==1){//by default group 1 is crust
+				/*if(i==1){//by default group 1 is crust
 					ts=(tvsv+tvsh)/2.;
 					trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
 					//tvpv=tvph = 0.9409 + 2.0947*ts - 0.8206*ts*ts + 0.2683*ts*ts*ts -0.0251*ts*ts*ts*ts;//-----test------
@@ -660,9 +667,20 @@ column:	0		1			2				3			4				5				....			N-1
 				}
 				else if (i==2){//by default group 2 is mantle
 					trho = 3.42+0.01*100*((tvsv+tvsh)/2.-4.5)/4.5;
-				}
+				}*/
 			  }//else
 
+			  //-----------test---------test a different rho=f(vs) relation-----------
+			  /*
+			  if(i==0)trho=tvsvvalue*0.279+1.477;
+			  else if(i==2)trho=3.38;
+			  else if(i==1){
+				if(tdep>11.0)trho=2.70;
+				//if(tdep>11.0){ts=(tvsvvalue+tvshvalue)/2.;trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;}
+				else{trho=tvsvvalue*0.279+1.477;}
+			  }
+			  */
+			  //----------------------------------
 			  if(fabs(tvpvs-tvpvscpt)>1E-4)tvpvs=tvpvscpt;//if model's vpvs has been changed, then follow the value computed from vp/vs, instead of the input m.g.vpvs
 			  model.laym0.vpvs.push_back(tvpvs);
 			  model.laym0.vsv.push_back(tvsv);
@@ -675,10 +693,7 @@ column:	0		1			2				3			4				5				....			N-1
 			  model.laym0.qs.push_back(tqs);
 			  model.laym0.qp.push_back(tqp);
 			  model.laym0.thick.push_back(tthick);
-			  if(flagupdaterho)
-			  	model.laym0.rho.push_back(trho);//########### RHO ###########
-			  else
-				model.laym0.rho.push_back(trhovalue);
+			  model.laym0.rho.push_back(trhovalue);
 			}//for j
 		  tnlay=tnlay+model.groups[i].nlay;
                 }//for i

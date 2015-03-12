@@ -50,7 +50,8 @@ default_random_engine generator (seed);
 #include"./INITstructure_BS_HV.h"
 #include"CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
-#include"CALmodel_LVZ_ET_BS_HV.C"
+//#include"CALmodel_LVZ_ET_BS_HV.C"
+#include "CALmodel_LVZ_ET_BS_HV_vpconstr.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 
@@ -774,7 +775,7 @@ int main(int argc, char *argv[])
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
 
-  if(argc!=13){
+  if(argc!=14){
     printf("Usage: XX 1]point_file 2]bin_dir 3]out_dir\n1]point_file: nodeid lon lat\n2]bin_dir: bindir/ani(vsv)_nodeid_lon_lat.bin\n3]out_dir: outdir/vsv(vsh)_lon_lat.txt\n4]compute_avg for flat vel(1) or titled vel(2; the vel from the effective TI medium)\n");
     exit(0);
   }
@@ -784,8 +785,9 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  //Rsurflag=5;
-  Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  //Rsurflag=5;Lsurflag=1;
+  AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;
+  flagupdaterho=1;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -827,6 +829,8 @@ int main(int argc, char *argv[])
     sprintf(Lgpindir,argv[i++]);//
     sprintf(fparanm,argv[i++]);//
     Rsurflag=atoi(argv[i++]);
+    Lsurflag=atoi(argv[i++]);
+    printf("Rsurflag=%d, Lsurflag=%d\n",Rsurflag,Lsurflag);
 
     Rdispnm.clear();
     sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
@@ -837,8 +841,17 @@ int main(int argc, char *argv[])
     }
 
     Ldispnm.clear();
+    if(Lsurflag>0){
     sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);
     Ldispnm.push_back(str);
+    AziampLdispnm.clear();
+    sprintf(str,"%s/aziamp_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziampLdispnm.push_back(str);
+
+    AziphiLdispnm.clear();
+    sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziphiLdispnm.push_back(str);
+    }
 
     AziampRdispnm.clear();
     sprintf(str,"%s/aziamp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
@@ -849,13 +862,6 @@ int main(int argc, char *argv[])
     //sprintf(str,"%s/aziphi_restore_unc/aziphi_%.1f_%.1f.txt",Rphindir,lon,lat);//#############HEY TEMPERARY########## TEST
     AziphiRdispnm.push_back(str);
 
-    AziampLdispnm.clear();
-    sprintf(str,"%s/aziamp_%.1f_%.1f.txt",Lphindir,lon,lat);
-    AziampLdispnm.push_back(str);
-
-    AziphiLdispnm.clear();
-    sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
-    AziphiLdispnm.push_back(str);
 
   
     initmodel(model0);
@@ -1052,7 +1058,6 @@ int main(int argc, char *argv[])
  
   return 1;
 }
-
 
 
 

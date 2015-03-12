@@ -86,8 +86,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   else
   {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int Nacc_updateK_init = 505;//500; //500;
-  const int accpcri=5000;//3000;//5000 ;//3000;
+  const int Nacc_updateK_init = 505;//505;//500; //500;
+  const int accpcri=5000; //5000;//3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
 
@@ -177,11 +177,12 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	/*--check--
 	*/
 	
-	if(Rmonoc+Lmonoc>0){
+	//if(Rmonoc+Lmonoc>0){
+	if(Rsurflag+Lsurflag>0){
 	    //cout<<"check monoc\n";//test---
 	    if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    ibad=0;
-	    while(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0) 
+	    while(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0) 
 		{ibad++;
 		 gen_newpara(refparaBS,refmodelBS,para1BS,k1);
 		 para2mod(para1BS,refmodelBS,model1BS);//???
@@ -213,7 +214,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		//if (iaccp%500==0 and iaccp>0 and iaccp!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 		///*
 		 //----test prior------
-		if(countacc>1000)break;//2500//modified on Mar 13, 2014
+		if(countacc>2000)break;//2500//modified on Mar 13, 2014
 		if (countacc%Tacc==0 and countacc>0 and countacc!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 			printf("re-compute Vkernel & Lkernel!! iloop=%d ijump=%d countacc=%d\n",iloop,ijump,countacc);
 			lastiaccp=countacc;
@@ -250,18 +251,19 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
             		updatemodel(model1,flagupdaterho);
             		if(positiveAni(model1,Vposani)==0){
 		    		tflag=1;
-				temp_writepara(ftemp,para1,model1,countacc,i,-1);//---test
+				//temp_writepara(ftemp,para1,model1,countacc,i,-1);//---test
 		    		continue;
             		}
 
           	}//if PosAni>0
 	
 		//printf("pass posAni ijump=%d\n",ijump);//---test---
-	 	if(Rmonoc+Lmonoc>0){
+	 	//if(Rmonoc+Lmonoc>0){
+	 	if(Rsurflag+Lsurflag>0){
             		if(PosAni<=0){updatemodel(model1,flagupdaterho);}
-	    		if(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0){
+	    		if(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0){
 	    		tflag=2;	
-			temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
+			//temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
     	    		continue;}
         	}//if monoc 
 		//printf("pass goodmodel ijump=%d\n",ijump);//---test---
@@ -284,7 +286,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	   		prandom=gen_random_unif01();
 	    		if(prandom<prob) { 
 		    		tflag=3;
-				temp_writepara(ftemp,para1,model1,countacc,i,-3);//---test
+				//temp_writepara(ftemp,para1,model1,countacc,i,-3);//---test
 		    		continue; }
 	  	    }	
 
@@ -305,7 +307,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		oldmisfit=newmisfit;
 		//SAVEMEM tparalst.push_back(para1);
 		//printf("test-- accp Rnpara=%d,%d Lnpara=%d,%d\n",para1.Rnpara,para1.Rparameter.size(),para1.Lnpara,para1.Lparameter.size());
-		if(PosAni+Lmonoc+Rmonoc<1){// no PosAni or monoc requirement, so model hasn't been updated
+		//if(PosAni+Lmonoc+Rmonoc<1){// no PosAni or monoc requirement, so model hasn't been updated
+		if(PosAni+Lsurflag+Rsurflag<1){// no PosAni or goodmodel requirement, so model hasn't been updated
 			updatemodel(model1,flagupdaterho);
 			
 		}

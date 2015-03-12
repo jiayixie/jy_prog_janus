@@ -11,9 +11,10 @@
 
 */
 struct groupdef {
+// should consider adding/using a flag to specify is this group is mantle or not (the scaling relationship for rho depend on if the group is crust or mantle or water)
 int np,nlay; //number of parameters for each para in each group (e.g., #of para describing vsv in group 1), filled in readmod; # of layers in each group, initialized in readmod;
 int flagBs; // flag for Bspline, it will change to 1 once the Bspling fuctions are stored in
-int flag;   //1--layered model 2--Bspline 3--Bspline(need to be changed to point) 4--gradient 5-- water layer 6--grid(line the grids and then u get the model, similar to MINEOS's input)
+int flag;   //1--layered model 2--Bspline 3--Bspline(need to be changed to point) 4--gradient 5-- water layer 6--grid(line the grids and then u get the model, similar to MINEOS's input) ; 
 int pflag; // indicate the type of input model, if not specified, vsv=vsh,vpv=vph,eta=1, and vp=vs*vpvs; 1--vs; 2--vsv,vsh; 3--vsv,vsh,vp; 4--vsv,vsh,vpv,vph; 5--vsv,vsh,vpv,vph,eta;
 int flagcpttype; // indicate the type of forward computation that will be used for this group; 1--use Vkernel to do all cpt (model is TI or iso) 2--use Vkernel(for RA) and Lovekernel(for AZ) 3--use Vkernel(for RA) and Azikernel(for AZ) 4--use Lovekernel (for both RA and AZ) 
 // Vkernel-- dC/dV, dC/dh; 

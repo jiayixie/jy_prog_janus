@@ -91,10 +91,9 @@ exit(0);
   depcri2=80.0;
   qpcri=900.;//900.;
   qscri=250.;
-  Rmonoc=0;
-  Lmonoc=0;
+  Rmonoc=1;
+  Lmonoc=1;
   PosAnic=1;
-  flagreadLkernel=0;//############
   flagupdaterho=0;
   //Rvmono.push_back(0);
   //Rvmono.push_back(1);
@@ -129,7 +128,7 @@ exit(0);
   sprintf(Lphindir,argv[6]);
   sprintf(Lgpindir,argv[7]);
   sprintf(fparanm,argv[8]);
-  flagreadVkernel=atoi(argv[9]);
+  flagreadLkernel=flagreadVkernel=atoi(argv[9]);
   int num_thread=atoi(argv[10]);
   //*/
   /*

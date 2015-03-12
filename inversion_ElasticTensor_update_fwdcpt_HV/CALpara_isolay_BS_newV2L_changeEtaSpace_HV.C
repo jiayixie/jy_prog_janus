@@ -340,16 +340,16 @@ j:	0		1		2		3		4		5
 		  	tv=model.groups[ng].thetavalue[nv];
 		  else if (p6==7 or p6==11)
 		  	tv=model.groups[ng].phivalue[nv];
-		  else if (p6==9)
+		  else if (p6==8)
 			tv=model.groups[ng].rhovalue[nv];
 		  else {	
 			printf("### mod2para, wrong number for the 7th column in para.in! ppflag=%d\n",p6);
 			exit(0);}
 		}// p0==0
-		else if (p0==1){
+		else if (p0==1){//and p6==9
 			tv=model.groups[ng].thick;
 		}
-		else if (p0==-1){
+		else if (p0==-1){// and p6==12
 			tv=model.groups[ng].vpvs;
 		}
 		else{
@@ -497,6 +497,10 @@ for i<para.npara
 		  else if (p6==7 or p6==11){//phi
 			  outmodel.groups[ng].phivalue[nv]=newv;
 		  	  }//if p6==7 or 11
+		  else if (p6==8){//rho
+			  outmodel.groups[ng].rhovalue[nv]=newv;
+			  }
+		  else{printf("### para2mod, the %dth para, from gp%d nv%d, has p0=0(indicating it's a value other than h or vpvs), p6=%d, which is unrecognized\n",i,ng,nv,p6);exit(0);}
 		}//if p0==0
 
 		else if(p0==1){// groups thickness
@@ -868,6 +872,19 @@ for i<para.npara
 		else if (p6==5){//eta
 			newv=1.0;}
 		else if (p6==6 or p6==7)newv=0.;//theta or phi
+		else if (p6==8){//rho; keep this part consistent with readmodAniso function
+			if(ng==2){//mantle default  assume this is mantle!!! THIS NEED TO BE MODIFIED IF GROUP2 IS NOT MANTLE
+			  ts=0.5*(model.groups[ng].vsvvalue[nv]+model.groups[ng].vshvalue[nv]);
+			  newv=3.42+0.01*100*(ts-4.5)/4.5;
+			}
+			else if (model.groups[ng].flag==5){//water layer
+				newv=1.02;
+			}
+			else{
+			  ts=0.5*(model.groups[ng].vsvvalue[nv]+model.groups[ng].vshvalue[nv]);
+			  newv=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;
+			}
+		}
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the isotropic scaling\n",p6);exit(0);}
 	  }
 	  else if (intflag==-2){
@@ -987,13 +1004,19 @@ for i<para.npara
                            model.groups[ng].vphvalue[nv]=newv;}
                   else if (p6==5){//eta
                            model.groups[ng].etavalue[nv]=newv;}
-                  else if (p6==6 or p6==10){//theta
+                  else if (p6==6 or p6==10){//theta or dVScos
                            model.groups[ng].thetavalue[nv]=newv;
                           }//p6=6 or 10 
-                  else if (p6==7 or p6==11){//phi
+                  else if (p6==7 or p6==11){//phi or dVSsin
                            model.groups[ng].phivalue[nv]=newv;
                           }//if p6==7 or 11
-
+		  else if (p6==8){//rho
+			   model.groups[ng].rhovalue[nv]=newv;
+			  }
+		  else{
+			printf("#### wrong flag for paramter%d from gp%d nv%d, p0==0 (indicate it is some value other than thickness or vpvs), p6=%d is unrecognized\n",i,ng,nv,p6);
+			exit(0);
+		       }
 		}//if p0==0 value
 		else if(p0==1){// thickness parameter
 		  outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);		  
