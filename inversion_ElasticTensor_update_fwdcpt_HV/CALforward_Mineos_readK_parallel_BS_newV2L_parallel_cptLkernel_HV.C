@@ -73,7 +73,7 @@ int readPREM(const char *PREMnm, vector<vector<double> >  &PREM,int &Nprem)
 int write_modMineos(modeldef &model, const char *outname,vector<vector<double> > PREM,int Nprem,int &Nmod)
 {//combine the inversion model and the prem model together, write out into a file which will be used as Mineos input model
   FILE *outf;
-  int i,N;
+  int i,N,j;
   double indepth,inrad,trad;
   vector<double> tmod;
   vector<vector<double> > Minput;
@@ -120,7 +120,13 @@ int write_modMineos(modeldef &model, const char *outname,vector<vector<double> >
         trad=tmod[0];
 	N=N+1;
 	if (tmod[0]>6371000.0001){
-	  printf("###### in write_modMineos, radius exceeds 6371000 m!!! %g tmpth=%g model.tthick=%g\n",tmod[0],tmpth,model.tthick);
+	  double tsum=0.;;
+	  printf("###### in write_modMineos, radius exceeds 6371000 m!!! %g tmpth=%g model.tthick=%g this_layer_thick=%gkm\n",tmod[0],tmpth,model.tthick,model.laym0.thick[i]);
+	  for(j=0;j<model.ngroup;j++){
+		printf("m.gp[%d].thick=%g\n",j,model.groups[j].thick);
+		tsum+=model.groups[j].thick;
+	  }
+	  printf("sum_gp_thick=%g  m.tthick=%g\n",tsum,model.tthick);
 	  exit(0);
 	}
   }//for i
@@ -557,12 +563,16 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
  // because Love has no H/V ratio value, so don't consider it (use DLdump)
  modeldef newmodel;
  paradef newpara;
- float dp=0.02,ddp; //dp*100% perturbation
- int j;
+ double dp,ddp; //dp*100% perturbation
+ int j,p0;
  vector<vector<double> > DRpvel,DRgvel,DLpvel,DLgvel,DRhvratio,DLdump;
  
  newmodel=model;
  newpara=para;
+  
+ p0=(int)para.para0[i][0];
+ if(p0==1){dp=0.05;}//thickness;
+ else{dp=0.02;}
 
  trkp1.clear();trkg1.clear();tlkp1.clear();tlkg1.clear();trkhv1.clear();
  if(Rflag>0 and Lflag==0){
@@ -683,7 +693,7 @@ int compute_Vkernel(paradef para,modeldef model,vector<vector<vector<double> > >
 	LVflag=(int)para.para0[i][7];
 
   	//printf("@@@ check, compute_Vkernel, begin3\n");
-	if(LVflag==1 and para.space1[i][2]*(para.space1[i][2]-0.001)<0.){// this para usese Vpara&Vkernel to do fwd computation and para don't need to be perturbed or scaled; then no need to cpt its partial deriv
+	if(LVflag==1 and para.space1[i][2]*(para.space1[i][2]-0.001)<0.){// this para usese Vpara&Vkernel to do fwd computation and para don't need to be perturbed or scaled; then no need to cpt its partial deriv. sigma>0 and <0.001
 		trkp1=Rp0;trkg1=Rg0;tlkp1=Lp0;tlkg1=Lg0;trkhv1=Rhv0;
 		printf("@@@ check, compute_Vkernel, dealing with the %d/%dth para, NO Vkernel cpt=====\n",i,para.npara-1);
 	}
@@ -698,7 +708,8 @@ int compute_Vkernel(paradef para,modeldef model,vector<vector<vector<double> > >
 			tlkg1=temp4;
 			*/
 		}
-		else if(ppflag>5 and ppflag!=9)// not vsv~eta, and not h
+		//else if(ppflag>5 and ppflag!=9 and ppflag!=8 and ppflag!=12)// not vsv~eta, and not h, not rho, not vpvs
+		else if ((ppflag-6)*(ppflag-7)==0) // theta, phi
 			{
 			printf("@@@ check, compute_Vkernel, dealing with the %d/%dth para, NO Vkernel cpt=====\n",i,para.npara-1);
 			trkp1=Rp0;trkg1=Rg0;tlkp1=Lp0;tlkg1=Lg0;trkhv1=Rhv0;
@@ -716,7 +727,8 @@ int compute_Vkernel(paradef para,modeldef model,vector<vector<vector<double> > >
                 printf("@@@ check, compute_Vkernel, dealing with the %d/%dth para, NO Vkernel cpt=====\n",i,para.npara-1);		
        	}//if 4
        	else if( model.groups[ng].flagcpttype==1 ){// cpt all with Vkernel
-		if(ppflag>5 and ppflag!=9)
+		//if(ppflag>5 and ppflag!=9 )
+		if ((ppflag-6)*(ppflag-7)*(ppflag-10)*(ppflag-11)==0) // theta, phi, dVscos, dVssin
 			{
 			printf("@@@ check, compute_Vkernel, dealing with the %d/%dth para, NO Vkernel cpt=====\n",i,para.npara-1);
 			trkp1=Rp0;trkg1=Rg0;tlkp1=Lp0;tlkg1=Lg0;trkhv1=Rhv0;

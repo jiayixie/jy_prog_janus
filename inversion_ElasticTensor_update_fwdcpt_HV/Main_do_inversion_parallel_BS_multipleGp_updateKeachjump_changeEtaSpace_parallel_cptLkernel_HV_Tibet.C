@@ -28,7 +28,7 @@ default_random_engine generator (seed);
 //#include"CALpara_isolay_BS.C"
 #include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
-#include"CALmodel_LVZ_ET_BS_HV_vpconstr.C"
+#include"CALmodel_LVZ_ET_BS_HV_vpconstr_Tibet.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
@@ -82,24 +82,24 @@ exit(0);
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
-  inpamp=0.25;//0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
-  inpphi=0.25;//0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
+  inpamp=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
+  inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  iitercri1=120000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1=50000;//100000;//12000 (mod1, 1cstlay)
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
   qpcri=900.;//900.;
   qscri=250.;
-  Rmonoc=1;
-  Lmonoc=1;
+  Rmonoc=1;//useless
+  Lmonoc=1;//useless
   PosAnic=1;
   flagupdaterho=0;
   //Rvmono.push_back(0);
-  //Rvmono.push_back(1);
-  //Rvmono.push_back(2);
-  //Lvmono.push_back(1);
-  //Lvmono.push_back(2);
+  Rvmono.push_back(1);
+  Rvmono.push_back(2);
+  Lvmono.push_back(1);
+  Lvmono.push_back(2);
   //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
   Rvgrad.push_back(1);
   //Rvgrad.push_back(2);

@@ -129,6 +129,7 @@ int updategroup(groupdef &group)
         {
 	  int i,j,nnlay,nBs;
 	  double tmpvsv,tmpvsh,tmpvpv,tmpvph,tmpeta,tmptheta,tmpphi,tmprho;
+	  double Htotal,dh;
           if((group.flag-2)*(group.flag-3)!=0){cout<<"wrong flag, here updating Bspline model, flag=2 or 3, group.flag="<<group.flag<<endl;return 0;} //; BS
 	  //if (group.thick1.size()+group.value1.size()!=0){cout<<"problem! the thick1 or value1 is not empty!"<<endl;return 0;}
 	  group.thick1.clear();
@@ -147,6 +148,8 @@ int updategroup(groupdef &group)
 	  }
 	  nnlay=group.nlay;
 	  nBs=group.np;
+	  Htotal=0.;
+	  dh=group.thick/(nnlay-1);
 	  for (i=0;i<nnlay-1;i++)
 		{
 		  //tmpR=0.;tmpL=0.;
@@ -170,7 +173,9 @@ int updategroup(groupdef &group)
 		  group.phivalue1.push_back(tmpphi);
 		  group.rhovalue1.push_back(tmprho);
 		  
-		  group.thick1.push_back(group.thick/(nnlay-1));
+		  //group.thick1.push_back(group.thick/(nnlay-1));
+		  group.thick1.push_back(dh);
+		  Htotal+=dh;
 		}//for i
 	  i=nnlay-1;tmpvsv=tmpvsh=tmpvpv=tmpvph=tmpeta=tmptheta=tmpphi=tmprho=0.;
 	  for (j=0;j<nBs;j++){
@@ -193,6 +198,12 @@ int updategroup(groupdef &group)
 	  group.rhovalue1.push_back(tmprho);
 
 	  group.thick1.push_back(0.);
+	  Htotal+=0.;
+
+	  if(fabs(Htotal-group.thick)>1e-4){
+		printf("### updategroup2, Bspline model, the thickness is changed!");
+		exit(0);
+	   }
 	  return 1;		
         }//updategroup2
 
@@ -201,6 +212,7 @@ int updategroup(groupdef &group)
         {
 	  int tn,j;
 	  double dh,dvsv,dvsh,dvpv,dvph,deta,dtheta,dphi,drho;
+  	  double Htotal;
 	  if(group.flag!=4){cout<<"wrong flag, here updating gradient model, flag=4, group.flag="<<group.flag<<endl;return 0;}
 	//  if (group.thick1.size()+group.value1.size()!=0){cout<<"problem! the thick1 or value1 is not empty!"<<endl;return 0;}
 	  group.thick1.clear();
@@ -226,7 +238,7 @@ int updategroup(groupdef &group)
 	  dphi=(group.phivalue[1]-group.phivalue[0])/(tn-1.);
 	  drho=(group.rhovalue[1]-group.rhovalue[0])/(tn-1.);
 
-	  
+	  Htotal=0.;
 	  for(j=0;j<tn-1;j++)
 		{
 		  group.vsvvalue1.push_back(group.vsvvalue[0]+j*dvsv);
@@ -239,6 +251,7 @@ int updategroup(groupdef &group)
 		  group.rhovalue1.push_back(group.rhovalue[0]+j*drho);
 		 
 		  group.thick1.push_back(dh);
+		  Htotal+=dh;
 		}
 	   j=tn-1;
 	   group.vsvvalue1.push_back(group.vsvvalue[0]+j*dvsv);
@@ -251,7 +264,13 @@ int updategroup(groupdef &group)
 	   group.rhovalue1.push_back(group.rhovalue[0]+j*drho);
 
 	   group.thick1.push_back(0.);	
-	  group.nlay=tn;
+	   Htotal+=0.;
+	   group.nlay=tn;
+
+	   if(fabs(Htotal-group.thick)>1e-4){
+		printf("### updategroup3, gradient model, the thickness is changed!");
+		exit(0);
+	   }
 	  return 1;
         }//updategroup3
 //----------------------------------------------------- 
@@ -297,6 +316,7 @@ int updategroup(groupdef &group)
         int updategroup5(groupdef &group) // for the point model; BS
         {
           //group.thick1=group.thick;
+          //the group.thick1 have already been filled in the Bsp2Point function
           group.vsvvalue1=group.vsvvalue;
           group.vshvalue1=group.vshvalue;
           group.vpvvalue1=group.vpvvalue;

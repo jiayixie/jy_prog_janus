@@ -580,6 +580,7 @@ column:	0		1			2				3			4				5				....			N-1
 	  double tvsvvalue,tvshvalue,tvpvvalue,tvphvalue,tetavalue,tthetavalue,tphivalue,trhovalue;
 	  double tthick,tvpvs,tdep=0.,tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,tqs,tqp;//trho
 	  double tvpvscpt,ts;
+	  double thicktotal;
 	  model.laym0.vsv.clear();model.laym0.vsh.clear(); model.laym0.vpv.clear();model.laym0.vph.clear();model.laym0.eta.clear();model.laym0.theta.clear();model.laym0.phi.clear();
 	  model.laym0.vpvs.clear();model.laym0.rho.clear();model.laym0.qs.clear();model.laym0.qp.clear();model.laym0.thick.clear();
 
@@ -587,7 +588,7 @@ column:	0		1			2				3			4				5				....			N-1
 	  //flagupdaterho=1;
 	  //should have set the initial rho in the readmodAniso function, so do not set it again here
 	  //-------------
-
+	  thicktotal=0.;
 	  for(i=0;i<model.ngroup;i++)
                 {
 		 updategroup(model.groups[i]);//based on g.Rv/Lv/t fill g.Rv1/Lv1/t1/Av1. Since Rv/Lv always exist regardless of flagLR, both Rv1/Lv1 are filled based on Rv/Lv.	
@@ -670,16 +671,6 @@ column:	0		1			2				3			4				5				....			N-1
 				}*/
 			  }//else
 
-			  //-----------test---------test a different rho=f(vs) relation-----------
-			  /*
-			  if(i==0)trho=tvsvvalue*0.279+1.477;
-			  else if(i==2)trho=3.38;
-			  else if(i==1){
-				if(tdep>11.0)trho=2.70;
-				//if(tdep>11.0){ts=(tvsvvalue+tvshvalue)/2.;trho=1.22679 + 1.53201*ts -0.83668*ts*ts + 0.20673*ts*ts*ts -0.01656*ts*ts*ts*ts;}
-				else{trho=tvsvvalue*0.279+1.477;}
-			  }
-			  */
 			  //----------------------------------
 			  if(fabs(tvpvs-tvpvscpt)>1E-4)tvpvs=tvpvscpt;//if model's vpvs has been changed, then follow the value computed from vp/vs, instead of the input m.g.vpvs
 			  model.laym0.vpvs.push_back(tvpvs);
@@ -693,11 +684,16 @@ column:	0		1			2				3			4				5				....			N-1
 			  model.laym0.qs.push_back(tqs);
 			  model.laym0.qp.push_back(tqp);
 			  model.laym0.thick.push_back(tthick);
+			  thicktotal+=tthick;
 			  model.laym0.rho.push_back(trhovalue);
 			}//for j
 		  tnlay=tnlay+model.groups[i].nlay;
                 }//for i
 
+	  if(fabs(thicktotal-model.tthick)>1e-4){
+		printf("#### updatemodel, the total thickness from sum(mod.laym0.thick)!=modl.tthick: %g !=%g\n",thicktotal,model.tthick);
+		exit(0);
+	  }
 	  model.laym0.nlayer=tnlay;
 	  model.flag=1;//updated, from layered vs,h get other layered para
 	  return 1;
@@ -858,19 +854,23 @@ column:	0		1			2				3			4				5				....			N-1
 	  double var=0;
 	  vector<int>::iterator id;
 	  double gradient;
+	  bool cc = false;
 	  if(isoflag>0 or Rflag>0){ // iso case, R and L have the same model.g.value1
 	      //---between groups, require positive vel jump---
 	      for(i=0;i<model.ngroup-1;i++)
 		//{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() )
 		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() or model.groups[i+1].vpvvalue1[0]<model.groups[i].vpvvalue1.back() ) 
 			{//cout<<"case 1\n"; //---test----
+			if(cc)printf("--R positive vel jump gp%d-gp%d\n",i,i+1);
        			return 0;}
 		}  	 
 
 	      //---at each depth, require the VsRA and VpRA have the same sign---
 	      for(i=0;i<model.ngroup;i++){
 		for(j=0;j<model.groups[i].nlay;j++){
-			if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0)return 0;
+			if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0){
+			if(cc)printf("--R RA sm sign\n");
+			return 0;}
 		}
 	      }
 
@@ -885,7 +885,9 @@ column:	0		1			2				3			4				5				....			N-1
 		       return 0;}*/
 		
 			//if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] ){return 0;}
-			if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] or model.groups[j].vpvvalue1[i]>model.groups[j].vpvvalue1[i+1] ){return 0;}
+			if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] or model.groups[j].vpvvalue1[i]>model.groups[j].vpvvalue1[i+1] ){
+			if(cc)printf("--R monoc sign\n");
+			return 0;}
 		    }//for i
 	     }//for id
 		///*
@@ -902,6 +904,7 @@ column:	0		1			2				3			4				5				....			N-1
 	     for (i=0;i<model.groups[2].nlay;i++){
 	     if(model.groups[2].vsvvalue1[i]>4.9 or model.groups[2].vshvalue1[i]>4.9){
 		     //printf("too large Vmoho\n");
+		     if(cc)printf("--R Vmax sign\n");
 		     return 0;}
 	     }
 		//*/
@@ -912,6 +915,7 @@ column:	0		1			2				3			4				5				....			N-1
 	        //if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] )
 	        if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] or model.groups[j].vpvvalue1[1]<model.groups[j].vpvvalue1[0] )
 		{ //cout<<"1st two value gradient\n"; //---test----
+		    if(cc)printf("--R gradient in group%d\n",j);
 		    return 0;}
 	      } 
 
@@ -921,7 +925,9 @@ column:	0		1			2				3			4				5				....			N-1
 		
 		for(j=0;j<model.groups[i].nlay-1;j++){
 			var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
-			if(var<1.7 or var >3.0)return 0;
+			if(var<1.7 or var >3.0){
+		     	if(cc)printf("--R Vp/Vs\n");
+			return 0;}
 			//if(var<1.65 or var>1.85){
 				//printf("reject ig=%d ilay=%d vp/vs=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);
 			//	return 0;}
@@ -938,7 +944,10 @@ column:	0		1			2				3			4				5				....			N-1
               for(i=0;i<model.ngroup-1;i++)//between groups
                 //{if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back())
                 {if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back() or model.groups[i+1].vphvalue1[0]<model.groups[i].vphvalue1.back())
-                 {return 0;}} 
+                 {
+		  if(cc)printf("--L pos jump\n");
+		  return 0;}
+		  } 
               for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
               {
                 j=*id;
@@ -946,7 +955,9 @@ column:	0		1			2				3			4				5				....			N-1
 			//gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
 		        //if(gradient>0. and gradient <70.)return 0; 
 		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]){return 0;}
-		 	if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]  or model.groups[j].vphvalue1[i]>model.groups[j].vphvalue1[i+1] ){return 0;}
+		 	if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]  or model.groups[j].vphvalue1[i]>model.groups[j].vphvalue1[i+1] ){
+		  	if(cc)printf("--L monotonic\n");
+			return 0;}
 		}//for i
 		
 	     }//for id
@@ -955,7 +966,9 @@ column:	0		1			2				3			4				5				....			N-1
                 j=*id;
 		//if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0])
                 if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0] or model.groups[j].vphvalue1[1]<model.groups[j].vphvalue1[0] )
-                    {return 0;}
+                    {
+		  	if(cc)printf("--L gradient in group%d\n",j);
+			return 0;}
               }			
 	  
 	  }//if Lflag

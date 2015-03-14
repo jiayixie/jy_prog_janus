@@ -863,17 +863,17 @@ column:	0		1			2				3			4				5				....			N-1
 	      for(i=0;i<model.ngroup-1;i++)
 		//{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() )
 		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() or model.groups[i+1].vpvvalue1[0]<model.groups[i].vpvvalue1.back() ) 
-			{//cout<<"case 1\n"; //---test----
+			{//printf("case 1R positive_jump ==========\n"); //---test----
        			return 0;}
 		}  	 
 
-	      /*---at each depth, require the VsRA and VpRA have the same sign---
+	      ///*---at each depth, require the VsRA and VpRA have the same sign---
 	      for(i=0;i<model.ngroup;i++){
 		for(j=0;j<model.groups[i].nlay;j++){
 			if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0)return 0;
 		}
 	      }
-		*/
+		//*/
 	      //---monotonic velocity change in group vmono[?]
 	      for(id=vmono.begin();id<vmono.end();id++)
               {
@@ -882,6 +882,7 @@ column:	0		1			2				3			4				5				....			N-1
 		    { gradient=(model.groups[j].thick1[i])/(model.groups[j].vsvvalue1[i]-model.groups[j].vsvvalue1[i+1]);
 		      if(gradient>0. and gradient <70.)
 		      {//printf("V1=%g h1=%g V2=%g h2=%g\n",model.groups[j].vsvvalue1[i],model.groups[j].vsvvalue1[i+1],model.groups[j].thick1[i],model.groups[j].thick1[i+1]);
+		       //printf("case 2R gradient =========\n");//---test
 		       return 0;}
 		
 			//if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] ){return 0;}
@@ -902,6 +903,7 @@ column:	0		1			2				3			4				5				....			N-1
 	     for (i=0;i<model.groups[2].nlay;i++){
 	     if(model.groups[2].vsvvalue1[i]>4.9 or model.groups[2].vshvalue1[i]>4.9){
 		     //printf("too large Vmoho\n");
+		     //printf("case 3R max_vs ========\n");
 		     return 0;}
 	     }
 		//*/
@@ -912,6 +914,7 @@ column:	0		1			2				3			4				5				....			N-1
 	        //if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] )
 	        if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] or model.groups[j].vpvvalue1[1]<model.groups[j].vpvvalue1[0] )
 		{ //cout<<"1st two value gradient\n"; //---test----
+		    //printf("case 4R positive_start ========\n");
 		    return 0;}
 	      } 
 
@@ -921,7 +924,9 @@ column:	0		1			2				3			4				5				....			N-1
 		
 		for(j=0;j<model.groups[i].nlay-1;j++){
 			var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
-			if(var<1.7 or var >3.0)return 0;
+			if(var<1.7 or var >3.0){
+		    	//printf("case 5R vpvs ========\n");
+			return 0;}
 			//if(var<1.65 or var>1.85){
 				//printf("reject ig=%d ilay=%d vp/vs=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);
 			//	return 0;}
@@ -944,7 +949,9 @@ column:	0		1			2				3			4				5				....			N-1
                 j=*id;
                 for(i=0;i<model.groups[j].nlay-1;i++){ 
 			gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
-		        if(gradient>0. and gradient <70.)return 0; 
+		        if(gradient>0. and gradient <70.){
+		    	//printf("case 2L grd ========\n");
+			return 0;} 
 		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]){return 0;}
 		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]  or model.groups[j].vphvalue1[i]>model.groups[j].vphvalue1[i+1] ){return 0;}
 		}//for i
@@ -955,7 +962,9 @@ column:	0		1			2				3			4				5				....			N-1
                 j=*id;
 		//if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0])
                 if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0] or model.groups[j].vphvalue1[1]<model.groups[j].vphvalue1[0] )
-                    {return 0;}
+                    {
+		    	//printf("case 4L positive_start  ========\n");
+			return 0;}
               }			
 	  
 	  }//if Lflag

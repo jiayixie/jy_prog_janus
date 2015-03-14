@@ -82,20 +82,20 @@ exit(0);
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
-  inpamp=0.25;//0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
-  inpphi=0.25;//0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
+  inpamp=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
+  inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
   if(isoflag==1)
   iitercri1=200000;//200000;//100000;//12000 (mod1, 1cstlay)
   else{iitercri1=400000;} //anisotropic case, need deeper search
-  iitercri1 = 50000;
+  iitercri1 = 40000;
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   //depcri1=20.0;
   //depcri2=80.0;
   //qpcri=900.;//900.;
   //qscri=250.;
-  Rmonoc=1;
-  Lmonoc=1;
+  Rmonoc=1;//useless
+  Lmonoc=1;//useless
   PosAnic=0;
   flagupdaterho=1;
   Rvmono.push_back(0);

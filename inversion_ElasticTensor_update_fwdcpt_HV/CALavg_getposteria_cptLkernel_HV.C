@@ -388,6 +388,7 @@ default_random_engine generator (seed);
        //int model_avg2( const char *fvsvnm, const char *fvshnm,char *faninm, vector<modeldef> &modlstall, vector<int> &idlst)
 	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst)
 	{
+	  //--the current version only works for model with 3 groups, need to modify it to fit general cases.
 	  int size,i,n,k;
  	  paradef para;
 	  modeldef mod;
@@ -409,26 +410,25 @@ default_random_engine generator (seed);
 	  for (i=0;i<size;i++){
 		k=idlst[i];
 	 	modlst.push_back(modlstall[k]);
-		Hsed=Hsed+modlst[i].groups[0].thick; // THIS IS thickness not depth
-		Hmoho=Hmoho+modlst[i].groups[1].thick;// Hmoho changes from thickness to depth later
-		Hmat=Hmat+modlst[i].groups[2].thick;
+		Hsed+=modlst[i].groups[0].thick; // THIS IS depth not thickness
+		Hmoho+=(modlst[i].groups[0].thick+modlst[i].groups[1].thick);//
+		Hmat+=(modlst[i].groups[0].thick+modlst[i].groups[1].thick+modlst[i].groups[2].thick);// the sum of group thickness should equal to model.tthick
 	  	//sprintf(str,"echo %g %g >> temp_h.txt\n",modlst[i].groups[0].thick+modlst[i].groups[1].thick+modlst[i].groups[2].thick,modlst[i].tthick);
 		//system(str);
 	  }//for i
-	  Hsed=Hsed/size;
+	  Hsed=Hsed/size;// depth 
 	  Hmoho=Hmoho/size;
 	  Hmat=Hmat/size;
 	  //printf("ok2\n");//--test--
 	  for(i=0;i<size;i++){
-	 	fm1=fm1+pow(modlst[i].groups[0].thick-Hsed,2);
-	 	fm2=fm2+pow(modlst[i].groups[1].thick-Hmoho,2);
+	 	fm1+=pow(modlst[i].groups[0].thick-Hsed,2);
+	 	fm2+=pow(modlst[i].groups[0].thick+modlst[i].groups[1].thick-Hmoho,2);
 	  }
 	  //printf("ok3\n");//--test--
 	  Hsedstd=sqrt(fm1/size);
 	  Hmohostd=sqrt(fm2/size);
-	  Hmoho=Hmoho+Hsed; // *********  the previous Hmoho is the thickness of crust not the depth of Moho; modified on Oct 10, 2012; 
-	  depmax=Hmoho+Hmat;
-	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
+	  depmax=Hmat;
+	  printf("test-- Depth (NOT thickness): Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
 	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
 	  cout<<"finish sed\n";//--test

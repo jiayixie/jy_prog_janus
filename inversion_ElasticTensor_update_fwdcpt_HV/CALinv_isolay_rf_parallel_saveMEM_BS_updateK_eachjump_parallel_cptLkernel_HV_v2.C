@@ -86,7 +86,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   else
   {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int Nacc_updateK_init = 505;//505;//500; //500;
+  const int Nacc_updateK_init =505;// 2000;//505;//505;//500; //500;
   const int accpcri=5000; //5000;//3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
@@ -183,6 +183,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	    if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    ibad=0;
 	    while(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0) 
+	    //while(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0) 
 		{ibad++;
 		 gen_newpara(refparaBS,refmodelBS,para1BS,k1);
 		 para2mod(para1BS,refmodelBS,model1BS);//???
@@ -214,7 +215,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		//if (iaccp%500==0 and iaccp>0 and iaccp!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 		///*
 		 //----test prior------
-		if(countacc>2000)break;//2500//modified on Mar 13, 2014
+		if(countacc>1500)break;//2500//modified on Mar 13, 2014
 		if (countacc%Tacc==0 and countacc>0 and countacc!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 			printf("re-compute Vkernel & Lkernel!! iloop=%d ijump=%d countacc=%d\n",iloop,ijump,countacc);
 			lastiaccp=countacc;
@@ -262,6 +263,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	 	if(Rsurflag+Lsurflag>0){
             		if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    		if(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0){
+	    		//if(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0){
 	    		tflag=2;	
 			//temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
     	    		continue;}

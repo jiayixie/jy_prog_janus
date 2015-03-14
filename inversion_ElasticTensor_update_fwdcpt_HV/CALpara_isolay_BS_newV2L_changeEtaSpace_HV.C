@@ -375,7 +375,7 @@ j:	0		1		2		3		4		5
 					exit(0);
 				}
 			}
-			if(p6<8){ // velocity or eta or theta or phi, should >0
+			if(p6<=9 or p6==12){ // velocity or eta or theta or phi or rho or h or vpvs, should >0
 				tmin=max(0.,tmin);
 				tmax=max(0.,tmax);
 				tmax=max(tmin+0.001,tmax);
@@ -395,7 +395,7 @@ j:	0		1		2		3		4		5
 			//if(p6==7){vt[0]=90.;vt[1]=180.;}
 			//if(p6==6){vt[0]=60.;vt[1]=90.;}
 			outpara.space1.push_back(vt);
-			printf("@@@ npara%d, v=%.3f [%.3f,%.3f] sigma=%.3f p6=%d\n",i,tv,vt[0],vt[1],sigma,p6);
+			printf("@@@ npara%d, v=%.3f [%.3f,%.3f] sigma=%.3f p0=%d p6=%d\n",i,tv,vt[0],vt[1],sigma,p0,p6);
 		}//inpara.flag<1
 	  }//for i<npara	  
 
@@ -465,10 +465,10 @@ for i<para.npara
 	  //this is different from the para2mod defined below this function; it won't modify the para anymore, it just use the given para, and transfer it to model, regardless if space1[i][2]<-1 or not;
 	  // this is used in computing Vkernel!	
 	  int i, p0,p1,ng,p6,nv,pflag;
- 	  double newv;
+ 	  double newv,dh;
 	  int np,flagvpv,flagvph,flagvsv,flagvsh;
 	  flagvpv=flagvph=flagvsv=flagvsh=-1;
-	  float factor;
+	  //float factor;
 
 	  outmodel=inmodel;
 	  for(i=0;i<para.npara;i++){
@@ -504,21 +504,44 @@ for i<para.npara
 		}//if p0==0
 
 		else if(p0==1){// groups thickness
-			outmodel.tthick=outmodel.tthick-outmodel.groups[ng].thick+newv; // the tthick is changing
-			//outmodel.groups[outmodel.ngroup-1].thick=outmodel.groups[outmodel.ngroup-1].thick+(outmodel.groups[ng].thick-newv);//change the thickness of the last group while keeping the tthcik the same // find a bug, if ngroup<3, this choice would cause problem!
-			outmodel.groups[ng].thick=newv;
-		
+		//---should only change the depth of one gp, keep the DEPTH of others grups unchanged (so the thickness of the following group will chnage)
+                  if(ng==outmodel.ngroup-1){// the last group, so only change the thickness of this group and the total thickness
+                  // actually it is kind of meaningless to perturb the last group's thickness ...
+                        dh=newv-outmodel.groups[ng].thick;
+			//printf("group%d is the last\n, thcik %g->%g dh=%g tthick%g->%g",ng,outmodel.groups[ng].thick,newv,dh,outmodel.tthick,outmodel.tthick+dh);
+                        outmodel.tthick+=dh;
+                        outmodel.groups[ng].thick+=dh;
+			//printf("==> thick[%d]=%g tthick=%g\n",ng,outmodel.groups[ng].thick,outmodel.tthick);
+                  }
+                  else{// not the last group, then change the thickness of this group, and that of the following group, total thickness will not change
+                        dh=newv-outmodel.groups[ng].thick;
+			//printf("group%d is not the last\n, thcik %g->%g dh=%g \n",ng,outmodel.groups[ng].thick,newv,dh);
+                        outmodel.groups[ng].thick+=dh;
+                        outmodel.groups[ng+1].thick-=dh;
+			//printf("==> thick[%d]=%g thick[%d]=%g thick[%d]=%g, sum=%g, tthick=%g\n",ng,outmodel.groups[ng].thick,ng+1,outmodel.groups[ng+1].thick,ng+2,outmodel.groups[ng+2].thick,outmodel.groups[ng].thick+outmodel.groups[ng+1].thick+outmodel.groups[ng+2].thick,outmodel.tthick);
+                  }
+		  /*/------------------test----------
+		  for(int k=0;k<outmodel.ngroup;k++){
+			if(outmodel.groups[k].thick<0){
+			printf("gp[%d].thick=%g<0!",k,outmodel.groups[k].thick);
+			exit(0);
+			}
+		  }
+		  //-----------
+		  */
+
 		}// else if p0==1
 		
 		else if (p0==-1){//vpvs
 			outmodel.groups[ng].vpvs=newv;
 		}
-		else{cout<<"########wrong!!!!! in para2mode"<<endl;exit(0);}
+		else {printf("### para2mod, wrong value for p0, should be either -1,1, or0, not %d\n",p0);exit(0);}
+
 	  }// for i
 
 
 	  return 1;
-	}// para2mod_static
+	}// para2mod
 	 
 
 
@@ -768,6 +791,7 @@ for i<para.npara
 		  */
 		  newv=gen_random_normal(mean,sigma); // normal distribution
 		  // mirror reflect newv that's outside para range
+		  // in some rare cases, even after relection, the value is still outside the m[min,max] range, and that may cause trouble
 		  if(newv>space1[i][1]){newv=space1[i][1]-(newv-space1[i][1]);}
 		  else if(newv<space1[i][0]){newv=space1[i][0]+(space1[i][0]-newv);}
 		  parameter[i]=newv;
@@ -969,9 +993,11 @@ for i<para.npara
 	  //once a parameter is changed, need to update the corresponding value in model because I may use this updated value for another scaled parameter.
 	  //within this function, I only generate parameter, the modified model values are not transferred back. should use para2mod after this function to keep para&model consistent with each other
 	  //it is easy to transfer the updated model values back by just using '&model'. But at this points, I just want to keep this function simple
+	  //half of this function actually take the role of para2mod... but that part CANNOT be removed, because in the gen_newpara_single_scale function, we need to use the UPDATED model (not para) values! 
 	  int i;
 	  int intsigma,p0,ng,p6,nv;
 	  double newv,sigma;
+	  double dh;
 	  modeldef tmodel;
 
 	  outpara=inpara;
@@ -1017,18 +1043,29 @@ for i<para.npara
 			printf("#### wrong flag for paramter%d from gp%d nv%d, p0==0 (indicate it is some value other than thickness or vpvs), p6=%d is unrecognized\n",i,ng,nv,p6);
 			exit(0);
 		       }
+
 		}//if p0==0 value
 		else if(p0==1){// thickness parameter
 		  outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);		  
+		  //---should only change the depth of one gp, keep the DEPTH of others grups unchanged (so the thickness of the following group will chnage)
 		  newv=outpara.parameter[i];
-		  model.tthick=model.tthick-model.groups[ng].thick+newv; // the tthick is changing
-                  model.groups[ng].thick=newv;
+		  if(ng==model.ngroup-1){// the last group, so only change the thickness of this group and the total thickness
+		  // actually it is kind of meaningless to perturb the last group's thickness ...
+			model.tthick=model.tthick-model.groups[ng].thick+newv;
+			model.groups[ng].thick=newv;
+		  }
+		  else{// not the last group, then change the thickness of this group, and that of the following group, total thickness will not change
+			dh=newv-model.groups[ng].thick;
+			model.groups[ng].thick+=dh;
+			model.groups[ng+1].thick-=dh;
+		  }
 
 		}//if p0=1
 		else if (p0==-1)//vpvs
 		  {outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
-		   newv=outpara.parameter[i];
-		   model.groups[ng].vpvs=newv;}
+  		   newv=outpara.parameter[i];
+		   model.groups[ng].vpvs=newv;
+		  }
 		else {printf("## gen_newpara, wrong value for p0, should be either -1,1, or0, not %d\n",p0);exit(0);}
 	  } //for i
 	  return 1;
