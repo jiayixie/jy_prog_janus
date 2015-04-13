@@ -77,7 +77,7 @@ default_random_engine generator (seed);
 	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
-	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs  vsvmin~phimin~vpvsmin,  vsvmax~phimax~vpvsmax];
+	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani  vsvmin~phimin~vpvsmin~animin,  vsvmax~phimax~vpvsmax~animax];
 	  //stdlst[ithick]=[vsvstd~phistd]
 	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
 	  //Feb19, 2015, modified this function, added rho & vpvs
@@ -188,10 +188,11 @@ default_random_engine generator (seed);
 				if(tvsv<0 or tvsv>5){
 					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
 
-				tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
+				//tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
+				tani=(tvsh*tvsh-tvsv*tvsv)/(2*tvsv*tvsv);//gamma
+				ani=ani+tani;
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
-				ani=ani+tani;
 				vpv=vpv+tvpv;
 				vph=vph+tvph;
 				eta=eta+teta;
@@ -217,7 +218,7 @@ default_random_engine generator (seed);
 				//---tvlst: vsv,vsh ..., phi
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
 				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi); 
-				tv.push_back(trho);tv.push_back(tvpvs);
+				tv.push_back(trho);tv.push_back(tvpvs);tv.push_back(tani);
 				tvlst.push_back(tv);
 				break;
 			}//if dep>tth
@@ -253,11 +254,11 @@ default_random_engine generator (seed);
 		tv.clear();
 		//tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vsvmin);tv.push_back(vsvmax);tv.push_back(vshmin);tv.push_back(vshmax);tv.push_back(ani);tv.push_back(animin);tv.push_back(animax);
 		tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vpv);tv.push_back(vph);tv.push_back(eta);tv.push_back(theta);tv.push_back(phi);
-		tv.push_back(rho);tv.push_back(vpvs);
+		tv.push_back(rho);tv.push_back(vpvs);tv.push_back(ani);
 		tv.push_back(vsvmin);tv.push_back(vshmin);tv.push_back(vpvmin);tv.push_back(vphmin);tv.push_back(etamin);tv.push_back(thetamin);tv.push_back(phimin);
-		tv.push_back(rhomin);tv.push_back(vpvsmin);
+		tv.push_back(rhomin);tv.push_back(vpvsmin);tv.push_back(animin);
 		tv.push_back(vsvmax);tv.push_back(vshmax);tv.push_back(vpvmax);tv.push_back(vphmax);tv.push_back(etamax);tv.push_back(thetamax);tv.push_back(phimax);
-		tv.push_back(rhomax);tv.push_back(vpvsmax);
+		tv.push_back(rhomax);tv.push_back(vpvsmax);tv.push_back(animax);
 
 		vlst.push_back(tv);
 		hlst.push_back(th);
@@ -290,15 +291,17 @@ default_random_engine generator (seed);
 		fm2=sqrt(fm2/Ncount);
 		fm3=sqrt(fm3/Ncount);
 		tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
-		fm1=0.;fm2=0.;
+		fm1=0.;fm2=0.;fm3=0.;
 		for(i=0;i<Ncount;i++){
 			fm1=fm1+pow(tvlst[i][7]-rho,2);
 			fm2=fm2+pow(tvlst[i][8]-vpvs,2);
+			fm3=fm3+pow(tvlst[i][9]-ani,2);
 		}		
 		fm1=sqrt(fm1/Ncount);
 		fm2=sqrt(fm2/Ncount);
-		tv.push_back(fm1);tv.push_back(fm2);
-
+		fm3=sqrt(fm3/Ncount);
+		tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
+		//printf("h=%g ani=%g dani=%g\n",th,ani,fm3);
 		stdlst.push_back(tv);
 	  }//for th
         vector<vector<double> >().swap(tvlst);
@@ -430,7 +433,8 @@ default_random_engine generator (seed);
 	  depmax=Hmat;
 	  printf("test-- Depth (NOT thickness): Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
-	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
+	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,min(Hsed/2.,0.1));
+	  //model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.1);
 	  cout<<"finish sed\n";//--test
 	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.);
 	  cout<<"finish cst\n";//---test
@@ -529,7 +533,7 @@ int get_posteriaDist(double depmin, double depmax, double depstep, vector<double
 		tphi=(phi[i]-phi[i-1])/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+phi[i-1];
 		tvpvs1=(vph[i]+vpv[i])/(vsh[i]+vsv[i]);
 		tvpvs2=(vph[i-1]+vpv[i-1])/(vsh[i-1]+vsv[i-1]);
-		tvpvs=(tvpvs2-tvpvs1)/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+tvpvs1;
+		tvpvs=(tvpvs1-tvpvs2)/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+tvpvs2;
 		fprintf(out,"%8g %8g %8g %8g %8g %8g %8g %8g %8g",tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tvpvs);break;}
     }
   }
@@ -907,6 +911,7 @@ int main(int argc, char *argv[])
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(frhonm,"%s/rho_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(faninm,"%s/anivs_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt",outdir,lon,lat);
     }
@@ -923,6 +928,7 @@ int main(int argc, char *argv[])
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(frhonm,"%s/rho_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(faninm,"%s/anivs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     }
@@ -931,7 +937,7 @@ int main(int argc, char *argv[])
       return 0;
     }
     fnmlst.push_back(fvsvnm);fnmlst.push_back(fvshnm);fnmlst.push_back(fvpvnm);fnmlst.push_back(fvphnm);fnmlst.push_back(fetanm);fnmlst.push_back(fthetanm);fnmlst.push_back(fphinm);
-    fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);
+    fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);fnmlst.push_back(faninm);
     Nparanm=fnmlst.size();
     ifstream mff(fbname);
     if (! mff.good()){
@@ -945,7 +951,6 @@ int main(int argc, char *argv[])
     N=paraall.size();
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);
-
 
     if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
       	flagreadVkernel=0;
@@ -1055,7 +1060,7 @@ int main(int argc, char *argv[])
     vector<int>().swap(idlst);
     
   }//while 1
- 
+  printf("END of CALavg %s %.1f %.1f\n",nodeid,lon,lat);
   return 1;
 }
 

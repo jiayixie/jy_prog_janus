@@ -4,6 +4,7 @@
 
 #-----make the CALavg code --
 g++ -I /home/jixi7887/Tool/package/boost_1_54_0 -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp -O3  CALavg_getposteria_cptLkernel_HV.C -o CALavg_getposteria_cptLkernel_RLHV_BS5f5o4_newgenpara_L -std=c++11  -g
+g++ -I /home/jixi7887/Tool/package/boost_1_54_0 -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp -O3  CALavg_getposteria_cptLkernel_HV_test.C -o CALavg_getposteria_cptLkernel_RLHV_BS5f5o4_newgenpara_L_test -std=c++11  -g
 
 #--- make the fwd cpt test code --
 #g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  test_fwdHV.C -std=c++11 -o test_fwdHV -g

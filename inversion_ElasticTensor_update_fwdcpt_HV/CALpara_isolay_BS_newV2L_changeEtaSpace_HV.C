@@ -752,13 +752,13 @@ for i<para.npara
 	}// para2mod
 	 
 
-
+/*
 //-----------------------------------------------------	 
 // randomly generating new parameters, uniform or normal distribution
 	int gen_newpara_single (  vector<vector<double> > space1, vector<double> &parameter, int npara,int pflag)
 	//vector<double> gen_newpara_single ( const vector<vector<double> > &space1, vector<double> parameter, int npara,int pflag)
 	{
-	  int i,flag;
+	  int i,flag,nx;
 	  double newv,sigma,mean,perc;
 
 	  //cout<<"gen_newpara! pflag="<<pflag<<endl;
@@ -782,18 +782,43 @@ for i<para.npara
 		  sigma=space1[i][2];
 		  if(sigma<0.001)continue;
 		  //printf("test-- gen_newpara i=%d (out of %d-1) mean=%g sigma=%g space=[%g~%g]\n",i,npara,mean,sigma,space1[i][0],space1[i][1]);
-		  /*while(flag<1)//throw away newv that's outside para range
+		  while(flag<1)//throw away newv that's outside para range
 		  {
 			newv=gen_random_normal(mean,sigma); // normal distribution
 			if(newv>space1[i][1] or newv<space1[i][0])continue;
 			else flag=2;
 		  }//while flag
-		  */
+		  
 		  newv=gen_random_normal(mean,sigma); // normal distribution
 		  // mirror reflect newv that's outside para range
-		  // in some rare cases, even after relection, the value is still outside the m[min,max] range, and that may cause trouble
-		  if(newv>space1[i][1]){newv=space1[i][1]-(newv-space1[i][1]);}
-		  else if(newv<space1[i][0]){newv=space1[i][0]+(space1[i][0]-newv);}
+		  // in some rare cases, even after relection, the value is still outside the m[min,max] range, and that may cause trouble ==> new use multiple reflection, see below:
+		  //if(newv>space1[i][1]){newv=space1[i][1]-(newv-space1[i][1]);}
+		  //else if(newv<space1[i][0]){newv=space1[i][0]+(space1[i][0]-newv);}
+		  if(newv>space1[i][1]){//x>c2
+		    nx=1;
+		    newv=2*space1[i][1]-newv; //x1=2*c2-x
+		    //x2=2*c1-x1;...; x[n]=2*ck-x[n-1] where k=1 if n is even, k=2 if n is odd
+		    while((newv-space1[i][0])*(newv-space1[i][1])>0){
+			nx+=1;
+			if(nx%2==0)//n is even
+				newv=2*space1[i][0]-newv;
+			else //n is odd
+				newv=2*space1[i][1]-newv;
+		    }
+		  }//if newv>space[i][1]
+		  else if (newv<space1[i][0]){ //x<c1
+		    nx=1;
+		    newv=2*space1[i][0]-newv;//x1=2*c1-x
+                    //x2=2*c2-x1;...; x[n]=2*ck-x[n-1] where k=2 if n is even, k=1 if n is odd
+		    while((newv-space1[i][0])*(newv-space1[i][1])>0){
+			nx+=1;
+			if(nx%2==0)//n is even
+				newv=2*space1[i][1]-newv;
+			else //n is odd
+				newv=2*space1[i][0]-newv;
+		    }//while	
+		  }//else if newv<space1[i][0]
+
 		  parameter[i]=newv;
 		}//fori
 
@@ -811,7 +836,6 @@ for i<para.npara
                }
 
           }//else if 2
-	  /*
 	  else if(pflag==3)//set the perturbed parameter to have the same purterbation. e.g. uniform anisotropy in the mantle
 	  {
 		//printf("pglag=%d,npara=%d\n",pflag,inpara.npara);
@@ -843,17 +867,18 @@ for i<para.npara
 		  parameter[i]=newv;
 		}
 	  }//else if 3
-	  */
 	  else{printf("### wrong pflag for gen_newpara!!\n");exit(0);}
 	  return 1;
 	  //return parameter;
 	}//gen new para single
+*/
 //-----------------------------------------------------
 
 //----------------------------------------------------- 
 	double gen_newpara_single_v2(vector<vector<double> > space1, vector<double> parameter,int ip,int pflag){
 	  double newv,min,max,mean,sigma;
-	
+	  int nx;
+
 	  mean=parameter[ip];
 	  newv=mean;
 	  min=space1[ip][0];
@@ -867,13 +892,44 @@ for i<para.npara
 		newv=gen_random_unif01()*(max-min)+min;
 		}
 	  else if (pflag==1){//normal
-		newv=gen_random_normal(mean,sigma);
-		if(newv>max){newv=max-(newv-max);}
-		else if(newv<min){newv=min+(min-newv);}
+		//newv=gen_random_normal(mean,sigma);
+		//if(newv>max){newv=max-(newv-max);}
+		//else if(newv<min){newv=min+(min-newv);}
+
+		  newv=gen_random_normal(mean,sigma); // normal distribution
+		  // mirror reflect newv that's outside para range
+		  // in some rare cases, even after relection, the value is still outside the m[min,max] range, and that may cause trouble ==> new use multiple reflection, see below:
+		  //if(newv>space1[i][1]){newv=space1[i][1]-(newv-space1[i][1]);}
+		  //else if(newv<space1[i][0]){newv=space1[i][0]+(space1[i][0]-newv);}
+		  if(newv>max){//x>c2
+		    nx=1;
+		    newv=2*max-newv; //x1=2*c2-x
+		    //x2=2*c1-x1;...; x[n]=2*ck-x[n-1] where k=1 if n is even, k=2 if n is odd
+		    while((newv-min)*(newv-max)>0){
+			nx+=1;
+			if(nx%2==0)//n is even
+				newv=2*min-newv;
+			else //n is odd
+				newv=2*max-newv;
+		    }
+		  }//if newv>space[i][1]
+		  else if (newv<min){ //x<c1
+		    nx=1;
+		    newv=2*min-newv;//x1=2*c1-x
+                    //x2=2*c2-x1;...; x[n]=2*ck-x[n-1] where k=2 if n is even, k=1 if n is odd
+		    while((newv-min)*(newv-max)>0){
+			nx+=1;
+			if(nx%2==0)//n is even
+				newv=2*max-newv;
+			else //n is odd
+				newv=2*min-newv;
+		    }//while	
+		  }//else if newv<space1[i][0]
+		  //if(newv<0){system("pause");}
 	  }
 	  else {printf("### wrong pflag for gen_newpara!!\n");exit(0);}
 	  //removed the section that "the perturbed parameter to have the same perturbation", this is enabled through the value of sigma, fulfilled in the main gen_newpara function
-
+	  //printf("gen_newpara %g\n",newv);//---test---
 	  return newv;
 	}//gen_newpara_single_v2
 //----------------------------------------------------- 

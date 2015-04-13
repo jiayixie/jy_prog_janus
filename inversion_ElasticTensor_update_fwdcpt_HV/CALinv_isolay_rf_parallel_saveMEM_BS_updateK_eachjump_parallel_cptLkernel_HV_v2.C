@@ -86,7 +86,10 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   else
   {printf("inv, crust idphi=%d i=%d\n",idphiC,i);flagidphiC=1;}
 
-  const int Nacc_updateK_init =505;// 2000;//505;//505;//500; //500;
+  const int Nacc_updateK_init = 505;//505;//505;//500; //500;
+  //const int accpcri=5000; //5000;//3000;//5000 ;//3000;
+  //const int Nacc_updateK_init = 700;//505;//505;//500; //500;
+  //const int accpcri=3000; //5000;//3000;//5000 ;//3000;
   const int accpcri=5000; //5000;//3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
@@ -101,6 +104,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   //omp_set_dynamic(0);     // Explicitly disable dynamic teams
   omp_set_num_threads(int(num_thread/10)); // Use 10 threads for all consecutive parallel regions
   }
+  //omp_set_num_threads(1);
   int flagbreak=0;
   while(iloop<600 and iaccp<accpcri){
   //maybe, just use Njump jumps all the time. eacho jump itterate iitercri times before it terminates. No break out of the code is necessary then.
@@ -170,6 +174,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		updatemodel(model1,flagupdaterho);
 		if(ibad%10000==0){printf("######POSITIVE ANISO MODEL CANNOT BE SATISFIED !!!! ijump=%d\n",i);
+		if(ibad>100000){break;}
 		//break;//---test---
 		}
 	    }	
@@ -190,6 +195,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		 Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);// para1BS->para1;
 		 updatemodel(model1,flagupdaterho);
 		 if(ibad%10000==0){printf("##### ibad=%d GOOD MODEL CANNOT BE SATISFIED UNDER MONOC==1!! ijump=%d\n",ibad,ijump);
+		 if(ibad>100000){break;}
 		  //break; //---test---
 		   }
 		}//while	  
@@ -205,8 +211,9 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	for(countitt=0;countitt<iitercri;countitt++){
 		if(iiter%10000==0){
 			printf("iiter=%d iaccp=%d dtime=%.1f ijump=%d iloop=%d;  ",iiter,iaccp,(float)(time(0)-start),i,iloop);
+			//if((float)(time(0)-start)>3600.*2)
 			if((float)(time(0)-start)>3600.*2)
-			{	printf("exceed 3hr limit! break\n");
+			{	printf("exceed 2hr limit! break\n");
 				flagbreak=1;
 				break;} //break the search after 50min. modified Mar 13, 2014
 			printf("inv time used wtime=%.2fs cputime=%.2fs\n",omp_get_wtime()-start_walltime,get_cpu_time()-start_cputime);

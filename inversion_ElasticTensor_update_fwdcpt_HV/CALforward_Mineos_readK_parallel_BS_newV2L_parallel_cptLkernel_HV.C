@@ -194,7 +194,16 @@ int interpolate(dispdef indisp,dispdef &outdisp)
 	break;
       }//for j
     }//for i
-    if(m!=n){printf("### in interpolate phase, inconsistancy between output disp.size() and inputT.size()!\n### outdisp.size()=%d inT.size()=%d\n",m,n);exit(0);}
+    if(m!=n){printf("### in interpolate phase, inconsistancy between output disp.size() and inputT.size()!\n### outdisp.size()=%d inT.size()=%d\n",m,n);
+	printf("reference T(outdisp.per):\n");
+	for(int k1=0;k1<refperiod.size();k1++){
+		printf("T%d=[%g] ",refperiod[k1]);
+	}
+	printf("\n inper T(indisp.per):\n");
+	for(int k2=0;k2<inper.size();k2++ ){
+		printf("T%d=[%g] ",inper[k2]);
+	}
+	exit(0);}
     }//else
   }//if fphase
 
@@ -446,7 +455,7 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
   sprintf(modnm,"MineosInputMod_%d",ipara);
   if(Lsurflag>0){
      jcmp=2;
-     sprintf(str,"csh run_Mineos_bran.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);
+     sprintf(str,"csh -f run_Mineos_bran.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);
      system(str);
      sprintf(Moutputnm,"%s_T",modnm);
      sprintf(HVoutputnm,"%s_HV_T",modnm);
@@ -468,9 +477,9 @@ int compute_dispMineos(modeldef &model,vector<vector<double> > PREM,int Nprem, i
   if(Rsurflag>0){
      jcmp=3;
      if(model.data.Rdisp.fhv>0){// there are H/V ratios readed in
-	sprintf(str,"csh run_Mineos_bran_HV.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);}
+	sprintf(str,"csh -f run_Mineos_bran_HV.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);}
      else{
-    	sprintf(str,"csh run_Mineos_bran.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);}
+    	sprintf(str,"csh -f run_Mineos_bran.csh %d %s %s %.1f %.1f\n",jcmp,moddir,modnm,wmin,wmax);}
      //printf("@@@ check, compute_dispMineos:  %s  #################\n",str);
      system(str);
      //get disp info from Mineos output 
@@ -573,6 +582,11 @@ int compute_Vkernel_single_para(paradef para, int i,modeldef model, vector<vecto
  p0=(int)para.para0[i][0];
  if(p0==1){dp=0.05;}//thickness;
  else{dp=0.02;}
+
+ //-----test----
+ //printf("\n\nTEST---- do Vkernel_single_para %d\n",i);
+ //if(p0==1){printf("TEST--- thickness=%g\n\n\n",para.parameter[i]);}
+ //
 
  trkp1.clear();trkg1.clear();tlkp1.clear();tlkg1.clear();trkhv1.clear();
  if(Rflag>0 and Lflag==0){
@@ -677,6 +691,7 @@ int compute_Vkernel(paradef para,modeldef model,vector<vector<vector<double> > >
 //num_threads(2)
   //omp_set_dynamic(0);
   omp_set_num_threads(10);
+  //omp_set_num_threads(1);
   //#pragma omp parallel default(none) shared(ijump,model,para,Rp0,Rg0,Lp0,Lg0,PREM,Nprem,Rflag,Lflag,flagupdaterho,trkp2,trkg2,tlkp2,tlkg2) private(ng,ppflag,LVflag,trkp1,trkg1,tlkp1,tlkg1) 
   #pragma omp parallel default(none) shared(model,para,Rp0,Rg0,Lp0,Lg0,Rhv0,trkhv2,trkp2,trkg2,tlkp2,tlkg2) private(ng,ppflag,LVflag,trkp1,trkg1,trkhv1,tlkp1,tlkg1) 
   {
@@ -2209,6 +2224,7 @@ int compute_Lkernel(paradef para,modeldef model,vector<vector<vector<double> > >
   kernel.clear();
 
   omp_set_num_threads(10);
+  //omp_set_num_threads(1);
   #pragma omp parallel default (none) shared(model,para,Rp0,Rg0,Lp0,Lg0,Rhv0,trkhv2,trkp2,trkg2,tlkp2,tlkg2) private(ng,nv,ppflag,LVflag,trkp1,trkg1,trkhv1,tlkp1,tlkg1)
   {
   printf("#####compute Lkernel threads=%d ijump=%d\n",omp_get_num_threads(),ijump);//---check---

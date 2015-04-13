@@ -239,6 +239,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   // flag indicate if average is for para.parameter(flag=1) or for para.parameter/LoveRAparameter/LoveAZparameter (flag=3)
   int i,j,k,size,idmin,Ngp,NgpM,igp,pflag,Ngood;
   vector<int> indexflaglst,indexflaglstM,idlst,idlstnew,idminlst;
+  //vector<int> idlstnewtest;
   vector<double> philst,philstM;  
   double mismin,pkM,pk,tv,T;  
   //vector<double> parastd;
@@ -421,7 +422,14 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 			paraavg.LoveRAparameter=compute_paraavg(paralst,idlstnew,parastd.LoveRAparameter,2);
 			paraavg.LoveAZparameter=compute_paraavgAZ(paralst,idlstnew,parastd.LoveAZparameter);
 		}
-		if(idlstnew.size()<2)continue;	
+		//printf("%d %d\n",idlstlst.size(),idlstnew.size());
+		if(idlstnew.size()<2)continue;
+		//idlstnewtest.clear();	
+		//for(int nn=0;nn<100;nn++){
+		//	idlstnewtest.push_back(idlstnew[nn]);
+		//	printf("%d/%d idlstnew[%d]=%d\n",nn,idlstnew.size(),nn,idlstnew[nn]);
+		//}
+
 		idlstlst.push_back(idlstnew);
     		paraavglst.push_back(paraavg);
 		parastdlst.push_back(parastd);
