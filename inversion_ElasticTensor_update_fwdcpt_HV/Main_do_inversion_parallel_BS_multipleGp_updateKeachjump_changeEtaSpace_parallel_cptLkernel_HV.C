@@ -96,7 +96,7 @@ exit(0);
   //qscri=250.;
   Rmonoc=1;//useless
   Lmonoc=1;//useless
-  PosAnic=0;
+  PosAnic=1;
   flagupdaterho=1;
   Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -110,7 +110,7 @@ exit(0);
   //Lvgrad.push_back(0);
   Lvgrad.push_back(1);
   //Vposani.push_back(0);
-  //Vposani.push_back(1);
+  Vposani.push_back(1);
   //Vposani.push_back(2);
   if(isoflag==1){
   Viso.push_back(0);

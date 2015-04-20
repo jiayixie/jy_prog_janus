@@ -225,6 +225,10 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			//Vkernel2Lkernel(RApara,RAmodel,Vkernel,Lkernel,flagupdaterho);
 			compute_Lkernel(RApara,RAmodel,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,ijump);
 			RApara.LoveAZparameter=refpara.LoveAZparameter; //set LoveAZparameter_ref to 0!
+                        for(int ip=0;ip<RApara.npara;ip++){// set AZcos AZsin parameters to 0! clear the AZcos AZsin parameters, modified Apr 17, 2015
+			       p6=(int)RApara.para0[ip][6];
+                                if((p6-10)*(p6-11)==0){RApara.parameter[ip]=0.;}
+                        }
 			refmodel=RAmodel;
 			refpara=RApara;
 			

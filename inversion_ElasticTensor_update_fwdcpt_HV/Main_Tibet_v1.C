@@ -32,7 +32,8 @@ default_random_engine generator (seed);
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
 #define _USE_MATH_DEFINES
@@ -85,7 +86,7 @@ exit(0);
   inpamp=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
   inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  iitercri1=50000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1= 30000;//50000;//100000;//12000 (mod1, 1cstlay)
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
@@ -251,17 +252,17 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
     checkParaModel(para1,model0,Viso);
 
-    /*===check===
-    printf("check readpara & mod2para----\n");
+    ///*===check===
+    printf("\n\ncheck readpara & mod2para----\n");
     printf("inpara.flag=%d\n",para0.flag);
     for(i=0;i<para1.npara;i++){
 	printf("parameter %d\n",i);
 	printf(" value=%g  dv=%g ng=%g nv=%g pflag=%g LVflag=%g RWflag=%g LWflag=%g AZflag=%g\n",para1.parameter[i],para1.para0[i][2],para1.para0[i][4],para1.para0[i][5],para1.para0[i][6],para1.para0[i][7],para1.para0[i][8],para1.para0[i][9],para1.para0[i][10]);
-    }*/
+    }//*/
     // ; BS
     //---check---
     ttmodel=model0;
-    printf("Before Bsp2P\n");
+    printf("\n\nBefore Bsp2P\n");
     for(i=0;i<ttmodel.ngroup;i++){
         printf("BSmodel group%d\n",i);
         for(j=0;j<ttmodel.groups[i].np;j++){
@@ -396,7 +397,8 @@ exit(0);
     //something to do, in computing the misfit for the angle phi, need to take the period of the angle into account. modify the compute_misfitDISP in CALmodel_LVZ_ET.C
     compute_misfitDISP(model0,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,inpamp,inpphi);
     //is the AZ disp filled? so are they taken into account in the misfit cpt? A: yes, both amp and angle are 0
-
+ 
+    // at this point, the AZ parameters (AZLoveparameter and AZcos AZsin) should be 0 for the reference para
     modelref=model0;
     pararef=para1;
    

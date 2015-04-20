@@ -972,6 +972,7 @@ for i<para.npara
 	  //scale based on gpnum layer's value, keep constant magnitude of anisotropy throughout this whole group
 	  //if flag=-2.0 then scaled based on the layer0's value
 	  //if flag=-2.2 then scale based on the layer2's vaue	
+	  //for AZI case, Acos=Acos[x], Asin=Asin[x]; azi has the same direction and amplitude 
 		gpnum=((int)(flag*10)%10);
 		if(p6==1){printf("###Hey, Vsv should not be scaled! reset para.in\n");exit(0);}
 		else if (p6==2){//vsh
@@ -984,9 +985,9 @@ for i<para.npara
 			newv=c*model.groups[ng].vpvvalue[nv];}
 		else if (p6==5){//eta
 			newv=model.groups[ng].etavalue[gpnum];}
-		else if (p6==6 ){//theta
+		else if (p6==6 or p6==10 ){//theta or AZcos
 			newv=model.groups[ng].thetavalue[gpnum];}
-		else if (p6==7){//phi
+		else if (p6==7 or p6==11 ){//phi or AZsin
 			newv=model.groups[ng].phivalue[gpnum];}
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the anisotropic scaling 1\n",p6);exit(0);}
 	  }
@@ -1014,6 +1015,7 @@ for i<para.npara
 	  //anisotropic scaling, this group is anisotropic
 	  //scale based on a given scaling relationship
 	  //e.g., VpRA=c1*VsRA; eta=c2+c3*VsRA	  
+	  // Acos/Asin=Acos[x]/Asin[x] --> this group has the same azi direction. 
 	  //this kind of scaling need to be dealt with carefully. need to be careful about the updating order of the parameters. the parameters are ordered from vsv->eta, but when doing scaling, may need some later parameters to be updated 1st.
 	 	if(p6==4){//vph --> [(vph-vpv)/vpv]/[(vsh-vsv)/vsv]=c
 			if(ng==0){c=1.0;}//in sediment VpRA=VsRA;
@@ -1025,6 +1027,17 @@ for i<para.npara
 			c=(model.groups[ng].vshvalue[nv]-model.groups[ng].vsvvalue[nv])/model.groups[ng].vsvvalue[nv];
 			newv=1.0-4.2*c;
 		}
+		//-------under construction -----
+		else if (p6==11){// Asin --> Asin/Acos=Asin[x]/Acos[x]; theta-Acos, phi-Asin
+			gpnum=((int)(flag*10)%10);
+			if(fabs(model.groups[ng].thetavalue[gpnum])<1e-4){// the Acos[x]==0; then should set Acos=0 and Asin=random();
+				return -999.;}
+
+			else{// Asin=Asin[x]/Acos[x]*Acos
+				newv=model.groups[ng].phivalue[gpnum]/model.groups[ng].thetavalue[gpnum]*model.groups[ng].thetavalue[nv];
+			}
+		}
+		//-----------
 		else{
 	  	printf("### this anisotropic scaling is still under construction...\n");
 	  	exit(0);
@@ -1072,7 +1085,16 @@ for i<para.npara
 		  else if (sigma<-1e-5){
 		    //intsigma=(int)sigma;
 		    outpara.parameter[i]=gen_newpara_single_scale(sigma,model,ng,nv,p6);
-		  }//else	
+		    if(outpara.parameter[i]<-900. and p6==11){// AZsin, and the Acos[x] used for scaling is 0; so should set Acos=0, and Asin=random
+			if((int)inpara.para0[i-1][6]!=10){
+				printf("### gen_newpara, wrong para.in setting!, the paramter before Asin should be Aco!\n");
+				exit(0);
+			}
+			outpara.parameter[i-1]=0.;
+			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
+
+		    }//if Asin
+		  }//else if	
 		  // then else indicate sigma==0; keep parameter unchanged
 
 		  newv=outpara.parameter[i];

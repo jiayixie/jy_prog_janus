@@ -550,7 +550,7 @@ int compute_kernel_4_para(paradef paraavg, paradef paraP, paradef &pararef, mode
 modeldef tmodel,model0,RAmodel;
 paradef tpara,para1,RApara;
 char kernelnmR[200],kernelnmL[200],kernelnmRHV[200];
-int i;
+int i,p6;
 	Vkernel.clear();
 	Lkernel.clear();
 
@@ -570,6 +570,10 @@ int i;
 	para2mod(RApara,tmodel,RAmodel);
 	updatemodel(RAmodel,flagupdaterho);
 	for(i=0;i<RApara.npara;i++)RApara.LoveAZparameter[i][0]=RApara.LoveAZparameter[i][1]=0.;
+        for(i=0;i<RApara.npara;i++){// clear the AZcos AZsin parameters, modified Apr 17, 2015
+                p6=(int)RApara.para0[i][6];
+                if((p6-10)*(p6-11)==0){RApara.parameter[i]=0.;}
+        }
 	para1=RApara;
 	model0=RAmodel;
 	

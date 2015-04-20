@@ -30,9 +30,11 @@ default_random_engine generator (seed);
 #include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
 #include"CALmodel_LVZ_ET_BS_HV.C"
-#include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
+//#include "CALmodel_LVZ_ET_BS_HV_vpconstr_Tibet.C"
+#include "CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
+///#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
@@ -76,10 +78,10 @@ exit(0);
 
   //----------------PARAMETERS-----------------------------------------
   isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
-  Rsurflag=5; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
+  Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
-  AziampRsurflag=0;
-  AziphiRsurflag=0;
+  AziampRsurflag=1;
+  AziphiRsurflag=1;
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
@@ -96,7 +98,6 @@ exit(0);
   Rmonoc=1;
   Lmonoc=1;
   PosAnic=0;
-  flagreadLkernel=0;
   flagupdaterho=1;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -130,6 +131,7 @@ exit(0);
   sprintf(Lgpindir,argv[7]);
   sprintf(fparanm,argv[8]);
   flagreadVkernel=atoi(argv[9]);
+  flagreadLkernel=flagreadVkernel;
   int num_thread=atoi(argv[10]);
 
   readPREM(PREMnm,PREM,Nprem);
@@ -157,6 +159,34 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     bestmisfit=1e10;
 
     Rdispnm.clear();
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Rphindir,lon,lat);
+    Rdispnm.push_back(str);
+    if(Rsurflag==5)
+    {sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    Rdispnm.push_back(str);}
+
+    Ldispnm.clear();
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Lphindir,lon,lat);
+    Ldispnm.push_back(str);
+
+    AziampRdispnm.clear();
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Rphindir,lon,lat);
+    AziampRdispnm.push_back(str);
+
+    AziphiRdispnm.clear();
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Rphindir,lon,lat);
+    AziphiRdispnm.push_back(str);
+
+    AziampLdispnm.clear();
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziampLdispnm.push_back(str);
+
+    AziphiLdispnm.clear();
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziphiLdispnm.push_back(str);
+
+    /*    
+    Rdispnm.clear();
     sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
     sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
@@ -181,7 +211,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     AziphiLdispnm.clear();
     sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
     AziphiLdispnm.push_back(str);
-
+    */
 
 
     //-----the final output model, that will serve as input model for the next step 
@@ -380,7 +410,7 @@ exit(0);
   	{para1BS.parameter[kk]=paraBS.parameter[kk]*1.04;
   	para1BS.parameter[kk+1]=paraBS.parameter[kk+1]*1.04;}
     */
-   // gen_newpara(paraBS,modelBS,para1BS,1);
+    gen_newpara(paraBS,modelBS,para1BS,1);
     para2mod(para1BS,modelBS,model1BS);
     Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);
     updatemodel(model1,flagupdaterho);

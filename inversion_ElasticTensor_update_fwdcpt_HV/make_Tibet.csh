@@ -3,3 +3,5 @@ g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_Tibet_v1.C -s
 
 g++ -I /home/jixi7887/Tool/package/boost_1_54_0 -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp -O3  CALavg_getposteria_cptLkernel_HV_Tibet.C -std=c++11 -o  CALavg_Tibet -g
 
+#--- another fwd cpt code,
+#g++ -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4 -fopenmp  do_fwdsyn_Tibet.C -std=c++11 -o do_fwdsyn_Tibet -g

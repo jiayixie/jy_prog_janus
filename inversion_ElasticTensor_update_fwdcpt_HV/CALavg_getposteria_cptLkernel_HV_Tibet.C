@@ -127,7 +127,7 @@ default_random_engine generator (seed);
 
 	  flag=0;
 	  for(th=h0;th<=h+dth;th=th+dth){//thickness
-		if(th>h){//make sure that we do do any avg at depth==h
+		if(th>h){//make sure that we do do an avg at depth==h
 		  if(flag==0 and fabs(th-h-dth)>1e-4)
 			{flag=1;th=h;}
 		  else{break;}
@@ -546,7 +546,7 @@ int compute_kernel_4_para(paradef paraavg, paradef paraP, paradef &pararef, mode
 modeldef tmodel,model0,RAmodel;
 paradef tpara,para1,RApara;
 char kernelnmR[200],kernelnmL[200],kernelnmRHV[200];
-int i;
+int i,p6;
 	Vkernel.clear();
 	Lkernel.clear();
 
@@ -565,7 +565,12 @@ int i;
 	Lovepara2Vpara(RApara,tmodel);
 	para2mod(RApara,tmodel,RAmodel);
 	updatemodel(RAmodel,flagupdaterho);
+	//--clear the AZ parameters
 	for(i=0;i<RApara.npara;i++)RApara.LoveAZparameter[i][0]=RApara.LoveAZparameter[i][1]=0.;
+	for(i=0;i<RApara.npara;i++){// clear the AZcos AZsin parameters, modified Apr 17, 2015
+		p6=(int)RApara.para0[i][6];
+		if((p6-10)*(p6-11)==0){RApara.parameter[i]=0.;}
+	}
 	para1=RApara;
 	model0=RAmodel;
 	
@@ -600,6 +605,7 @@ int i;
     	//---obtain Love kernel ---
 	sprintf(kernelnmR,"%s/LkernelRp1ani_%s.txt",dirlay,name);
 	sprintf(kernelnmL,"%s/LkernelLp1ani_%s.txt",dirlay,name);
+	sprintf(kernelnmRHV,"%s/LkernelRHVp1ani_%s.txt",dirlay,name);
 	//sprintf(kernelnmR,"%s/LkernelRp1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     	//sprintf(kernelnmL,"%s/LkernelLp1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     	if(flagreadLkernel==1){
@@ -614,6 +620,7 @@ int i;
           //Vkernel2Lkernel(para1,model0,Vkernel,Lkernel,flagupdaterho);
           //write_kernel(Lkernel,model0,para1,kernelnmR,kernelnmL,Rsurflag,Lsurflag);
           compute_Lkernel(para1,model0,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);//modification Nov 23, 2014
+	  write_kernel(Lkernel,model0,para1,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
     	}//else
 	printf("end of kernel computation\n");
 	//--end of computing kernel
@@ -941,7 +948,7 @@ int main(int argc, char *argv[])
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);
 
-
+    //if(0){//---test---
     if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
       	flagreadVkernel=0;
       	flagreadLkernel=0;
@@ -987,6 +994,8 @@ int main(int argc, char *argv[])
 	parastd=parastdlst[ig];
 
 	if(RAflag==1){
+       	 	//flagreadVkernel=1;
+       	 	//flagreadLkernel=1;
        	 	flagreadVkernel=0;
        	 	flagreadLkernel=0;
 		//compute the kernel for this para, compute its disp (RA and AZ), write the disp 
@@ -994,6 +1003,8 @@ int main(int argc, char *argv[])
 		//exit(0);
 		sprintf(str,"avg_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);
 		paraavg=compute_dispM_writeASC(paraavg,paraP,modelP,PREM,inpamp,inpphi,Nprem,flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,str);
+       	 	//flagreadVkernel=1;
+       	 	//flagreadLkernel=1;
        	 	flagreadVkernel=0;
        	 	flagreadLkernel=0;
 		sprintf(str,"best_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);

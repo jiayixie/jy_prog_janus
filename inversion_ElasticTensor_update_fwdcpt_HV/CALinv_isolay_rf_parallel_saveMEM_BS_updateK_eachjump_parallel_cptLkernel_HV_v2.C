@@ -53,7 +53,7 @@ int temp_writepara(FILE *f, paradef para,modeldef model, int iaccp, int ithread,
 //int do_inv_BS(int id,double misfitcri,vector<paradef> &aralst,paradef refparaBS,modeldef refmodelBS,paradef refpara,modeldef refmodel,vector<int> Rvmono,vector<int> Lvmono,vector<int> Rvgrad, vector<int> Lvgrad,vector<vector<double> > PREM, vector<vector<vector<double> > > Vkernel, vector<vector<vector<double> > > Lkernel,int k1,int k2,time_t start,int isoflag, int Rsurflag, int Lsurflag, int AziampRflag, int AziampLflag, int AziphiRflag, int AziphiLflag,int Nprem,int Rmonoc,int Lmonoc, int PosAni, vector<int> Vposani, int iitercri,int ijumpcri,char *fbinnm,float inpamp, float inpphi, int flagupdaterho){
 //int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<paradef> &paralst,const paradef refparaBS,const modeldef refmodelBS,const paradef refpara,const modeldef refmodel,const vector<int> Rvmono,const vector<int> Lvmono,const vector<int> Rvgrad,const vector<int> Lvgrad,const vector<vector<double> > PREM,const  vector<vector<vector<double> > > Vkernel, const vector<vector<vector<double> > > Lkernel,const int k1,const int k2,const time_t start,const int isoflag,const int Rsurflag, const int Lsurflag,const int AziampRflag,const int AziampLflag,const int AziphiRflag,const int AziphiLflag,const int Nprem,const int Rmonoc,const int Lmonoc,const int PosAni, const vector<int> Vposani, const int iitercri,const int ijumpcri,const char *fbinnm,const float inpamp, const float inpphi, const int flagupdaterho){
 int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<paradef> &paralst,const paradef refparaBS,const modeldef refmodelBS, const paradef refpara0, const modeldef refmodel0,const vector<int> Rvmono,const vector<int> Lvmono,const vector<int> Rvgrad,const vector<int> Lvgrad,const vector<vector<double> > PREM, const vector<vector<vector<double> > > Vkernel0, const vector<vector<vector<double> > > Lkernel0,const int k1,const int k2,const time_t start,const int isoflag,const int Rsurflag, const int Lsurflag,const int AziampRflag,const int AziampLflag,const int AziphiRflag,const int AziphiLflag,const int Nprem,const int Rmonoc,const int Lmonoc,const int PosAni, const vector<int> Vposani, const int iitercri,const int ijumpcri,const char *fbinnm,const float inpamp, const float inpphi, const int flagupdaterho){
-  int i;
+  int i,p6;
   int tflag,iiter,iaccp,ibad,lastiaccp,idphiC,flagidphiC;
   double oldL,oldRL,oldLL,newL,newRL,newLL,oldmisfit,newmisfit;
   double prob,prandom;
@@ -109,7 +109,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   while(iloop<600 and iaccp<accpcri){
   //maybe, just use Njump jumps all the time. eacho jump itterate iitercri times before it terminates. No break out of the code is necessary then.
   //num_threads(Njump)
-  #pragma omp parallel default(none) shared(flagidphiC,flagbreak,idphiC,outbin,outbinRA,paralst,iloop,iiter,iaccp) private(para2,para1,tmodel,oldLL,oldRL,oldL,countitt,countacc,ibad,tflag,newL,newRL,newLL,newmisfit,now,prob,oldmisfit,prandom,refmodel,Vkernel,Lkernel,lastiaccp,refpara,Tacc,NKdid) 
+  #pragma omp parallel default(none) shared(flagidphiC,flagbreak,idphiC,outbin,outbinRA,paralst,iloop,iiter,iaccp) private(para2,para1,tmodel,oldLL,oldRL,oldL,countitt,countacc,ibad,tflag,newL,newRL,newLL,newmisfit,now,prob,oldmisfit,prandom,refmodel,Vkernel,Lkernel,lastiaccp,refpara,Tacc,NKdid,p6) 
   {
   printf("jump threads=%d\n",omp_get_num_threads());//--check---
   #pragma omp for schedule(dynamic,1)
@@ -238,6 +238,10 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			//Vkernel2Lkernel(RApara,RAmodel,Vkernel,Lkernel,flagupdaterho);
 			compute_Lkernel(RApara,RAmodel,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,ijump);
 			RApara.LoveAZparameter=refpara.LoveAZparameter; //set LoveAZparameter_ref to 0!
+                        for(int ip=0;ip<RApara.npara;ip++){// set AZcos AZsin parameters to 0! clear the AZcos AZsin parameters, modified Apr 17, 2015
+			       p6=(int)RApara.para0[ip][6];
+                                if((p6-10)*(p6-11)==0){RApara.parameter[ip]=0.;}
+                        }
 			refmodel=RAmodel;
 			refpara=RApara;
 			}// if compute_dispMineos
