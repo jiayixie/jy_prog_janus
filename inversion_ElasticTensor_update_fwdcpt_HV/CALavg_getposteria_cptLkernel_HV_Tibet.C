@@ -25,7 +25,7 @@
 // change the included files, keep them consistent with those in the Main code, changed the CALforward, CALinv, CALpara, gen_random, CALmodel
 
 // this version (HV), consider the newly added HV dispersion curves.  
-
+// this version (Tibet), use the para_avg_multiple_gp_v6.C whcih considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> FA, AMP --> convert FA --> AZcos, AZsin --> do avg
 
 #include<iostream>
 #include<algorithm>
@@ -57,7 +57,7 @@ default_random_engine generator (seed);
 
 #include "./BIN_rw_Love.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
-#include "para_avg_multiple_gp_v5.C"
+#include "para_avg_multiple_gp_v6.C"
 
 //----------------------------------------------------------------
 	int para_best(vector<paradef> paralst,paradef &parabest){
@@ -628,7 +628,7 @@ int i,p6;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
@@ -643,7 +643,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
     char name[100];
     vector<double> newmisfitlst;
     //--1. get the average para --
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC);
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -762,9 +762,9 @@ int main(int argc, char *argv[])
   //char fnmlst[7][300];
   vector<string> fnmlst;
   FILE *inpo, *out,*fmis;
-  int Nprem,npoint,i,j,RAflag,idmin,N;
+  int Nprem,npoint,i,j,RAflag,idmin,N,p6;
   double tvsv,tvsh,tani,T;
-  vector<double> anilst;	  
+  //vector<double> anilst;	  
   paradef paraavg,parabest,parastd;
   vector<paradef> parabestlst;
   vector<int> idminlst;
@@ -781,6 +781,12 @@ int main(int argc, char *argv[])
   modeldef model0,modelP;
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
+  vector<int> AZcosidlst;
+
+  int Nres=3000;
+  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);
+  parabestlst.reserve(10);
+  AziampRdispnm.reserve(10);AziphiRdispnm.reserve(10);AziampLdispnm.reserve(10);AziphiLdispnm.reserve(10);Rdispnm.reserve(10);Ldispnm.reserve(10);fnmlst.reserve(10);
 
   if(argc!=13){
     printf("Usage: XX 1]point_file 2]bin_dir 3]out_dir\n1]point_file: nodeid lon lat\n2]bin_dir: bindir/ani(vsv)_nodeid_lon_lat.bin\n3]out_dir: outdir/vsv(vsh)_lon_lat.txt\n4]compute_avg for flat vel(1) or titled vel(2; the vel from the effective TI medium)\n");
@@ -817,6 +823,7 @@ int main(int argc, char *argv[])
     vector<string> fnmlsttmp;
     vector<double> newmisfitlst;
 
+    paraavglst.reserve(10);parastdlst.reserve(10);idlstlst.reserve(10);fnmlsttmp.reserve(10);
 
     if(fscanf(inpo,"%s %f %f",&nodeid[0],&lon,&lat)==EOF)
     //if(fscanf(inpo,"%s %f %f %d",&nodeid[0],&lon,&lat,&ktopo)==EOF)
@@ -890,6 +897,11 @@ int main(int argc, char *argv[])
     }*/
     idphiM=-1;    
 
+   //---get the AZcosidlst (here I do not distinguish between crust and mantle)
+   for(i=0;i<paraP.npara;i++){
+	p6=(int)paraP.para0[i][6];
+	if(p6==10){AZcosidlst.push_back(i);}
+   } 
   //---end of reading information
 
 
@@ -947,14 +959,15 @@ int main(int argc, char *argv[])
     N=paraall.size();
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);
+    newmisfitlst.reserve(N);
 
-    //if(0){//---test---
-    if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
+    if(0){//---test---
+    //if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
       	flagreadVkernel=0;
       	flagreadLkernel=0;
       	//--recompute the paraall[].misfit based on each group's average para---
       	printf("recompute the paraall[].misfit =======\n");
-      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid);
+      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst);
       	//--write out the misfits---
       	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
       	if((fmis=fopen(str,"w"))==NULL){printf("### Cannot open %s to write new misfit!\n",str);exit(0);}
@@ -982,7 +995,7 @@ int main(int argc, char *argv[])
 
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC);
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());
