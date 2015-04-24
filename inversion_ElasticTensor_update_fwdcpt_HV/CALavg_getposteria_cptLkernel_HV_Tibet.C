@@ -628,7 +628,7 @@ int i,p6;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst,vector<int> AZcosidlstM){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
@@ -643,7 +643,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
     char name[100];
     vector<double> newmisfitlst;
     //--1. get the average para --
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst);
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -781,10 +781,10 @@ int main(int argc, char *argv[])
   modeldef model0,modelP;
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
-  vector<int> AZcosidlst;
+  vector<int> AZcosidlst,AZcosidlstM;
 
   int Nres=3000;
-  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);
+  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);AZcosidlstM.reserve(20);
   parabestlst.reserve(10);
   AziampRdispnm.reserve(10);AziphiRdispnm.reserve(10);AziampLdispnm.reserve(10);AziphiLdispnm.reserve(10);Rdispnm.reserve(10);Ldispnm.reserve(10);fnmlst.reserve(10);
 
@@ -894,13 +894,18 @@ int main(int argc, char *argv[])
     if(i==paraP.npara){idphiC=-1;} 
     /*for(i=0;i<paraP.npara;i++){
         if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2){idphiM=i;break;}
-    }*/
+    M}*/
     idphiM=-1;    
 
-   //---get the AZcosidlst (here I do not distinguish between crust and mantle)
+   //---get the AZcosidlst for crust
    for(i=0;i<paraP.npara;i++){
 	p6=(int)paraP.para0[i][6];
-	if(p6==10){AZcosidlst.push_back(i);}
+	if(p6==10 and (int)paraP.para0[i][4]==1){AZcosidlst.push_back(i);}
+   } 
+   //---get the AZcosidlst for mantle
+   for(i=0;i<paraP.npara;i++){
+	p6=(int)paraP.para0[i][6];
+	if(p6==10 and (int)paraP.para0[i][4]==2){AZcosidlstM.push_back(i);}
    } 
   //---end of reading information
 
@@ -961,13 +966,13 @@ int main(int argc, char *argv[])
     printf("test-- begin para_avg # of all models=%d\n",N);
     newmisfitlst.reserve(N);
 
-    if(0){//---test---
-    //if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
+    //if(0){//---test---
+    if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
       	flagreadVkernel=0;
       	flagreadLkernel=0;
       	//--recompute the paraall[].misfit based on each group's average para---
       	printf("recompute the paraall[].misfit =======\n");
-      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst);
+      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst,AZcosidlstM);
       	//--write out the misfits---
       	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
       	if((fmis=fopen(str,"w"))==NULL){printf("### Cannot open %s to write new misfit!\n",str);exit(0);}
@@ -982,7 +987,8 @@ int main(int argc, char *argv[])
 		//if((fscanf(fmis,"%g %g",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
 		if((fscanf(fmis,"%f %f",&fnewmis,&foldmis))==EOF){printf("## strange end of file\n");exit(0);}
 		misfit=(double)fnewmis;oldmisfit=(double)foldmis;
-		newmisfitlst.push_back(misfit);
+		newmisfitlst.push_back(misfit); 
+		//newmisfitlst.push_back(oldmisfit); //---test---
 		//printf("%d new1 %f old1 %f old2 %f \n",j,misfit,oldmisfit,paraall[j].misfit);
 	}
 	fclose(fmis);
@@ -995,7 +1001,7 @@ int main(int argc, char *argv[])
 
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst);
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());
@@ -1007,7 +1013,7 @@ int main(int argc, char *argv[])
 	parastd=parastdlst[ig];
 
 	if(RAflag==1){
-       	 	//flagreadVkernel=1;
+       	 	//flagreadVkernel=1;//--test---
        	 	//flagreadLkernel=1;
        	 	flagreadVkernel=0;
        	 	flagreadLkernel=0;

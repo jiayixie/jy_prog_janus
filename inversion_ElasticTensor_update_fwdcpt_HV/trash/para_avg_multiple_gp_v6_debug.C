@@ -12,8 +12,8 @@
 
 // this version, para_avg_multiple_gp_v6.C, considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> FA, AMP --> convert FA --> AZcos, AZsin --> do avg
 
-double convert(double vin,double vref,double T){
-  double v;
+float convert(float vin,float vref,float T){
+  float v;
   v=vin;
   //while(vref>T)vref-=T;
   //while(vref<0)vref+=T;
@@ -25,23 +25,24 @@ double convert(double vin,double vref,double T){
 //--------------------------
 
 //int seperate_gp(vector<double> &vlst,int &Ngp, double &pk, vector<int> &indexflaglst){
-int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflaglst, double distcri, double T){
+//int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflaglst, double distcri){
+int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflaglst, double distcri){
   //this is used to group the parameters according to the phi(strke) value in the crust (HOW ABOUT MANTLE?)
   // input the para list (a list of phi) that will be judged during the grouping process. 
   //return two index lists, each list belongs to one phi group
-  // the input T and angles are in degree
+  //
   // 
   //#############PARAMETER
-  //double distcri=5;//if |peak-avg|>distcri, then we think there are multiple groups of phi value
-  double dv,dist,tv,dist1,dist2;
-  //double T=180.; //period of phi
+  //float distcri=5;//if |peak-avg|>distcri, then we think there are multiple groups of phi value
+  float dv,dist,tv,dist1,dist2;
+  float T=180.; //period of phi
   double avg1,avg2,tmpv; //,pk;
   int i,j,k,Nv,nmax,Nbin;  
   vector<int> binlst;//,indexflaglst;  
   binlst.reserve(100);
 
   Nv=vlst.size();
-  //printf("Begin another seperate_group, list size=%d\n",Nv);//---test---
+  printf("Begin another seperate_group, list size=%d\n",Nv);//---test---
   if(Nv==0){
 	printf("### seperate_gp, the input list has no value inside!\n");
 	exit(0);
@@ -75,8 +76,6 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   //FILE *ftemp2;
   //ftemp2=fopen("temp_v.txt","w");
   for(i=0;i<Nv;i++){
-        while(vlst[i]<0)vlst[i]+=T;
-        while(vlst[i]>T)vlst[i]-=T;
 	k=int(floor(vlst[i]/dv));
 	//fprintf(ftemp2,"%d %d %g\n",i,k,vlst[i]);
 	if(k==Nbin){printf("#### seperate_gp, strange case, vlst[%d]=%g,k=%d==%d\n",i,vlst[i],k,Nbin);exit(0);}
@@ -97,6 +96,13 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   
   //--compute avg in the [peak-130,peak+60] range
   avg1=0.;
+  /*vector<double> tmpvlst=vlst;
+  for(i=0;i<Nv;i++){
+	while(tmpvlst[i]<pk-130)tmpvlst[i]+=T;
+	while(tmpvlst[i]>pk+(T-130))tmpvlst[i]-=T;
+	avg1+=tmpvlst[i];
+  }//for i<Nv
+  */
   for(i=0;i<Nv;i++){
 	tmpv=vlst[i];
 	while(tmpv<pk-130)tmpv+=T;
@@ -104,7 +110,7 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
 	avg1+=tmpv;
   }
   avg1/=Nv;
-  //printf("hey, peak value = %g avg=%g === ibin=%d\n",pk,avg1,k);//---check---
+  printf("hey, peak value = %g avg=%g === ibin=%d\n",pk,avg1,k);//---check---
 
   //-- choose between avg1, avg2 based on their dist to pk, and get the |avg-pk|
   avg1=convert(avg1,pk,T);
@@ -120,6 +126,7 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   printf("dist=%g distcri=%g, Ngp=%d\n",dist,distcri,Ngp);//--check--
   //--group the index of vlst into Ngp group(s)
   indexflaglst.clear();
+  //indexflaglst.reserve(3000);
   if(Ngp==1){//only one group
 	for(i=0;i<Nv;i++){
 		indexflaglst.push_back(1);//this lst tells if this para belongs to gp1 or 2 
@@ -151,53 +158,85 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   }//else two groups
   if(indexflaglst.size()!=Nv){printf("something wrong, size doesn't match! %d!=%d\n",indexflaglst.size(),Nv);exit(0);}//---check---
   
+  //binlst.clear();
+  //vector<int>().swap(binlst);
+
   printf("pause\n");
   return 1;//indexflaglst;
   //return vlst;
 }//seperate_gp
 //--------------------------
-int cs2ap_v2(double Ac,double As, double &amp,double &phi, double &fa, int phiflag){
+int cs2ap_v2(float Ac,float As, float &amp,float &phi){
 // this is slightly different from the cs2ap (in the CALforward*.C). This does not give the fast direction, but just the angle directely correlated with sin and cos
-  //the returned phi & fa are in radius
-  double T=M_PI*2/phiflag;
   amp=sqrt(Ac*Ac+As*As);
-  phi=atan2(Ac,As); //rad
-  fa=T/4.-phi/phiflag;
+  phi=atan2(Ac,As);
+  phi=phi*180./M_PI; //rad2deg
   return 1;
 }//cs2ap_v2
 //--------------------------
-int ap2cs(double amp,double phi,double &Ac,double &As){
-  //phi is in radius
-  if(fabs(phi)>10){
-	printf("### ap2cs, Hey, the input phi should be in radius NOT degree! here phi=%g\n",phi);
-	exit(0);
-  }
+int ap2cs(float amp,float phi,float &Ac,float &As){
+  phi=phi*M_PI/180.;//deg2rad
   Ac=amp*cos(phi);
   As=amp*sin(phi);
   return 1;
 }//ap2cs
-//--------------------------
-vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vector<int> idlst, int Ngood, int &Ngp){
+//------------------
+int get_peak(vector<float> &vlst, float &pk,float T){//---test---
+//-- compute the peak value; bin the list and get the value correlated with most data
+  float dv;
+  int i,k,nmax,Nbin,Nv;
+  vector<int> binlst;
+  binlst.reserve(100);
+
+  Nv=vlst.size();
+  dv=5.;//bin width
+  Nbin=int(T/dv);
+  if(int(T*10)%int(dv*10)!=0){
+	printf("### seperate_gp, the dv(%g) is not good! mod(T,dv)=mod(%g,%g)!=0\n",dv,T,dv);
+	exit(0);
+  }
+  
+  for(i=0;i<Nbin;i++){
+	binlst.push_back(0);
+  }
+  for(i=0;i<Nv;i++){
+	while(vlst[i]<0)vlst[i]+=T;
+	while(vlst[i]>T)vlst[i]-=T;
+	k=int(floor(vlst[i]/dv));
+	//fprintf(ftemp2,"%d %d %g\n",i,k,vlst[i]);
+	if(k==Nbin){printf("#### get_peak, strange case, vlst[%d]=%g,k=%d==%d\n",i,vlst[i],k,Nbin);exit(0);}
+	binlst[k]++;
+  }
+  //get the value with max binlst value
+  k=0;
+  nmax=-100;
+  for(i=0;i<Nbin;i++){
+	if(binlst[i]>nmax){nmax=binlst[i];k=i;}
+  }
+  pk=(k+0.5)*dv;//the mid value of that bin; normally, I think pk is correlated with the group with c<=0, but I might be wrong
+  return 1;
+}// get_peak
+//  --------------------------
+int convert_AZpara(vector<vector<double> > &AZcoslst2,vector<vector<double> > &AZsinlst2,vector<int> AZcosidlst, vector<int> idlst, int Ngood){
   // this is used to group and convert the AZcos, AZsin: AZcos, AZsin --> FA, AMP --> convert FA, move values close by taking the periodicity into account --> converted AZcos, AZsin based on AMP and converted_FA
-  // return the indexflaglst of the last AZcos para, so by default, the input AZcos list should have the same angle
   int i,j,ip,k;
   //int size;
-  int Rphi;
+  int Ngp;
   //vector<double> AZcoslst,AZsinlst;
-  double T,AZcos,AZsin,phi,fa,amp,pk;
-  vector<double> anglst,amplst;
+  float T,AZcos,AZsin,ang,amp,pk; //---test
+  vector<float> anglst,amplst;
   vector<int> indexflaglst;
-  double rad2deg,deg2rad;
-
-  rad2deg=180./M_PI;
-  deg2rad=M_PI/180.;
   indexflaglst.reserve(Ngood);
   anglst.reserve(Ngood);
   amplst.reserve(Ngood);
 
-  //########## IMPORTANT PARAMETER ########### CONTROL WHICH RAYLEIGH-WAVE LOVE-WAVE AZI TO COMPUT
-  Rphi=2;
-  T=M_PI*2/Rphi*rad2deg; // in degree
+  /*---test----
+  vector<double> anglstcvt;
+  vector<vector<double> > anglstcvt2;
+  vector<vector<double> > anglst2;//---test---
+  */
+  T=180.;// period of the angle
+  //size=paralst.size();
 
   for(i=0;i<AZcosidlst.size();i++){
 	ip=AZcosidlst[i];
@@ -206,53 +245,44 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
 	indexflaglst.clear();
 	for(j=0;j<Ngood;j++){
 		k=idlst[j];
-		AZcos=paralst[k].parameter[ip];
-		AZsin=paralst[k].parameter[ip+1];
-		cs2ap_v2(AZcos,AZsin,amp,phi,fa,Rphi); // fa and phi are in rad
-		anglst.push_back(fa*rad2deg);
+		AZcos=AZcoslst2[i][j];//paralst[k].parameter[ip];
+		AZsin=AZsinlst2[i][j];//paralst[k].parameter[ip];
+		//AZsin=paralst[k].parameter[ip+1];
+		cs2ap_v2(AZcos,AZsin,amp,ang);// this is slightly different from the cs2ap, in that this does not give the fast direction, but just the angle directely correlated with sin and cos
+		anglst.push_back(ang);
 		amplst.push_back(amp);
 	}//j<size
-	seperate_gp(anglst,Ngp,pk,indexflaglst,10.,T);
-	printf("in convert_AZ, the %dth AZcospara, peak=%g\n",i,pk);
+	//anglst2.push_back(anglst);//---test---
+	//anglstcvt.clear();//----test---
+	//seperate_gp(anglst,Ngp,pk,indexflaglst,10.);//---test
+	//pk=90.;Ngp=1;//----test
+	pk=-99.;
+	get_peak(anglst, pk, T);
 	//-----------
+	Ngp=1;
+	printf("pause2 peak=%g\n",pk);//---test--
 	if(Ngp==1){
 		for(j=0;j<Ngood;j++){
-			fa=anglst[j]=convert(anglst[j],pk,T);//deg
+			ang=convert(anglst[j],pk,T);
 			amp=amplst[j];
-			phi=(T/4-fa)*Rphi*deg2rad;//rad
 			//anglstcvt.push_back(ang);//---test---
-			ap2cs(amp,phi,AZcos,AZsin);
-			paralst[idlst[j]].parameter[ip]=AZcos;
-			paralst[idlst[j]].parameter[ip+1]=AZsin;
+			ap2cs(amp,ang,AZcos,AZsin);
+			AZcoslst2[i][j]=AZcos;
+			AZsinlst2[i][j]=AZsin;
+			//paralst[idlst[j]].parameter[ip]=AZcos;
+			//paralst[idlst[j]].parameter[ip+1]=AZsin;
 		}//for j
 	}//if Ngp
 	else{
-		//---this part may need modification! --- even if there are 2 groups of solutions, I still treat it as one group
-		printf("#### convert_AZpara, dealing with the %dth AZcos parameter (%dth parameter), there are %d groups of angles peak=%g and %g\n",i,ip,Ngp,pk,pk+0.5*T); 
-//---to be modified----
-        	for(j=0;j<Ngood;j++){
-                	if(indexflaglst[j]==1){
-				fa=anglst[j]=convert(anglst[j],pk,T);//deg
-			}
-                	else if (indexflaglst[i]==2){
-				fa=anglst[j]=convert(anglst[j],pk+0.5*T,T);//deg
-                	}
-			amp=amplst[j];
-			phi=(T/4-fa)*Rphi*deg2rad;//rad
-			ap2cs(amp,phi,AZcos,AZsin);
-                        paralst[idlst[j]].parameter[ip]=AZcos;
-                        paralst[idlst[j]].parameter[ip+1]=AZsin;
-        	}//for i
-	
-
+		printf("#### convert_AZpara, dealing with the %dth AZcos parameter (%dth parameter), there are %d groups of angles, and this multiple groups of angle situation has not been considered.\n",i,ip,Ngp);
 		//exit(0); //---test---
 	}//else Ngp>1
-	printf("hey, finish converting paraCos%d para%d\n",i,ip);
+	//anglstcvt2.push_back(anglstcvt);//----test---
   }//for i < AZcosidlst.size()
   
   
-  return indexflaglst;
-  //return 1;
+  //
+  return 1;
 }//convert_AZpara
 
 //--------------------------
@@ -263,6 +293,7 @@ vector<double> compute_paraavg(vector<paradef> paralst,vector<int> idlst, vector
 
         Npara=paralst[0].npara;
         Ngood=idlst.size();
+	vavglst.reserve(Npara);//--add--
 
 	//printf("begin compute_paraavg %d %d\n",paralst[0].parameter.size(),paralst[0].LoveRAparameter.size());//--check--
         if((id-1)*(id-2)!=0){printf("### compute_paraavg, wrong value for id! should be 1 or 2\n");exit(0);}
@@ -309,6 +340,7 @@ vector<vector<double> > compute_paraavgAZ(vector<paradef> paralst,vector<int> id
 
         Npara=paralst[0].npara;
         Ngood=idlst.size();
+	vavglst.reserve(Npara);//---add--
 
 	//printf("begin compute_paraavg %d %d\n",paralst[0].parameter.size(),paralst[0].LoveRAparameter.size());//--check--
 
@@ -345,10 +377,10 @@ vector<vector<double> > compute_paraavgAZ(vector<paradef> paralst,vector<int> id
   return vavglst;
 }//compute_paraavgAZ
 //--------------------------
-vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst, vector<int> AZcosidlstM){
+vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst){
   // in this function, if idphiM<0 then, won't do mantle group seperation based on mantle phi
   // flag indicate if average is for para.parameter(flag=1) or for para.parameter/LoveRAparameter/LoveAZparameter (flag=3)
-  int i,j,k,size,idmin,Ngp,NgpM,igp,pflag,Ngood;
+  int i,j,k,size,idmin,Ngp,NgpM,igp,pflag,Ngood,Nidcos;
   vector<int> indexflaglst,indexflaglstM,idlst,idlstnew,idminlst;
   //vector<int> idlstnewtest;
   vector<double> philst,philstM;  
@@ -356,6 +388,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   //vector<double> parastd;
   paradef paraavg,parastd;
   T=180.; //period of phi
+  Nidcos=AZcosidlst.size();
 
   if((flag-1)*(flag-3)!=0){
 	printf("### para_avg_multiple_gp, flag should be 1(compute avg for para.parameter), or 3 (compute avg for para.parameter, para.LoveRAparameter, and para.LoveAZparameter), but input is %d\n",flag);
@@ -365,6 +398,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   idlstlst.clear();
   size=paralst.size();
   if(size<1) return idminlst;
+  indexflaglst.reserve(size);indexflaglstM.reserve(size);idlst.reserve(size);idlstnew.reserve(size);idminlst.reserve(10);philst.reserve(size);philstM.reserve(size);//--add--
  
   paraavg=paralst[0];
   //parabest=paralst[0];
@@ -373,6 +407,17 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
  
   //--initialize the paralst and parastd --> will be handled by the function compute_paraavg
 
+  //--get the ipara for the phi
+  /*for(i=0;i<paralst[0].npara;i++){
+	printf("para0.size=%d\n",paralst[0].para0.size());//--check--
+	igp=(int)paralst[0].para0[i][4];
+	pflag=(int)paralst[0].para0[i][6];
+	if(igp==1 and pflag==7){//since the phi is constant in crust, just take the 1st phi
+		idphi=i;
+		break;
+	}
+  }//for i
+  */
   printf("idphi=%d\n",idphi);//--check--
 
   //--get the smallest misfit and get the index lst for model within misfit criteria-- this is just a groups of model with acceptable misfit; then after group seperation, we will re-select the model with higher criteria;(two criteria, one in seperate_gp[based on its dist to the avg phi value], one in the later part of this subroutine[based on the mismin of that phi gorup])
@@ -395,13 +440,34 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 	}
   }
 
-
-  //--- by default, a group (e.g., crust) can only be either TTI/TI/iso or AZcos, cannot be both at the same time
-  if(AZcosidlst.size()>0){// if this group is AZcos
   //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. Without this step, the averaged values. 
-  indexflaglst=convert_AZpara(paralst, AZcosidlst,idlst,Ngood,Ngp);
+  vector<double> AZsinlst,AZcoslst;
+  vector<vector<double> > AZcoslst2,AZsinlst2;
+  AZcoslst.reserve(Ngood);
+  AZsinlst.reserve(Ngood);
+  AZcoslst2.reserve(Nidcos);
+  AZsinlst2.reserve(Nidcos);
+  //AZcoslst2.reserve(AZcosidlst.size());
+  //AZsinlst2.reserve(AZcosidlst.size());
+  for(i=0;i<Nidcos;i++){
+	k=AZcosidlst[i];
+	AZcoslst.clear();AZsinlst.clear();
+	for(j=0;j<Ngood;j++){//---test---
+		if(j>size or k+1>paralst[idlst[j]].parameter.size()-1){printf("Hey,%dth model, %d>%d or %d > %d\n",j,j,size,k+1,paralst[idlst[j]].parameter.size()-1);exit(0);}
+		AZcoslst.push_back(paralst[idlst[j]].parameter[k]);
+		AZsinlst.push_back(paralst[idlst[j]].parameter[k+1]);
+		//AZcoslst.push_back(-0.0007);
+		//AZsinlst.push_back(0.0003);
+		//AZcoslst.push_back(gen_random_unif01());
+		//AZsinlst.push_back(gen_random_unif01());
+	}
+	AZcoslst2.push_back(AZcoslst);
+	AZsinlst2.push_back(AZsinlst);
   }
-  else{// else this group is TTI or TI/iso
+
+  //convert_AZpara(paralst, AZcosidlst,idlst,Ngood);
+  convert_AZpara(AZcoslst2,AZsinlst2, AZcosidlst,idlst,Ngood);
+
   //---get philst(only from mod with small misfit), and call function seperate_gp to group the philst
   //philst.clear();
   if(idphi>=0){
@@ -410,7 +476,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 	philst.push_back(paralst[k].parameter[idphi]);}  
 
   Ngp=0;
-  seperate_gp(philst,Ngp,pkC,indexflaglst,5.,T);
+  seperate_gp(philst,Ngp,pkC,indexflaglst,5.);
   }//if idphi>=0
   else{
     Ngp=1; // no idphi informatino, then do not seperate the group
@@ -420,8 +486,14 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   /*for(i=0;i<Ngood;i++){
 	// since I disabled the &vlst in the seperate_gp function, the philst is not changed, so no need to transfer its value back to paralst; I disabled it only b.c. of the memory problem correlated with the '&'
 	k=idlst[i];
+	//--check---
+	//if(fabs(paralst[k].parameter[idphi]-philst[i])>1){
+	//	printf("  %g->%g\n",paralst[k].parameter[idphi],philst[i]);
+	//}
+	paralst[k].parameter[idphi]=philst[i];
   }*/
   //
+  //printf("hi 309\n");//--check---
 
   //--since philst is not transfered back, need to modify the phi values here
   if(idphi>=0){
@@ -447,13 +519,8 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   }//else two groups
   }//if idphi>=0
   //---
-  }// else AZcosidlst.size()
 
-  if(AZcosidlstM.size()>0){// if this group is AZcos
-  //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. Without this step, the averaged values. 
-  indexflaglstM=convert_AZpara(paralst,AZcosidlstM,idlst,Ngood,NgpM);
-  }
-  else{// else this group is TTI or TI/iso
+
   //## if want to seperate the model also based on mantle phi,then
   if(idphiM>=0){ // do do group seperation for mantle
   philstM.clear();
@@ -462,7 +529,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 	philstM.push_back(paralst[k].parameter[idphiM]);
   }
   NgpM=0;
-  seperate_gp(philstM,NgpM,pkM,indexflaglstM,5.,T);
+  seperate_gp(philstM,NgpM,pkM,indexflaglstM,5.);
   /*for(i=0;i<Ngood;i++){
 	k=idlst[i];
 	paralst[k].parameter[idphiM]=philstM[i];
@@ -495,9 +562,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 	for(i=0;i<Ngood;i++)indexflaglstM.push_back(1);
   }
   //printf("hi 331\n");//--check---
-  }// else AZcosidlstM.size()
 
-//---to be modified----
   for(i=0;i<Ngp;i++){
 	for(j=0;j<NgpM;j++){
   		idlstnew.clear();

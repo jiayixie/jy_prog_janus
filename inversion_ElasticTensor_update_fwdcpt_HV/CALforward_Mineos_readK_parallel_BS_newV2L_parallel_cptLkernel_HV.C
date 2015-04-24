@@ -1566,7 +1566,7 @@ int cs2ap(double Ac,double As, double &amp,double &phi, int phiflag){
 // convert cos and sin to the amplitue and phi where phi is the fast axis (I think it's CW from N, not sure...)
 // Ac*cos(Xt)+As*sin(Xt)=sqrt(A^2+B^2)*sin(Xt+phi)=sqrt(A^2+B^2)*sin(X(t+phi')); phi=atan(Ac/As), if As/cos(phi)<0 then phi=phi+pi;  phi'=phi/X 
 //# Xpsi: fitting_curve=A*sin(X*(t+Xpsi))+C ==> fast_axis = pi/2/X-Xpsi
-//# this can be understood if you draw a picture; +Xpsi moves the sin curve left by Xpsi, and 1/4 period of the sin curve is pi/2/X; the positive peak was at pi/2/X,then is moved left by Xpsi --> the positive peak is at pi/2/X=Xpsi
+//# this can be understood if you draw a picture; +Xpsi moves the sin curve left by Xpsi, and 1/4 period of the sin curve is pi/2/X; the positive peak was at pi/2/X (T/4),then is moved left by Xpsi --> the positive peak is at pi/2/X-Xpsi (T/4-Xpsi)
 //
 
   // Rayleigh can also have 4-phi azi!!	
