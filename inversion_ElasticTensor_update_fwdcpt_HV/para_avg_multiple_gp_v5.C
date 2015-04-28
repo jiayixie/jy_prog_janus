@@ -9,6 +9,7 @@
 // previous v3 version has bug for identifying multiple gorup for 0.90,180 peak case; now change it by 1) find peak; 2) move all points to [peak-130,peak+60[ range 3) then do average and compare average&peak
 // this version, the pk will be passed to the main program, only pass the pkC (peak of phi in the crust) value, not the pkM value
 // only the phi value in the 1st layer/grid of that group has the right value, since only that layer/grid has converted phi value
+// debuged the sperate_gp
 
 float convert(float vin,float vref,float T){
   float v;
@@ -65,6 +66,8 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   }
   //FILE *ftemp2;
   //ftemp2=fopen("temp_v.txt","w");
+  while(vlst[i]>T)vlst[i]-=T;
+  while(vlst[i]<0)vlst[i]+=T;
   for(i=0;i<Nv;i++){
 	k=int(floor(vlst[i]/dv));
 	//fprintf(ftemp2,"%d %d %g\n",i,k,vlst[i]);

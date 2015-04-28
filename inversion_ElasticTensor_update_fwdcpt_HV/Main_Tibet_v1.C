@@ -86,7 +86,7 @@ exit(0);
   inpamp=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
   inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  iitercri1= 30000;//50000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1= 20000;//50000;//100000;//12000 (mod1, 1cstlay)
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
@@ -107,7 +107,7 @@ exit(0);
   //Lvgrad.push_back(0);
   Lvgrad.push_back(1);
   //Vposani.push_back(0);
-  Vposani.push_back(1);
+  //Vposani.push_back(1);
   Vposani.push_back(2);
   /*
   Viso.push_back(0);

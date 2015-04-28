@@ -1035,6 +1035,8 @@ for i<para.npara
 
 			else{// Asin=Asin[x]/Acos[x]*Acos
 				newv=model.groups[ng].phivalue[gpnum]/model.groups[ng].thetavalue[gpnum]*model.groups[ng].thetavalue[nv];
+				//--check the sign, if sign is flipped, then return 1k+newv
+				if(newv*model.groups[ng].phivalue[gpnum]<0)return 1000.0+newv;
 			}
 		}
 		//-----------
@@ -1093,7 +1095,11 @@ for i<para.npara
 			outpara.parameter[i-1]=0.;
 			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
 
-		    }//if Asin
+		    }//if Asin<-900
+		    else if (outpara.parameter[i]>900){//the sign of cos and sin is not right, should multiply both of them by -1
+			outpara.parameter[i-1]*=-1;
+			outpara.parameter[i]=(outpara.parameter[i]-1000.0)*(-1);
+		    }// else if >900
 		  }//else if	
 		  // then else indicate sigma==0; keep parameter unchanged
 

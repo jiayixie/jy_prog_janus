@@ -10,7 +10,8 @@
 // this version, the pk will be passed to the main program, only pass the pkC (peak of phi in the crust) value, not the pkM value
 // only the phi value in the 1st layer/grid of that group has the right value, since only that layer/grid has converted phi value
 
-// this version, para_avg_multiple_gp_v6.C, considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> FA, AMP --> convert FA --> AZcos, AZsin --> do avg
+// this version, para_avg_multiple_gp_v6.C, considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> AMP,PHI,FA (function of PHI) --> convert FA --> convert PHI --> AZcos, AZsin --> do avg
+// debugged the serperate_gp function
 
 double convert(double vin,double vref,double T){
   double v;
@@ -30,7 +31,7 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
   // input the para list (a list of phi) that will be judged during the grouping process. 
   //return two index lists, each list belongs to one phi group
   // the input T and angles are in degree
-  // 
+  // the output pk is within [0,T]
   //#############PARAMETER
   //double distcri=5;//if |peak-avg|>distcri, then we think there are multiple groups of phi value
   double dv,dist,tv,dist1,dist2;
@@ -159,6 +160,8 @@ int seperate_gp(vector<double> vlst,int &Ngp, double &pk, vector<int> &indexflag
 int cs2ap_v2(double Ac,double As, double &amp,double &phi, double &fa, int phiflag){
 // this is slightly different from the cs2ap (in the CALforward*.C). This does not give the fast direction, but just the angle directely correlated with sin and cos
   //the returned phi & fa are in radius
+  //Ac*cos(X*theta)+As*sin(X*theta)=A*sin(X*theta+phi)
+  //where A=sqrt(Ac*Ac+As*As); phi=atan(Ac/As); fast_axis=T/4-phi/X, and T=2pi/X
   double T=M_PI*2/phiflag;
   amp=sqrt(Ac*Ac+As*As);
   phi=atan2(Ac,As); //rad
@@ -168,12 +171,15 @@ int cs2ap_v2(double Ac,double As, double &amp,double &phi, double &fa, int phifl
 //--------------------------
 int ap2cs(double amp,double phi,double &Ac,double &As){
   //phi is in radius
+  //for a givin phi and amp, compute the coefficient for cos and sin
+  //A*sin[X*theta+phi]=Ac*cos(X*theta)+As*sin(X*theta)
+  //==> Ac=A*sin(phi); As=A*cos(phi)
   if(fabs(phi)>10){
 	printf("### ap2cs, Hey, the input phi should be in radius NOT degree! here phi=%g\n",phi);
 	exit(0);
   }
-  Ac=amp*cos(phi);
-  As=amp*sin(phi);
+  Ac=amp*sin(phi);
+  As=amp*cos(phi);
   return 1;
 }//ap2cs
 //--------------------------
@@ -184,7 +190,7 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
   //int size;
   int Rphi;
   //vector<double> AZcoslst,AZsinlst;
-  double T,AZcos,AZsin,phi,fa,amp,pk;
+  double T,AZcos,AZsin,phi,fa,amp,pk,pk2;
   vector<double> anglst,amplst;
   vector<int> indexflaglst;
   double rad2deg,deg2rad;
@@ -204,6 +210,8 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
 	anglst.clear();
 	amplst.clear();
 	indexflaglst.clear();
+	//---test--- record the cos, sin, and fa before and after the change
+  	vector<double> Vcosb,Vsinb,Vcosa,Vsina,fab,faa;
 	for(j=0;j<Ngood;j++){
 		k=idlst[j];
 		AZcos=paralst[k].parameter[ip];
@@ -211,6 +219,11 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
 		cs2ap_v2(AZcos,AZsin,amp,phi,fa,Rphi); // fa and phi are in rad
 		anglst.push_back(fa*rad2deg);
 		amplst.push_back(amp);
+
+		//---test--- record the cos, sin, and fa before and after the change
+		Vcosb.push_back(AZcos);	
+		Vsinb.push_back(AZsin);	
+		fab.push_back(fa*rad2deg);
 	}//j<size
 	seperate_gp(anglst,Ngp,pk,indexflaglst,10.,T);
 	printf("in convert_AZ, the %dth AZcospara, peak=%g\n",i,pk);
@@ -224,24 +237,53 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
 			ap2cs(amp,phi,AZcos,AZsin);
 			paralst[idlst[j]].parameter[ip]=AZcos;
 			paralst[idlst[j]].parameter[ip+1]=AZsin;
+
+			//---test--- record the cos, sin, and fa before and after the change
+			Vcosa.push_back(AZcos);	
+			Vsina.push_back(AZsin);
+			faa.push_back(fa);
 		}//for j
 	}//if Ngp
 	else{
-		//---this part may need modification! --- even if there are 2 groups of solutions, I still treat it as one group
-		printf("#### convert_AZpara, dealing with the %dth AZcos parameter (%dth parameter), there are %d groups of angles peak=%g and %g\n",i,ip,Ngp,pk,pk+0.5*T); 
+		pk2=pk+0.5*T;
+		while(pk2>T)pk2-=T;
+		while(pk2<0)pk2+=T;
+		printf("#### convert_AZpara, dealing with the %dth AZcos parameter (%dth parameter), there are %d groups of angles peak=%g and %g\n",i,ip,Ngp,pk,pk2); 
 //---to be modified----
         	for(j=0;j<Ngood;j++){
-                	if(indexflaglst[j]==1){
+                	if(indexflaglst[j]==1){//belongs to gp1
 				fa=anglst[j]=convert(anglst[j],pk,T);//deg
 			}
-                	else if (indexflaglst[i]==2){
-				fa=anglst[j]=convert(anglst[j],pk+0.5*T,T);//deg
+                	else if (indexflaglst[j]==2){//belongs to gp2
+				fa=anglst[j]=convert(anglst[j],pk2,T);//deg
                 	}
+			else if (indexflaglst[j]==0){//does not belong to any groups
+				fa=anglst[j];
+			}
+			else{
+				printf("### convert_AZ, hey, the indexflaglst has problem! value should be either 0, 1 or 2. but here it equals to %d\n",indexflaglst[j]);
+				exit(0);
+			}
 			amp=amplst[j];
 			phi=(T/4-fa)*Rphi*deg2rad;//rad
 			ap2cs(amp,phi,AZcos,AZsin);
+			//printf("cos: %g -> %g sin: %g-> %g\n",paralst[idlst[j]].parameter[ip],AZcos,paralst[idlst[j]].parameter[ip+1],AZsin);
                         paralst[idlst[j]].parameter[ip]=AZcos;
                         paralst[idlst[j]].parameter[ip+1]=AZsin;
+			//---test--- record the cos, sin, and fa before and after the change
+			Vcosa.push_back(AZcos);	
+			Vsina.push_back(AZsin);
+
+  			phi=atan2(AZcos,AZsin);
+  			phi=phi/Rphi;
+			double T2=M_PI*2/Rphi;
+  			fa=T2/4.-phi; //fast axis direction
+  			while(fa>T2)
+          			fa-=T2;
+  			while(fa<0)
+          			fa+=T2;
+			fa=fa*180./M_PI; //rad2deg
+			faa.push_back(fa);
         	}//for i
 	
 

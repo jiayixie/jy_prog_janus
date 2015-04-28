@@ -58,6 +58,7 @@ default_random_engine generator (seed);
 #include "./BIN_rw_Love.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 #include "para_avg_multiple_gp_v6.C"
+#include "cs2ap_model.C"
 
 //----------------------------------------------------------------
 	int para_best(vector<paradef> paralst,paradef &parabest){
@@ -961,6 +962,7 @@ int main(int argc, char *argv[])
     mff.close();
     printf("test-- begin read_bin\n");
     read_bin(modelall,paraall,fbname,signall,iiterall,iaccpall);
+    model_cs2ap(modelall,paraP);
     N=paraall.size();
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);
@@ -1013,19 +1015,15 @@ int main(int argc, char *argv[])
 	parastd=parastdlst[ig];
 
 	if(RAflag==1){
-       	 	//flagreadVkernel=1;//--test---
-       	 	//flagreadLkernel=1;
-       	 	flagreadVkernel=0;
-       	 	flagreadLkernel=0;
+       	 	//flagreadVkernel=flagreadLkernel=1;//--test---
+       	 	flagreadVkernel=flagreadLkernel=0;
 		//compute the kernel for this para, compute its disp (RA and AZ), write the disp 
 		printf("compute_dispM_writeASC\n");//---test--
 		//exit(0);
 		sprintf(str,"avg_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);
 		paraavg=compute_dispM_writeASC(paraavg,paraP,modelP,PREM,inpamp,inpphi,Nprem,flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,str);
-       	 	//flagreadVkernel=1;
-       	 	//flagreadLkernel=1;
-       	 	flagreadVkernel=0;
-       	 	flagreadLkernel=0;
+       	 	//flagreadVkernel=flagreadLkernel=1;//--test---
+       	 	flagreadVkernel=flagreadLkernel=0;
 		sprintf(str,"best_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);
 		parabest=compute_dispM_writeASC(parabest,paraP,modelP,PREM,inpamp,inpphi,Nprem,flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,str);
 	}
@@ -1045,7 +1043,7 @@ int main(int argc, char *argv[])
 	printf("Read bin in all phi_group%d, model_size=%d\n",ig,modelall.size());
 	sprintf(str,"%s_phigp%d",foutnm,ig);
 	if((out=fopen(str,"w"))==NULL){printf("### Cannot open %s to write!!\n",foutnm);exit(0);};
-	for(int j=0;j<idlst.size();j++){
+	for(int j=0;j<idlst.size();j++){// size of idlst = groups of model
 		i=idlst[j];
 		if(signall[i]==0){fprintf(out,"prior ");}
 	        else if(signall[i]==1){
