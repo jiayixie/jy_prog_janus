@@ -525,8 +525,11 @@ column:	0		1			2				3			4				5				....			N-1
 
 			      }// if pflag>2
 			      else{//pflag==2
-			        model.groups[iid].vpvvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
-			        model.groups[iid].vphvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+			        //model.groups[iid].vpvvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+			        //model.groups[iid].vphvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+				model.groups[iid].vpvvalue.push_back(0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i])*model.groups[iid].vpvs);
+                                model.groups[iid].vphvalue.push_back(0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i])*model.groups[iid].vpvs);
+
 			        model.groups[iid].etavalue.push_back(1.0);
 				model.groups[iid].thetavalue.push_back(0.);
 			    	model.groups[iid].phivalue.push_back(0.);
@@ -535,8 +538,10 @@ column:	0		1			2				3			4				5				....			N-1
 			    }//if pflag>1	  
 			    else{//pflag==1
 			      model.groups[iid].vshvalue.push_back(model.groups[iid].vsvvalue[i]);
-			      model.groups[iid].vpvvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
-			      model.groups[iid].vphvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+			      //model.groups[iid].vpvvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+			      //model.groups[iid].vphvalue.push_back(model.groups[iid].vsvvalue[i]*model.groups[iid].vpvs);
+                              model.groups[iid].vpvvalue.push_back(0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i])*model.groups[iid].vpvs);
+                              model.groups[iid].vphvalue.push_back(0.5*(model.groups[iid].vsvvalue[i]+model.groups[iid].vshvalue[i])*model.groups[iid].vpvs);			    
 			      model.groups[iid].etavalue.push_back(1.0);
 			      model.groups[iid].thetavalue.push_back(0.);
 			      model.groups[iid].phivalue.push_back(0.);

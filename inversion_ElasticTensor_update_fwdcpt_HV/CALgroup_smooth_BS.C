@@ -91,12 +91,12 @@ int updategroup(groupdef &group)
 	  else if(group.thick<20)group.nlay=5;//10;
           else group.nlay=30;//30;
           nBs=group.np;
-          //if(nBs<4) order=3;
-          //else order=4; //cubic Bspline
-          //factor = 2.;
+          if(nBs<4) order=3;
+          else order=4; //cubic Bspline
+          factor = 2.;
           //factor = 5.;// ---test---- 
-	  order=4.;//---test--
-          factor = 5.;// ---test---- 
+	  //order=4.;//---test--
+          //factor = 5.;// ---test---- 
 	  //printf("nBs=%d order=%d group.thick=%g factor=%g nlay=%d\n",nBs,order,group.thick,factor,group.nlay);
 	  gen_B_spline(nBs,order,0.,group.thick,factor,group.nlay,group.Bsplines);
           group.flagBs=1;

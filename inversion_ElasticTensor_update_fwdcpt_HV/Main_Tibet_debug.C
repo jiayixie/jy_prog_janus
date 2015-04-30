@@ -4,6 +4,7 @@
 // this version, use CALinv_isolay_rf_parallel_saveMEM_BS_updateK.C, which updated the Vkernel&Lkernel during the inversion
 // this version, use CALpara_isolay_BS_newV2L_changeEtaSpace.C, which require eta<=1.1
 // this Tibet version is for the Tibet's Elastic tensor inversion
+// this verison, debug, is used to debug the prior distribution problem
 
 #include<iostream>
 #include<algorithm>
@@ -32,8 +33,8 @@ default_random_engine generator (seed);
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
@@ -99,11 +100,12 @@ exit(0);
   //PosAnic=1;
   flagupdaterho=0;
   //Rvmono.push_back(0);
+  ///*
   Rvmono.push_back(1);
   Rvmono.push_back(2);
   Lvmono.push_back(1);
   Lvmono.push_back(2);
-  
+  //*/
   //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
   Rvgrad.push_back(1);
   //Rvgrad.push_back(2);
@@ -411,6 +413,9 @@ exit(0);
 
     float theta;
     printf("test-- do inv\n");
+    if(goodmodel(modelref,Rvmono,Rvgrad,Rsurflag,0,isoflag) ==0) {printf("bad R model\n");}
+    if( goodmodel(modelref,Lvmono,Lvgrad,0,Lsurflag,0)==0){printf("bad L model\n");}
+    exit(0);
     if((do_inv_BS(num_thread,2,-2,paralst,paraBS,modelBS,pararef,modelref,Rvmono,Lvmono,Rvgrad,Lvgrad,PREM,Vkernel,Lkernel,k1,k2,start,isoflag,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,Nprem,Rmonoc,Lmonoc,PosAnic,Vposani,iitercri1,ijumpcri1,fbinnm1,inpamp,inpphi,flagupdaterho))==0){
     //if((do_inv(2,-2,paralst,pararef,modelref,Rvmono,Lvmono,Rvgrad,Lvgrad,PREM,Vkernel,Lkernel,k1,k2,start,isoflag,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,Nprem,Rmonoc,Lmonoc,PosAnic,Vposani,iitercri1,ijumpcri1,fbinnm1,inpamp,inpphi,flagupdaterho))==0){
     	sprintf(str,"echo %s %.1f %.1f >> point_do_inv_failed.txt",nodeid,lon,lat);

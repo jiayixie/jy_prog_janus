@@ -800,7 +800,7 @@ int main(int argc, char *argv[])
 
   T=180.;
   //Rsurflag=5;
-  Lsurflag=1;AziampRsurflag=1;AziphiRsurflag=1;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");

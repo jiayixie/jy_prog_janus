@@ -946,7 +946,8 @@ for i<para.npara
 		else if(p6==2){//vsh
 			newv=model.groups[ng].vsvvalue[nv];}
 		else if(p6==3){//vpv
-			newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
+			//newv=model.groups[ng].vsvvalue[nv]*model.groups[ng].vpvs;}
+			newv=0.5*(model.groups[ng].vsvvalue[nv]+model.groups[ng].vshvalue[nv])*model.groups[ng].vpvs;}
 		else if (p6==4){//vph
 			newv=model.groups[ng].vpvvalue[nv];}
 		else if (p6==5){//eta
@@ -1096,7 +1097,7 @@ for i<para.npara
 			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
 
 		    }//if Asin<-900
-		    else if (outpara.parameter[i]>900){//the sign of cos and sin is not right, should multiply both of them by -1
+		    else if (outpara.parameter[i]>900 and p6==11){//the sign of cos and sin is not right, should multiply both of them by -1
 			outpara.parameter[i-1]*=-1;
 			outpara.parameter[i]=(outpara.parameter[i]-1000.0)*(-1);
 		    }// else if >900
