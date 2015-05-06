@@ -1,5 +1,6 @@
 #g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_do_inversion_parallel_BS_multipleGp_updateKeachjump_changeEtaSpace_parallel_cptLkernel_HV_Tibet.C -std=c++11 -o  invTibet -g
-g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_Tibet_v1.C -std=c++11 -o  invTibet_NposRAgp_f2o4_TI -g
+g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_Tibet_v1.C -std=c++11 -o  invTibet_NposRAgp_f2o4_prior_$argv[1] -g
+#g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_Tibet_v1.C -std=c++11 -o  invTibet_posRAgp12SP_nosign  -g
 #--debug
 #g++   -I  /home/jixi7887/Tool/C++Eigen/eigen-3.1.4  -fopenmp  Main_Tibet_debug.C -std=c++11 -o  invTibet_prior_debug -g
 

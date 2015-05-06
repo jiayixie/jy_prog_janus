@@ -11,7 +11,6 @@
 // this version,  in 'goodmodel', verified the gradient of the model. 
 // this version, on Apr 22, 2014, added constraint on vp/vs 
 // this version, vpconstr, in goodmodel, put constraints on both vsv,vsh and vpv,vph
-// put vp constrain in the positiveAni function (May 4, 2015)
 using namespace std;
 /*=====CONTENT=======
 int initdisp (dispdef &disp)
@@ -856,113 +855,147 @@ column:	0		1			2				3			4				5				....			N-1
 
 //-----------------------------------------------------	
 
-int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<int> Lvmono, vector<int> Lvgrad, int Rflag, int Lflag)
-{
-        // this is not an optimized code, but I try to make it compelete. in order to optimize, we need to seperate different cases (iso, scaled para, non-scaled para, etc.)
-        // sometimes, we require vsv and vsh have different constraint (e.g., vsh monoc, vsv not monoc). So we need to deal vsv and vsh seperately. I will group the model parameter into two groups: 1) vsv, vpv, vph 2) vsh (eta, theta, phi, Acos, Asin are not taken into consideration)
-        // there are a few criteria for a good model:
-        // * positive jump between each group (for vsv/h, vpv/h)
-        // * VsRA and VpRA should have the same sign: VsRA*VpRA>=0
-        // * (optional) monotonic increasing of velocities, or some constrain on the velocities' vertical gradient (for vsv/h, vpv/h)
-        // * higher bond on the velocities (for vsv/h, vpv/h)
-        // * (optional) positive velocity gradient at the top of a group (for vsv/h, vpv/h)
 
-        int i,j;
-        bool cc=false;
-        double gradient;
-        vector<int>::iterator id;
-	int flagjump,flagsign,flagbond,flaggrad,flagmono;
-	flagjump=flagsign=flagbond=flaggrad=flagmono=1;
-	flagsign=0;
-	
-        //-- * positive jump between each group (for vsv/h, vpv/h)
-	if(flagjump==1){
-        for(i=0;i<model.ngroup-1;i++){
-                if( model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() or model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back()  or model.groups[i+1].vpvvalue1[0]<model.groups[i].vpvvalue1.back()  or model.groups[i+1].vphvalue1[0]<model.groups[i].vphvalue1.back() ){
-                        if(cc){
-                                printf("-- positive vel jump gp%d-gp%d\n",i,i+1);printf("vsv: %g<%g or vpv: %g<%g or vsh: %g<%g or vph: %g<%g\n",model.groups[i+1].vsvvalue1[0],model.groups[i].vsvvalue1.back(),model.groups[i+1].vpvvalue1[0],model.groups[i].vpvvalue1.back(),model.groups[i+1].vshvalue1[0],model.groups[i].vshvalue1.back(),model.groups[i+1].vphvalue1[0],model.groups[i].vphvalue1.back());
-                        }//if cc                        
-                        return 0;
-                }//if <
-        }//for i<m.ngroup
-	}
-	if(flagsign==1){
-        //-- * VsRA and VpRA should have the same sign: VsRA*VpRA>=0. at each depth
-        for(i=0;i<model.ngroup;i++){
-                for(j=0;j<model.groups[i].nlay;j++){
-                        if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0){
-                                if(cc)printf("-- RA sm sign\n");
-                                return 0;
-                        }//if <
-                }//for j<m.g.nlay
-        }//for i<m.ng
-	}
-	if(flagbond==1){
-        //-- * higher bond on the velocities (for vsv/h, vpv/h),
-        //-- just check for the last group, is probably enough
-        for(i=0;i<model.groups[model.ngroup-1].nlay;i++){
-                if(model.groups[model.ngroup-1].vsvvalue[i]>4.9 or model.groups[model.ngroup-1].vshvalue[i]>4.9){
-                        if(cc)printf("-- Vmax \n");
-                        return 0;
-                }//if >
-        }//for i<m.g.nlay
-	}
-	
-        //--------------optional criteria, seperate R and L ----------------
-        if(Rflag>0){
-	if(flagmono==1){
-        //-- * monotonic increasing of velocities, or some constrain on the velocities' vertical gradient (for vsv/h, vpv/h)
-        for(id=Rvmono.begin();id<Rvmono.end();id++){
-                j=*id;
-                for(i=0;i<model.groups[j].nlay-1;i++){
-                      gradient=(model.groups[j].thick1[i])/(model.groups[j].vsvvalue1[i]-model.groups[j].vsvvalue1[i+1]);
-                      if(gradient>0. and gradient <70.){
-                                if(cc)printf("--R vsv monoc\n");
-                                return 0;
-                        }//if
-                }//for i
-        }//for id
-	}
-	if(flaggrad==1){
-        //-- * (optional) positive velocity gradient at the top of a group (for vsv/h, vpv/h)
-        for(id=Rvgrad.begin();id<Rvgrad.end();id++){
-                j=*id;
-                if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] or model.groups[j].vpvvalue1[1]<model.groups[j].vpvvalue1[0] or model.groups[j].vphvalue1[1]<model.groups[j].vphvalue1[0]){
-                        if(cc)printf("-- gradient in group%d\n",j);
-                        return 0;
-                }//if <
-        }//for id<vgrad 
-        }//if Rflag>0
-	}
-        //---------------------------
-        if(Lflag>0){
-	if(flagmono==1){
-        //-- * (optional) monotonic increasing of velocities, or some constrain on the velocities' vertical gradient (for vsh)
-        for(id=Lvmono.begin();id<Lvmono.end();id++){
-                j=*id;
-                for(i=0;i<model.groups[j].nlay-1;i++){
-                      gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
-                      if(gradient>0. and gradient <70.){
-                                if(cc)printf("--L vsv monoc\n");
-                                return 0;
-                        }//if
-                }//for i
-        }//for id
-	}
-	if(flaggrad==1){
-        //-- * (optional) positive velocity gradient at the top of a group (for vsv/h, vpv/h)
-        for(id=Lvgrad.begin();id<Lvgrad.end();id++){
-                j=*id;
-                if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0]){
-                        if(cc)printf("--L gradient in group%d\n",j);
-                        return 0;
-                }//if <
-        }//for id<vgrad 
-	}
-        }//if Lflag>0
-	return 1;
-}//goodmodel
+ int goodmodel( modeldef &model, vector<int> vmono, vector<int> vgrad,int Rflag, int Lflag, int isoflag)
+	 {
+	  // for anisotropic case, cannot check goodmodel for both R and L. need to run this twice, check L R seperately
+	  // this function is kind of mess, need to be refined
+	  return 1;//---test---debug---
+	  int i,j;
+	  double var=0;
+	  vector<int>::iterator id;
+	  double gradient;
+	  bool cc = false;
+	  if(isoflag>0 or Rflag>0){ // iso case, R and L have the same model.g.value1
+	//	/*---test--
+	      //---between groups, require positive vel jump---
+	      for(i=0;i<model.ngroup-1;i++)
+		//{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() )
+		{if(model.groups[i+1].vsvvalue1[0]<model.groups[i].vsvvalue1.back() or model.groups[i+1].vpvvalue1[0]<model.groups[i].vpvvalue1.back() ) 
+			{//cout<<"case 1\n"; //---test----
+			if(cc){printf("--R positive vel jump gp%d-gp%d\n",i,i+1);printf("vsv: %g<%g or vpv: %g<%g\n",model.groups[i+1].vsvvalue1[0],model.groups[i].vsvvalue1.back(),model.groups[i+1].vpvvalue1[0],model.groups[i].vpvvalue1.back());}
+       			return 0;}
+		}  	 
+	//	*/
+	      //---at each depth, require the VsRA and VpRA have the same sign---
+	      for(i=0;i<model.ngroup;i++){
+		for(j=0;j<model.groups[i].nlay;j++){
+			if((model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])<0){
+			if(cc)printf("--R RA sm sign\n");
+			return 0;}
+		}
+	      }
 
+	      //---monotonic velocity change in group vmono[?]
+	      for(id=vmono.begin();id<vmono.end();id++)
+              {
+	    	j=*id;
+	    	for(i=0;i<model.groups[j].nlay-1;i++)
+		    { gradient=(model.groups[j].thick1[i])/(model.groups[j].vsvvalue1[i]-model.groups[j].vsvvalue1[i+1]);
+		      if(gradient>0. and gradient <70.)
+		      {//printf("V1=%g h1=%g V2=%g h2=%g\n",model.groups[j].vsvvalue1[i],model.groups[j].vsvvalue1[i+1],model.groups[j].thick1[i],model.groups[j].thick1[i+1]);
+		       if(cc)printf("--R vsv monoc\n");
+		       return 0;}
+		
+			//if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] ){return 0;}
+			//if(model.groups[j].vsvvalue1[i]>model.groups[j].vsvvalue1[i+1] or model.groups[j].vpvvalue1[i]>model.groups[j].vpvvalue1[i+1] ){
+			//if(cc)printf("--R monoc sign\n");
+			//return 0;}
+		    }//for i
+	     }//for id
+		///*
+	      /*//--------------revised; newly added, Jun 2, 2012--------
+	      //require the slope in mantle part larger than 70.
+	     for(i=0;i<model.groups[2].nlay-1;i++){
+	         gradient=(model.groups[2].thick1[i])/(model.groups[2].vsvvalue1[i]-model.groups[2].vsvvalue1[i+1]);
+		 if(gradient>0. and gradient <50.){
+			 //printf("mantle grad !\n");
+		 	 if(cc)printf("--R vsv mantle monoc\n");
+			 return 0;}
+	     }*/
+	     //---require the vel at all depth (the maximum = g.tthcik, which comes from the input) to be smaller than 4.9 ---- revised on Aug 23, 2012------
+		//*/
+	     for (i=0;i<model.groups[2].nlay;i++){
+	     if(model.groups[2].vsvvalue1[i]>4.9 or model.groups[2].vshvalue1[i]>4.9){
+		     //printf("too large Vmoho\n");
+		     if(cc)printf("--R Vmax sign\n");
+		     return 0;}
+	     }
+		//*/
+	     //------------------------------------------------
+	     for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
+	      {
+	        j=*id;
+	        //if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] )
+	        if(model.groups[j].vsvvalue1[1]<model.groups[j].vsvvalue1[0] or model.groups[j].vpvvalue1[1]<model.groups[j].vpvvalue1[0] )
+		{ //cout<<"1st two value gradient\n"; //---test----
+		    if(cc)printf("--R gradient in group%d\n",j);
+		    return 0;}
+	      } 
+
+	      /*
+	      //-------- revised; newly added, Apr 22, 2014. constrains on the Vp/Vs=(vph+vpv)/(vsh+vsv)
+	      //--- in some case, if use vpv=vph==vp/vs*vsv, then need to modify this part
+	      for(i=0;i<model.ngroup;i++){
+		
+		for(j=0;j<model.groups[i].nlay-1;j++){
+			var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
+			//var=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/model.groups[i].vsvvalue1[j]/2.; // for the vpv=vph=vp/vs*vsv case (i.e., both vpv and vph's gen_newpara_flag is -1.0)
+			if(var<1.7 or var >3.0){
+		     	if(cc){printf("--R Vp/Vs\n");printf("igp=%d jlay=%d var=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);}
+			return 0;}
+			//if(var<1.65 or var>1.85){
+				//printf("reject ig=%d ilay=%d vp/vs=(%g+%g)/(%g+%g)=%g\n",i,j,model.groups[i].vphvalue1[j],model.groups[i].vpvvalue1[j],model.groups[i].vshvalue1[j],model.groups[i].vsvvalue1[j],var);
+			//	return 0;}
+	     	//---put upper limit on the amp of Vp and Vs anisotropy. //---test---
+	     	//if(fabs(2*(model.groups[i].vshvalue1[j]-model.groups[i].vsvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]))>0.15 or fabs(2*(model.groups[i].vphvalue1[j]-model.groups[i].vpvvalue1[j])/(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j]))>0.1){
+		//	return 0;}
+		}//for j
+	      }//for i vp/vs constraint
+	     */
+	  }//if isoflag or Rflag>0
+
+	  
+	  if (Lflag>0){
+	///* ---test---
+              for(i=0;i<model.ngroup-1;i++)//between groups
+                //{if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back())
+                {if(model.groups[i+1].vshvalue1[0]<model.groups[i].vshvalue1.back() or model.groups[i+1].vphvalue1[0]<model.groups[i].vphvalue1.back())
+                 {
+		  if(cc){printf("--L pos jump\n");printf("vsh: %g<%g or vph: %g<%g\n",model.groups[i+1].vshvalue1[0],model.groups[i].vshvalue1.back(),model.groups[i+1].vphvalue1[0],model.groups[i].vphvalue1.back());}
+		  return 0;}
+		  } 
+		
+	//	*/
+              for(id=vmono.begin();id<vmono.end();id++)// monotonic change in group vmono[?]
+              {
+                j=*id;
+                for(i=0;i<model.groups[j].nlay-1;i++){ 
+			gradient=(model.groups[j].thick1[i])/(model.groups[j].vshvalue1[i]-model.groups[j].vshvalue1[i+1]);
+		        if(gradient>0. and gradient <70.){
+			if(cc)printf("--L monotonic\n");
+			return 0; }
+		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]){return 0;}
+		 	//if(model.groups[j].vshvalue1[i]>model.groups[j].vshvalue1[i+1]  or model.groups[j].vphvalue1[i]>model.groups[j].vphvalue1[i+1] ){
+		  	//if(cc)printf("--L monotonic\n");
+			//return 0;}
+		}//for i
+		
+	     }//for id
+              for(id=vgrad.begin();id<vgrad.end();id++)//gradient check for the 1st two velue in group vgrad[?]
+              {
+                j=*id;
+		//if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0])
+                if(model.groups[j].vshvalue1[1]<model.groups[j].vshvalue1[0] or model.groups[j].vphvalue1[1]<model.groups[j].vphvalue1[0] )
+                    {
+		  	if(cc)printf("--L gradient in group%d\n",j);
+			return 0;}
+              }			
+	  
+	  }//if Lflag
+	
+	  return 1;
+	}//goodmodel
 //-----------------------------------------------------	
 	int positiveAni( modeldef model, vector<int> vmono)
 	{// require the L to be always faster than R in group vmono[?]
@@ -974,9 +1007,6 @@ int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<
 		for(i=0;i<model.groups[j].nlay;i++){
 			
 			if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] ){ //rm the VpRA>0 constraint, ---test---
-				return 0;
-			}
-			if(model.groups[j].vphvalue1[i]<model.groups[j].vpvvalue1[i]){// added/modified May 4, 2015
 				return 0;
 			}
 		}//for i

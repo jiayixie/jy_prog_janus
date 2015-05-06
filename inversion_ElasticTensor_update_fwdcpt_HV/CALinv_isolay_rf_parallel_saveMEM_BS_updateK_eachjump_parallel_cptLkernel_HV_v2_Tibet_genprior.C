@@ -30,6 +30,10 @@ int temp_writepara(FILE *f, paradef para,modeldef model, int iaccp, int ithread,
 	for(i=0;i<para.npara;i++)
 	{ fprintf(f,"%8g ",para.parameter[i]);
 	}
+	fprintf(f," RApara: ");
+	for(i=0;i<para.npara;i++)
+	{ fprintf(f,"%8g ",para.LoveRAparameter[i]);
+	}
 	/*
 	//---check---write out the Love wave 4psi signal amp, write peak and avg of the 1st 4 values
 	double max=-1.;
@@ -189,8 +193,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	    //cout<<"check monoc\n";//test---
 	    if(PosAni<=0){updatemodel(model1,flagupdaterho);}
 	    ibad=0;
-	    while(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0) 
-	    //while(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag) ==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0) 
+	    while(goodmodel(model1,Rvmono,Rvgrad,Lvmono,Lvgrad,Rsurflag,Lsurflag)==0)
 		{ibad++;
 		 gen_newpara(refparaBS,refmodelBS,para1BS,k1);
 		 para2mod(para1BS,refmodelBS,model1BS);//???
@@ -275,8 +278,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	 	//if(Rmonoc+Lmonoc>0){
 	 	if(Rsurflag+Lsurflag>0){
             		if(PosAni<=0){updatemodel(model1,flagupdaterho);}
-	    		if(goodmodel(model1,Rvmono,Rvgrad,Rsurflag,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lsurflag,0)==0){
-	    		//if(goodmodel(model1,Rvmono,Rvgrad,Rmonoc,0,isoflag)==0 or goodmodel(model1,Lvmono,Lvgrad,0,Lmonoc,0)==0){
+			if(goodmodel(model1,Rvmono,Rvgrad,Lvmono,Lvgrad,Rsurflag,Lsurflag)==0){
 	    		tflag=2;	
 			//temp_writepara(ftemp,para1,model1,countacc,i,-2);//---test
     	    		continue;}

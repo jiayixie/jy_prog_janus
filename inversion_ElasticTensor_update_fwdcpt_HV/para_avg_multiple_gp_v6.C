@@ -183,9 +183,11 @@ int ap2cs(double amp,double phi,double &Ac,double &As){
   return 1;
 }//ap2cs
 //--------------------------
-vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vector<int> idlst, int Ngood, int &Ngp){
+vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vector<int> idlst, int Ngood, int &Ngp, double sepangcri){
   // this is used to group and convert the AZcos, AZsin: AZcos, AZsin --> FA, AMP --> convert FA, move values close by taking the periodicity into account --> converted AZcos, AZsin based on AMP and converted_FA
   // return the indexflaglst of the last AZcos para, so by default, the input AZcos list should have the same angle
+  // --the sepangcri define the criteria that defines a parameter has multiple group or not. generally, this value is 5-10. But, depend on the need, you can set it very large, to eliminate multiple-group seperation.
+  
   int i,j,ip,k;
   //int size;
   int Rphi;
@@ -195,6 +197,7 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
   vector<int> indexflaglst;
   double rad2deg,deg2rad;
 
+ 
   rad2deg=180./M_PI;
   deg2rad=M_PI/180.;
   indexflaglst.reserve(Ngood);
@@ -225,7 +228,7 @@ vector<int> convert_AZpara(vector<paradef> &paralst,vector<int> AZcosidlst, vect
 		Vsinb.push_back(AZsin);	
 		fab.push_back(fa*rad2deg);
 	}//j<size
-	seperate_gp(anglst,Ngp,pk,indexflaglst,10.,T);
+	seperate_gp(anglst,Ngp,pk,indexflaglst,sepangcri,T);
 	printf("in convert_AZ, the %dth AZcospara, peak=%g\n",i,pk);
 	//-----------
 	if(Ngp==1){
@@ -441,7 +444,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   //--- by default, a group (e.g., crust) can only be either TTI/TI/iso or AZcos, cannot be both at the same time
   if(AZcosidlst.size()>0){// if this group is AZcos
   //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. Without this step, the averaged values. 
-  indexflaglst=convert_AZpara(paralst, AZcosidlst,idlst,Ngood,Ngp);
+  indexflaglst=convert_AZpara(paralst, AZcosidlst,idlst,Ngood,Ngp,10.);
   }
   else{// else this group is TTI or TI/iso
   //---get philst(only from mod with small misfit), and call function seperate_gp to group the philst
@@ -493,7 +496,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 
   if(AZcosidlstM.size()>0){// if this group is AZcos
   //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. Without this step, the averaged values. 
-  indexflaglstM=convert_AZpara(paralst,AZcosidlstM,idlst,Ngood,NgpM);
+  indexflaglstM=convert_AZpara(paralst,AZcosidlstM,idlst,Ngood,NgpM,100.);// here I set the sepangcri=100. to eliminate group seperation in the mantle
   }
   else{// else this group is TTI or TI/iso
   //## if want to seperate the model also based on mantle phi,then

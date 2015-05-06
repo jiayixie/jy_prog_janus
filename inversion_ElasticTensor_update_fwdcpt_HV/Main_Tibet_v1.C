@@ -32,8 +32,8 @@ default_random_engine generator (seed);
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
@@ -79,8 +79,8 @@ exit(0);
   isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
   Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
-  AziampRsurflag=0;
-  AziphiRsurflag=0;
+  AziampRsurflag=1;
+  AziphiRsurflag=1;
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
@@ -96,7 +96,7 @@ exit(0);
   qscri=250.;
   Rmonoc=1;//useless
   Lmonoc=1;//useless
-  //PosAnic=1;
+  PosAnic=0;
   flagupdaterho=0;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -105,10 +105,10 @@ exit(0);
   Lvmono.push_back(2);
   
   //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
-  Rvgrad.push_back(1);
+  //Rvgrad.push_back(1);
   //Rvgrad.push_back(2);
   //Lvgrad.push_back(0);
-  Lvgrad.push_back(1);
+  //Lvgrad.push_back(1);
   //Vposani.push_back(0);
   //Vposani.push_back(1);
   //Vposani.push_back(2);

@@ -962,7 +962,7 @@ int main(int argc, char *argv[])
     mff.close();
     printf("test-- begin read_bin\n");
     read_bin(modelall,paraall,fbname,signall,iiterall,iaccpall);
-    model_cs2ap(modelall,paraP);
+    model_cs2ap(modelall,paraP);//in the modelall, new the theta[] stores amp instead of Acos, phi[] stores fast-axis instead of Asin
     N=paraall.size();
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);

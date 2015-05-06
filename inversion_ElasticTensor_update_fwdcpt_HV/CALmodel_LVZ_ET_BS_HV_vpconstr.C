@@ -768,6 +768,10 @@ column:	0		1			2				3			4				5				....			N-1
 
           for(i=0;i<disp.npper;i++)
                 {
+                  //modified Apr30,2015, return the corrected (based on input disp) disp curves
+                  while(disp.pvel[i]-disp.pvelo[i]>0.5*T)disp.pvel[i]-=T;
+                  while(disp.pvel[i]-disp.pvelo[i]<-0.5*T)disp.pvel[i]+=T;
+                  
       		  phidiff1=fabs(disp.pvelo[i]-disp.pvel[i]);
 		  while(phidiff1>T){phidiff1-=T;}
 		  //--check @@
