@@ -261,7 +261,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     if(model0.flag==0){updatemodel(model0,flagupdaterho);}
     compute_dispMineos(model0,PREM,Nprem,Rsurflag,Lsurflag,0);
 
-    compute_dispMineos(model0,PREM,Nprem,Rsurflag,Lsurflag,0);
+    //compute_dispMineos(model0,PREM,Nprem,Rsurflag,Lsurflag,0);
     compute_misfitDISP(model0,Rsurflag,Lsurflag,0,0,0,0,0,0);
 
   char name[50];

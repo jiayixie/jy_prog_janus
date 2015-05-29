@@ -56,7 +56,8 @@ default_random_engine generator (seed);
 #include "./ASC_rw_HV.C"
 
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 #include "para_avg_multiple_gp_v6.C"
 #include "cs2ap_model.C"
 
@@ -78,7 +79,7 @@ default_random_engine generator (seed);
 	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
-	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs  vsvmin~phimin~vpvsmin,  vsvmax~phimax~vpvsmax];
+	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani  vsvmin~phimin~vpvsmin~animin,  vsvmax~phimax~vpvsmax~animax];
 	  //stdlst[ithick]=[vsvstd~phistd]
 	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
 	  //Feb19, 2015, modified this function, added rho & vpvs
@@ -219,6 +220,7 @@ default_random_engine generator (seed);
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
 				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi); 
 				tv.push_back(trho);tv.push_back(tvpvs);
+				tv.push_back(tani); // added May 7, 2015
 				tvlst.push_back(tv);
 				break;
 			}//if dep>tth
@@ -250,15 +252,18 @@ default_random_engine generator (seed);
 			system(str);
 			//exit(0);
 		}
-		//---vlst: vsv~phi~vpvs, vsvmin~phimin~vpvsmin, vsvmax~phimax~vpvsmax---
+		//---vlst: vsv~phi~vpvs~aniS, vsvmin~phimin~vpvsmin~animin, vsvmax~phimax~vpvsmax~animax---
 		tv.clear();
 		//tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vsvmin);tv.push_back(vsvmax);tv.push_back(vshmin);tv.push_back(vshmax);tv.push_back(ani);tv.push_back(animin);tv.push_back(animax);
 		tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vpv);tv.push_back(vph);tv.push_back(eta);tv.push_back(theta);tv.push_back(phi);
 		tv.push_back(rho);tv.push_back(vpvs);
+		tv.push_back(ani);//added May 7, 2015
 		tv.push_back(vsvmin);tv.push_back(vshmin);tv.push_back(vpvmin);tv.push_back(vphmin);tv.push_back(etamin);tv.push_back(thetamin);tv.push_back(phimin);
 		tv.push_back(rhomin);tv.push_back(vpvsmin);
+		tv.push_back(animin);//added May 7, 2015
 		tv.push_back(vsvmax);tv.push_back(vshmax);tv.push_back(vpvmax);tv.push_back(vphmax);tv.push_back(etamax);tv.push_back(thetamax);tv.push_back(phimax);
 		tv.push_back(rhomax);tv.push_back(vpvsmax);
+		tv.push_back(animax);//added May 7, 2015
 
 		vlst.push_back(tv);
 		hlst.push_back(th);
@@ -640,11 +645,12 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
     vector<vector<int> > idlstlst;
     vector<int> idminlst;
     paradef tpara,pararef,paraP;
-    modeldef modelref,modelP;
+    modeldef modelref,modelP,modeltmp;
     char name[100];
     vector<double> newmisfitlst;
     //--1. get the average para --
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM);
+    modeltmp=model0;
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -779,7 +785,7 @@ int main(int argc, char *argv[])
   char modnm1[200],fRdispnm[200],fLdispnm[200],fAZRdispnm[200],fAZLdispnm[200];
   vector<string> AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm;
   vector<string> Rdispnm,Ldispnm;
-  modeldef model0,modelP;
+  modeldef model0,modelP,modeltmp;
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
   vector<int> AZcosidlst,AZcosidlstM;
@@ -800,7 +806,7 @@ int main(int argc, char *argv[])
 
   T=180.;
   //Rsurflag=5;
-  Lsurflag=1;AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Lsurflag=1;AziampRsurflag=AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -952,6 +958,7 @@ int main(int argc, char *argv[])
     }
     fnmlst.push_back(fvsvnm);fnmlst.push_back(fvshnm);fnmlst.push_back(fvpvnm);fnmlst.push_back(fvphnm);fnmlst.push_back(fetanm);fnmlst.push_back(fthetanm);fnmlst.push_back(fphinm);
     fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);
+    fnmlst.push_back(faninm);//added May 7, 2015
     Nparanm=fnmlst.size();
     ifstream mff(fbname);
     if (! mff.good()){
@@ -1003,7 +1010,8 @@ int main(int argc, char *argv[])
 
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM);
+    modeltmp=model0;
+    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());

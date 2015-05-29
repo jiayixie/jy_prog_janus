@@ -1047,12 +1047,17 @@ for i<para.npara
 		}
   	  }
 	  else if (intflag==-5){
+	  // this categori is not well organized, may consider changing it in the future
 	  // vpvs scaling, this group can be isotropic or anisotropic
 	  // scale the the vpv based on 1st layer's vsv and vpv0/vsv0
+	  // for vsh, will keep the anisotropy constant
 	  	if(p6==3){//vpv
 			c=model.groups[ng].vpvvalue[0]/model.groups[ng].vsvvalue[0];
 			newv=model.groups[ng].vsvvalue[nv]*c;
 		}
+		else if (p6==2){//vsh
+			newv=1000.;// will asgin the real newv in the returned gen_newpara function
+		}		
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the vpvs scaling\n",p6);exit(0);}
 	  }
 	  return newv;
@@ -1069,7 +1074,8 @@ for i<para.npara
 	  int i;
 	  int intsigma,p0,ng,p6,nv;
 	  double newv,sigma;
-	  double dh;
+	  double dh,c;
+	  int iiter;
 	  modeldef tmodel;
 
 	  outpara=inpara;
@@ -1088,19 +1094,41 @@ for i<para.npara
 		  else if (sigma<-1e-5){
 		    //intsigma=(int)sigma;
 		    outpara.parameter[i]=gen_newpara_single_scale(sigma,model,ng,nv,p6);
-		    if(outpara.parameter[i]<-900. and p6==11){// AZsin, and the Acos[x] used for scaling is 0; so should set Acos=0, and Asin=random
-			if((int)inpara.para0[i-1][6]!=10){
-				printf("### gen_newpara, wrong para.in setting!, the paramter before Asin should be Aco!\n");
-				exit(0);
-			}
-			outpara.parameter[i-1]=0.;
-			outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
-
-		    }//if Asin<-900
-		    else if (outpara.parameter[i]>900 and p6==11){//the sign of cos and sin is not right, should multiply both of them by -1
-			outpara.parameter[i-1]*=-1;
-			outpara.parameter[i]=(outpara.parameter[i]-1000.0)*(-1);
-		    }// else if >900
+		    if(p6==11){	//Acos	
+		      	if(outpara.parameter[i]<-900.){// AZsin, and the Acos[x] used for scaling is 0; so should set Acos=0, and Asin=random
+				if((int)inpara.para0[i-1][6]!=10){
+					printf("### gen_newpara, wrong para.in setting!, the paramter before Asin should be Aco!\n");
+					exit(0);
+				}
+				outpara.parameter[i-1]=0.;
+				outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
+		      	}//if Asin<-900
+		      	else if (outpara.parameter[i]>900 ){//the sign of cos and sin is not right, should multiply both of them by -1
+				outpara.parameter[i-1]*=-1;
+				outpara.parameter[i]=(outpara.parameter[i]-1000.0)*(-1);
+		      	}// else if >900
+			/*
+			iiter=0;
+		      	while((outpara.parameter[i]-outpara.space1[i][0])*(outpara.parameter[i]-outpara.space1[i][1])>0){
+				iiter++;
+				if(iiter%100000==0){printf("i=%d,iiter=%d, space=[%g,%g],para=%g\n",i,iiter,outpara.space1[i][0],outpara.space1[i][1],outpara.parameter[i]);}
+				outpara.parameter[i-1]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i-1,pflag);	
+				outpara.parameter[i]=gen_newpara_single_scale(sigma,model,ng,nv,p6);
+				if(outpara.parameter[i]<-900.){
+					outpara.parameter[i-1]=0.;
+					outpara.parameter[i]=gen_newpara_single_v2(outpara.space1,outpara.parameter,i,pflag);
+				}
+				else if (outpara.parameter[i]>900 ){
+					outpara.parameter[i-1]*=-1;
+					outpara.parameter[i]=(outpara.parameter[i]-1000.0)*(-1);
+				}
+		      	}//while
+			*/			      
+		    }//if p6==11
+	  	    else if (p6==2 and outpara.parameter[i]>900){// this is a vsh parameter that requires constant radial anisotropy, and the amplitude of RA is computed from the model
+			c=tmodel.groups[ng].vshvalue[0]/tmodel.groups[ng].vsvvalue[0];
+			outpara.parameter[i]=outpara.parameter[i-1]*c;
+		    }//else if p6==2
 		  }//else if	
 		  // then else indicate sigma==0; keep parameter unchanged
 

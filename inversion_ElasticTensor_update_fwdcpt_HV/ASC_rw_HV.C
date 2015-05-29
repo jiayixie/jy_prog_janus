@@ -89,12 +89,42 @@ int write_ASCAZdisp_single(dispdef AMPdisp, dispdef PHIdisp, FILE *outdisp,dispd
 }
 //-------------------------------------------------------------------
 //int write_ASC(modeldef model,paradef para,char *namemod,char *Rnamedisp,char *Lnamedisp,char *AZRnamedisp, char *AZLnamedisp, int Rsurflag, int Lsurflag, int RAZflag, int LAZflag)
-int write_ASC(modeldef model,paradef para, char *namemod, char *Rnamedisp,char *Lnamedisp,char *AZRnamedisp, char *AZLnamedisp, int Rsurflag, int Lsurflag, int RAZampflag, int LAZampflag,int RAZphiflag, int LAZphiflag)
+int write_ASC(modeldef model,paradef para,  char *namemod, char *Rnamedisp,char *Lnamedisp,char *AZRnamedisp, char *AZLnamedisp, int Rsurflag, int Lsurflag, int RAZampflag, int LAZampflag,int RAZphiflag, int LAZphiflag)
 {
-  FILE *outmod,*Routdisp,*Loutdisp;
+  FILE *outmod,*Routdisp,*Loutdisp, *outpara;
   FILE *AZRoutdisp, *AZLoutdisp;
-  int i;
+  int i,j,k,ng,nv,p6;
   float h=0.;
+  char namepara[500];
+  double effRA,effAZ;
+
+  //----write para
+  sprintf(namepara,"%s_para",namemod);
+  if((outpara=fopen(namepara,"w"))==NULL)
+  {
+   printf("Cannot open file to write %s!!!\n",namepara);
+   exit(0);
+  }
+  fprintf(outpara,"%10s %10s %20s %20s\n","ng","nv","RApara(N-L)/2L","RApara_G");
+  for(i=0;i<model.ngroup;i++) {
+	for(j=0;j<model.groups[i].np;j++){
+		for(k=0;k<para.npara;k++){
+  			ng=(int)para.para0[k][4];
+  			nv=(int)para.para0[k][5];
+			if(ng!=i or nv!=j)continue;
+			p6=(int)para.para0[k][6];
+			if(p6==1){//vsv or L
+				effRA=(para.LoveRAparameter[k+1]-para.LoveRAparameter[k])/2./para.LoveRAparameter[k];	// in percent
+				effAZ=pow((pow(para.LoveAZparameter[k][0],2)+pow(para.LoveAZparameter[k][1],2)),0.5)/2./para.LoveRAparameter[k]; // in percent
+				fprintf(outpara,"%10d %10d %20g %20g\n",i,j,effRA,effAZ);
+				break;
+			}
+		}
+	}	
+  }
+  fclose(outpara);
+
+  //----write model
   if((outmod=fopen(namemod,"w"))==NULL)
   {
    printf("Cannot open file to write %s!!!\n",namemod);

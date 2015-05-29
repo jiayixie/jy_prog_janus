@@ -2,8 +2,9 @@
 // this version, could handle multiple-peak phi case (<=2 peaks); in such case, the modavg would be multiple
 // this version, use the para_avg_multiple_gp_v3.C, which enables the computation of parabest for each phi group, so there are multiple parabest output
 // this version, use CALinv_isolay_rf_parallel_saveMEM_BS_updateK.C, which updated the Vkernel&Lkernel during the inversion
-// this version, use CALpara_isolay_BS_newV2L_changeEtaSpace.C, which require eta<=1.1
-// this Tibet version is for the Tibet's Elastic tensor inversion
+
+// this code is used to do forward computation. for a given model, computes the disp curves. (L+R+HV)
+// this version is for tti, such that it could read in theta, rotate model, compute kernel, and then get the dispersion curves (RA+AZ)
 
 #include<iostream>
 #include<algorithm>
@@ -28,11 +29,11 @@ default_random_engine generator (seed);
 //#include"CALpara_isolay_BS.C"
 #include "CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
-#include"CALmodel_LVZ_ET_BS_HV_vpconstr_Tibet.C"
-#include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
+//#include"CALmodel_LVZ_ET_BS_HV.C"
+#include "CALmodel_LVZ_ET_BS_HV_vpconstr_Tibet.C"
+#include "CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
@@ -43,7 +44,7 @@ default_random_engine generator (seed);
 
 int main(int argc, char *argv[])
 {
-int npoint,Rsurflag,Lsurflag,Rmonoc,Lmonoc,PosAnic,iitercri1,ijumpcri1,ijumpcri2;
+int npoint,Rsurflag,Lsurflag,Rmonoc,Lmonoc,PosAnic,iitercri1,iitercri2,ijumpcri1,ijumpcri2;
 int i,j,k,isoflag,Nprem,k1,k2;
 int AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag;
 double bestmisfit, misfit, L,misfitcri;
@@ -76,43 +77,41 @@ exit(0);
 */
 
   //----------------PARAMETERS-----------------------------------------
-  isoflag=1; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
+  isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
   Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
-  AziampRsurflag=0;
-  AziphiRsurflag=0;
+  AziampRsurflag=1;
+  AziphiRsurflag=1;
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
-  inpamp=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
-  inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
+  inpamp=0.25;//0.25; //the weight of the azi_aniso disp curve, amp part (0~1)
+  inpphi=0.25;//0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
-  //iitercri1= 20000;//50000;//100000;//12000 (mod1, 1cstlay)
-  iitercri1= 40000;//50000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1=100000;//100000;//12000 (mod1, 1cstlay)
+  iitercri2=15000;
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
   qpcri=900.;//900.;
   qscri=250.;
-  Rmonoc=1;//useless
-  Lmonoc=1;//useless
-  PosAnic=0; //*1
-  flagupdaterho=0;
+  Rmonoc=1;
+  Lmonoc=1;
+  PosAnic=0;
+  flagupdaterho=1;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
-  Rvmono.push_back(2);
+  //Rvmono.push_back(2);
   Lvmono.push_back(1);
-  Lvmono.push_back(2);
-  
-  //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
-  //Rvgrad.push_back(1);
+  //Lvmono.push_back(2);
+  //Rvgrad.push_back(0);
+  Rvgrad.push_back(1);
   //Rvgrad.push_back(2);
   //Lvgrad.push_back(0);
-  //Lvgrad.push_back(1);
-  //Vposani.push_back(0);
-  //*Vposani.push_back(1);
-  //*Vposani.push_back(2);
+  Lvgrad.push_back(1);
   /*
+  Vposani.push_back(1);
+  Vposani.push_back(2);
   Viso.push_back(0);
   Viso.push_back(1);
   Viso.push_back(2);
@@ -123,7 +122,6 @@ exit(0);
 
   //sprintf(PREMnm,"/home/jiayi/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/prem_noocean.txt");
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
-  ///*
   sprintf(inponm,argv[1]);
   sprintf(dirlay,argv[2]);
   sprintf(modnm,argv[3]);//starting model
@@ -132,21 +130,9 @@ exit(0);
   sprintf(Lphindir,argv[6]);
   sprintf(Lgpindir,argv[7]);
   sprintf(fparanm,argv[8]);
-  flagreadLkernel=flagreadVkernel=atoi(argv[9]);
+  flagreadVkernel=atoi(argv[9]);
+  flagreadLkernel=flagreadVkernel;
   int num_thread=atoi(argv[10]);
-  //*/
-  /*
-  sprintf(inponm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/point1.txt");
-  sprintf(dirlay,"/lustre/janus_scratch/jixi7887/code_test/inv_v1_testHV/P12A_-115.0_39.4_inv_v1_testHV");
-  sprintf(modnm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test/P12A_iso.mod");
-  sprintf(Rphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(Rgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(Lphindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(Lgpindir,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/Data/test");
-  sprintf(fparanm,"/projects/jixi7887/work/code_test/test_HVratio_Mineos/para_v1.txt");
-  flagreadVkernel=1;//atoi(argv[1]);
-  int num_thread=atoi(argv[1]);
-  */
 
   readPREM(PREMnm,PREM,Nprem);
 
@@ -165,9 +151,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
   while(1){
     if(fscanf(inpo,"%s %f %f",&nodeid[0],&lon,&lat)==EOF)
-	{
-		printf("End of input point file, break!\n");
-		break;}
+	break;
     npoint++;
     printf("Begin to work on point %d: id=%s lon=%f lat=%f\n",npoint,nodeid,lon,lat);
 
@@ -191,7 +175,6 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
     AziphiRdispnm.clear();
     sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Rphindir,lon,lat);
-    //sprintf(str,"%s/aziphi_restore_unc/aziphi_%.1f_%.1f.txt",Rphindir,lon,lat);//#############HEY TEMPERARY########## TEST
     AziphiRdispnm.push_back(str);
 
     AziampLdispnm.clear();
@@ -202,6 +185,33 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Lphindir,lon,lat);
     AziphiLdispnm.push_back(str);
 
+    /*    
+    Rdispnm.clear();
+    sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    Rdispnm.push_back(str);
+    sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    Rdispnm.push_back(str);
+
+    Ldispnm.clear();
+    sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);
+    Ldispnm.push_back(str);
+
+    AziampRdispnm.clear();
+    sprintf(str,"%s/aziamp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    AziampRdispnm.push_back(str);
+
+    AziphiRdispnm.clear();
+    sprintf(str,"%s/aziphi.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    AziphiRdispnm.push_back(str);
+
+    AziampLdispnm.clear();
+    sprintf(str,"%s/aziamp_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziampLdispnm.push_back(str);
+
+    AziphiLdispnm.clear();
+    sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziphiLdispnm.push_back(str);
+    */
 
 
     //-----the final output model, that will serve as input model for the next step 
@@ -220,34 +230,10 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     initpara(pararef);
   
     readdisp(model0,Rdispnm,Ldispnm,AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm,Rsurflag,Lsurflag,AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag); 
-    /*==check===
-    //printf("test-- the number of AZ data: AZRamp.npper=%d AZRamp.pvel.size()=%d AZRamp.pvelo.size=%d\n",model0.data.AziampRdisp.npper,model0.data.AziampRdisp.pvel.size(),model0.data.AziampRdisp.pvelo.size());
-    printf("the Rayleigh wave data:\n");
-    for(i=0;i<model0.data.Rdisp.npper;i++){
-    	printf("T=%g vel=%g unc=%g\n",model0.data.Rdisp.pper[i],model0.data.Rdisp.pvelo[i],model0.data.Rdisp.unpvelo[i]);
-    }
-    printf("the Rayleigh Azi wave data:\n");
-    for(i=0;i<model0.data.AziampRdisp.npper;i++){
-    	printf("T=%g vel=%g unc=%g\n",model0.data.AziampRdisp.pper[i],model0.data.AziampRdisp.pvelo[i],model0.data.AziampRdisp.unpvelo[i]);
-    }
-    for(i=0;i<model0.data.AziphiRdisp.npper;i++){
-    	printf("T=%g vel=%g unc=%g\n",model0.data.AziphiRdisp.pper[i],model0.data.AziphiRdisp.pvelo[i],model0.data.AziphiRdisp.unpvelo[i]);
-    }
-    */
     
     readmodAniso(model0,modnm);// both m.g.LV/Rv are filled regardless of flags. (readin iso model)
     printf("finish read mod\n");
     printf("#########group[0].vsvvalue[0]=%g vshvalue[0]=%g\n",model0.groups[0].vsvvalue[0],model0.groups[0].vshvalue[0]);
-    /*===check===
-    for(i=0;i<model0.ngroup;i++){
-    	printf("group %d thick=%f\n",i,model0.groups[i].thick);
-	for(j=0;j<model0.groups[i].np;j++){
-		printf("  np %d\n vsv=%g vsh=%g vpv=%g vph=%g eta=%g theta=%g phi=%g vpvs=%g\n",j,model0.groups[i].vsvvalue[j],model0.groups[i].vshvalue[j],model0.groups[i].vpvvalue[j],model0.groups[i].vphvalue[j],model0.groups[i].etavalue[j],model0.groups[i].thetavalue[j],model0.groups[i].phivalue[j],model0.groups[i].vpvs);
-	}
-    
-    }
-    //exit(0);
-    */
     readpara(para0,fparanm);
 
 
@@ -255,17 +241,9 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
 
     checkParaModel(para1,model0,Viso);
 
-    ///*===check===
-    printf("\n\ncheck readpara & mod2para----\n");
-    printf("inpara.flag=%d\n",para0.flag);
-    for(i=0;i<para1.npara;i++){
-	printf("parameter %d\n",i);
-	printf(" value=%g  dv=%g ng=%g nv=%g pflag=%g LVflag=%g RWflag=%g LWflag=%g AZflag=%g\n",para1.parameter[i],para1.para0[i][2],para1.para0[i][4],para1.para0[i][5],para1.para0[i][6],para1.para0[i][7],para1.para0[i][8],para1.para0[i][9],para1.para0[i][10]);
-    }//*/
-    // ; BS
     //---check---
     ttmodel=model0;
-    printf("\n\nBefore Bsp2P\n");
+    printf("Before Bsp2P\n");
     for(i=0;i<ttmodel.ngroup;i++){
         printf("BSmodel group%d\n",i);
         for(j=0;j<ttmodel.groups[i].np;j++){
@@ -276,8 +254,10 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     
     modeldef modelP,modelBS;
     paradef paraP,paraBS;
+    para2mod(para1,model0,model0);
     Bsp2Point(model0,para1,modelP,paraP,flagupdaterho);
     modelBS=model0;paraBS=para1;
+    Vpara2Lovepara(paraP,modelP,flagupdaterho);//there is para2mod inside the code
     model0=modelP;para1=paraP;
 
     //---check-- 
@@ -296,23 +276,32 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
                 printf("\tvsv=%.2f vsh=%.2f vpv=%.2f vph=%.2f eta=%.2f vpvs=%.2f RAvs=%.2f RAvp=%.2f\n",ttmodel.groups[i].vsvvalue[j],ttmodel.groups[i].vshvalue[j],ttmodel.groups[i].vpvvalue[j],ttmodel.groups[i].vphvalue[j],ttmodel.groups[i].etavalue[j],ttmodel.groups[i].vpvvalue[j]/ttmodel.groups[i].vsvvalue[j],(ttmodel.groups[i].vshvalue[j]-ttmodel.groups[i].vsvvalue[j])/(ttmodel.groups[i].vshvalue[j]+ttmodel.groups[i].vsvvalue[j])*50,(ttmodel.groups[i].vphvalue[j]-ttmodel.groups[i].vpvvalue[j])/(ttmodel.groups[i].vphvalue[j]+ttmodel.groups[i].vpvvalue[j])*50);
         }
     }
-    //
 
-    /*printf("\nafter Bsp2Point inpara.flag=%d\n",para0.flag);
-    for(i=0;i<para1.npara;i++){
-	printf("parameter %d\n",i);
-	printf(" value=%g  dv=%g ng=%g nv=%g pflag=%g LVflag=%g RWflag=%g LWflag=%g AZflag=%g\n",para1.parameter[i],para1.para0[i][2],para1.para0[i][4],para1.para0[i][5],para1.para0[i][6],para1.para0[i][7],para1.para0[i][8],para1.para0[i][9],para1.para0[i][10]);
-    }*/
     // ; BS
-    Vpara2Lovepara(para1,model0,flagupdaterho);//there is para2mod inside the code
+    //
+    // ---get RAmodel and RApara, will be used for kernel computation, and will be used as reference model and para
+    paradef RApara;
+    modeldef RAmodel;
+    RApara=paraP;
+    for(i=0;i<RApara.LoveAZparameter.size();i++){
+	RApara.LoveAZparameter[i][0]=0.;
+	RApara.LoveAZparameter[i][1]=0.;
+    }
+    Lovepara2Vpara(RApara,model0);
+    para2mod(RApara,model0,RAmodel);
+    updatemodel(RAmodel,flagupdaterho);
+    
+    //--TO DO, modify the model0 to RAmodel, para1 to RApara
 
+    //if(model0.flag==0){updatemodel(model0,flagupdaterho);}
+    //compute_dispMineos(model0,PREM,Nprem,Rsurflag,Lsurflag,0);
 
+    compute_dispMineos(RAmodel,PREM,Nprem,Rsurflag,Lsurflag,0);
+    //compute_misfitDISP(model0,Rsurflag,Lsurflag,0,0,0,0,0,0);
 
-    if(model0.flag==0){updatemodel(model0,flagupdaterho);}
-    compute_dispMineos(model0,PREM,Nprem,Rsurflag,Lsurflag,0);
-
+    //----------------------------------
     printf("@@@ check, main, from initial model\n");
-    for(j=0;j<model0.data.Rdisp.npper;j++)printf("  @@@ check, T=%g,vin=%g vold=%g\n",model0.data.Rdisp.pper[j],model0.data.Rdisp.pvelo[j],model0.data.Rdisp.pvel[j]);
+    for(j=0;j<RAmodel.data.Rdisp.npper;j++)printf("  @@@ check, T=%g,vin=%g vold=%g\n",RAmodel.data.Rdisp.pper[j],RAmodel.data.Rdisp.pvelo[j],RAmodel.data.Rdisp.pvel[j]);
 
     printf("@@@ check, do V kernel ====\n");
     //---obtain V kernel ---
@@ -321,7 +310,7 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     sprintf(kernelnmRHV,"%s/VkernelRHV1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
 
     if(flagreadVkernel==1){
-    	if((read_kernel(para1,model0,Vkernel,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag,PREM,Nprem))==0){
+    	if((read_kernel(RApara,RAmodel,Vkernel,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag,PREM,Nprem))==0){
 		 printf ("#####!! read_kernel failed\n");
     	 	 sprintf(str,"echo point %d: id=%s lon=%f lat=%f >> point_rdKernel_failed_Ani.txt",npoint,nodeid,lon,lat);
          	 system(str);
@@ -329,13 +318,12 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
      	} // if readkernel()==0    
     }//if flagreadkernel==1
     else {
-    	compute_Vkernel(para1,model0,Vkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);
+    	compute_Vkernel(RApara,RAmodel,Vkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);
 	cout<<"check finish compute_Vkernel\n";
-	write_kernel(Vkernel,model0,para1,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
+	write_kernel(Vkernel,RAmodel,RApara,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
 	cout<<"check finish write_Vkernel\n";
     }//else flagreadkernel==1
     //====
-
 
     printf("@@@ check, do L kernel ====\n");
     //---obtain Love kernel ---
@@ -343,71 +331,96 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     sprintf(kernelnmL,"%s/LkernelLp1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     sprintf(kernelnmRHV,"%s/LkernelRHV1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     if(flagreadLkernel==1){
-    	if((read_kernel(para1,model0,Lkernel,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag,PREM,Nprem))==0){
+    	if((read_kernel(RApara,RAmodel,Lkernel,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag,PREM,Nprem))==0){
 		 printf ("#####!! read_kernel failed\n");
     	 	 sprintf(str,"echo point %d: id=%s lon=%f lat=%f >> point_rdKernel_failed_Ani.txt",npoint,nodeid,lon,lat);
          	 system(str);
 		 continue;
      	} // if readkernel()==0    
-    	
     }
     else{
-	compute_Lkernel(para1,model0,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);
+	compute_Lkernel(RApara,RAmodel,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);
 	cout<<"check finish compute Lkernel\n";
-    	//Vkernel2Lkernel(para1,model0,Vkernel,Lkernel,flagupdaterho);
-    	write_kernel(Lkernel,model0,para1,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
+    	write_kernel(Lkernel,RAmodel,RApara,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
 	cout<<"check finish write_Lkernel\n";
     }
-/*  //----------------------------
-  //test the accuracy of the forward computation
-  paradef RApara;
-  modeldef RAmodel;
-
-  pararef=para1;
-  modelref = model0;
-  //---perturb the parameters
-  for (int kk=4;kk<=18;kk=kk+7)
-  	paraBS.parameter[kk]=paraBS.parameter[kk]*1.04;
-  Bsp2Point(modelBS,paraBS,model0,para1,flagupdaterho);
-  ttmodel=model0;
-  para2mod(para1,ttmodel,model0);
-  updatemodel(model0,flagupdaterho);
-  Vpara2Lovepara(para1,model0,flagupdaterho);//--before this, only the para.parameters are updated, not the para.LoveRAparameter
-  //---get the RAmodel, RApara from the Point para and model (para1 and model0)
-  get_RAmodpara(para1,model0,RApara,RAmodel,flagupdaterho);
-  
-  //
-  //--do compute RAdisp with
-  //Mineos
-  printf("compute RAdisp M\n");
-  computeRAdisp_Mineos(RAmodel,PREM,Nprem);
-  //Lkernel
-  printf("compute RAdisp L\n");
-  computeRAdisp_Lkernel(RApara,RAmodel,pararef,modelref,Vkernel,Lkernel);
-  //Vkernel
-  printf("compute RAdisp V\n");
-  computeRAdisp_Vkernel(RApara,RAmodel,pararef,modelref,Vkernel,Lkernel);  
-  //-----------------------------
-printf("\n\nexit!!\n\n");
-exit(0);
-*/
 /*    
  int d = Math.abs(a - b) % 360;
      int r = d > 180 ? 360 - d : d;
 */
+    //TO DO, then, for the initially read in para, para2mod, Bsp2Point; updatemodel; get_misfitkernel; sprintf names; write_ASC
+    //the paraP and modelP are the processed (para2mod, Bsp2Point, updatemodel) model and para for the initially readin information; so just use them immediately
+    
+  get_misfitKernel(modelP,paraP,RAmodel,RApara,Vkernel,Lkernel,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,inpamp,inpphi,flagupdaterho);
+  char name[500];
+  sprintf(name,"K");
+  sprintf(modnm1,"%s/Animod_%s",dirlay,name);
+  sprintf(fRdispnm,"%s/Rdisp_%s",dirlay,name);
+  sprintf(fLdispnm,"%s/Ldisp_%s",dirlay,name);
+  sprintf(fAZRdispnm,"%s/AZRdisp_%s",dirlay,name);
+  sprintf(fAZLdispnm,"%s/AZLdisp_%s",dirlay,name);
+  write_ASC(modelP,paraP,modnm1,fRdispnm,fLdispnm,fAZRdispnm,fAZLdispnm,Rsurflag,Lsurflag,AziampRsurflag, AziampLsurflag,AziphiRsurflag, AziphiLsurflag);
+
+
+    //
+    exit(0);
+    //
     printf("test-- cpt misfit\n");
     //somethihng to do, 1st, in generating the ang disp curve, make it smooth
     //something to do, in computing the misfit for the angle phi, need to take the period of the angle into account. modify the compute_misfitDISP in CALmodel_LVZ_ET.C
     compute_misfitDISP(model0,Rsurflag,Lsurflag,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,inpamp,inpphi);
     //is the AZ disp filled? so are they taken into account in the misfit cpt? A: yes, both amp and angle are 0
- 
-    // at this point, the AZ parameters (AZLoveparameter and AZcos AZsin) should be 0 for the reference para
+
     modelref=model0;
     pararef=para1;
    
     ttmodel=modelBS;
     para2mod(paraBS,ttmodel,modelBS);
     updatemodel(modelBS,flagupdaterho);
+
+    //-----test fwd computation ----
+    modeldef model1BS,model1K,model1M;
+    paradef para1BS;
+    
+    para1BS=paraBS;
+    /*for (int kk=4;kk<=18;kk=kk+4)
+  	{para1BS.parameter[kk]=paraBS.parameter[kk]*1.04;
+  	para1BS.parameter[kk+1]=paraBS.parameter[kk+1]*1.04;}
+    */
+    gen_newpara(paraBS,modelBS,para1BS,1);
+    para2mod(para1BS,modelBS,model1BS);
+    Bsp2Point(model1BS,para1BS,model1,para1,flagupdaterho);
+    updatemodel(model1,flagupdaterho);
+
+    //----
+    model1M=model1;
+    compute_dispMineos(model1M,PREM,Nprem,Rsurflag,Lsurflag,0);  
+    compute_misfitDISP(model1M,Rsurflag,Lsurflag,0,0,0,0,0,0);
+
+//  char name[50];
+  sprintf(name,"M");
+  sprintf(modnm1,"%s/Animod_%s",dirlay,name);
+  sprintf(fRdispnm,"%s/Rdisp_%s",dirlay,name);
+  sprintf(fLdispnm,"%s/Ldisp_%s",dirlay,name);
+  sprintf(fAZRdispnm,"%s/AZRdisp_%s",dirlay,name);
+  sprintf(fAZLdispnm,"%s/AZLdisp_%s",dirlay,name);
+  write_ASC(model1M,paraP,modnm1,fRdispnm,fLdispnm,fAZRdispnm,fAZLdispnm,Rsurflag,Lsurflag,AziampRsurflag, AziampLsurflag,AziphiRsurflag, AziphiLsurflag);
+
+    //------
+    model1K=model1;
+    compute_dispKernel(model1K,para1,modelref,pararef,Vkernel,Lkernel,Rsurflag,Lsurflag,max(AziampRsurflag,AziphiRsurflag),max(AziampLsurflag,AziphiLsurflag));
+    compute_misfitDISP(model1K,Rsurflag,Lsurflag,0,0,0,0,0,0);
+  
+  sprintf(name,"K");
+  sprintf(modnm1,"%s/Animod_%s",dirlay,name);
+  sprintf(fRdispnm,"%s/Rdisp_%s",dirlay,name);
+  sprintf(fLdispnm,"%s/Ldisp_%s",dirlay,name);
+  sprintf(fAZRdispnm,"%s/AZRdisp_%s",dirlay,name);
+  sprintf(fAZLdispnm,"%s/AZLdisp_%s",dirlay,name);
+  write_ASC(model1K,paraP,modnm1,fRdispnm,fLdispnm,fAZRdispnm,fAZLdispnm,Rsurflag,Lsurflag,AziampRsurflag, AziampLsurflag,AziphiRsurflag, AziphiLsurflag);
+
+exit(0);
+    //---
 
     float theta;
     printf("test-- do inv\n");

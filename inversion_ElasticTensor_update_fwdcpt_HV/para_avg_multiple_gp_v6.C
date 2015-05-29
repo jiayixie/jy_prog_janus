@@ -390,9 +390,10 @@ vector<vector<double> > compute_paraavgAZ(vector<paradef> paralst,vector<int> id
   return vavglst;
 }//compute_paraavgAZ
 //--------------------------
-vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst, vector<int> AZcosidlstM){
+vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst, vector<int> AZcosidlstM,modeldef model, int flagupdaterho, paradef para0){
   // in this function, if idphiM<0 then, won't do mantle group seperation based on mantle phi
   // flag indicate if average is for para.parameter(flag=1) or for para.parameter/LoveRAparameter/LoveAZparameter (flag=3)
+  // the newly added (May 14, 2015) para0 parameter is used to transfer the para0.para0 information
   int i,j,k,size,idmin,Ngp,NgpM,igp,pflag,Ngood;
   vector<int> indexflaglst,indexflaglstM,idlst,idlstnew,idminlst;
   //vector<int> idlstnewtest;
@@ -476,6 +477,8 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		k=idlst[i];
 		tv=paralst[k].parameter[idphi];
 		paralst[k].parameter[idphi]=convert(tv,pk,T);		
+		//paralst[k].para0=para0.para0;
+		//Vpara2Lovepara(paralst[k],model,flagupdaterho);//---modified May 6, 2015
 	}//for i<Nv
   }//if Ngp==1
   else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
@@ -483,10 +486,14 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		if(indexflaglst[i]==1){
 			tv=paralst[idlst[i]].parameter[idphi];
 			paralst[idlst[i]].parameter[idphi]=convert(tv,pk,T);
+			//paralst[idlst[i]].para0=para0.para0;
+			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 		else if (indexflaglst[i]==2){
 			tv=paralst[idlst[i]].parameter[idphi];
 			paralst[idlst[i]].parameter[idphi]=convert(tv,pk+0.5*T,T);
+			//paralst[idlst[i]].para0=para0.para0;
+			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 	}//for i
   }//else two groups
@@ -518,6 +525,8 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		k=idlst[i];
 		tv=paralst[k].parameter[idphiM];
 		paralst[k].parameter[idphiM]=convert(tv,pk,T);		
+		//paralst[k].para0=para0.para0;
+		//Vpara2Lovepara(paralst[k],model,flagupdaterho);//---modified May 6, 2015
 	}//for i<Nv
   }//if Ngp==1
   else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
@@ -525,10 +534,14 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		if(indexflaglstM[i]==1){
 			tv=paralst[idlst[i]].parameter[idphiM];
 			paralst[idlst[i]].parameter[idphiM]=convert(tv,pk,T);
+			//paralst[idlst[i]].para0=para0.para0;
+			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 		else if (indexflaglstM[i]==2){
 			tv=paralst[idlst[i]].parameter[idphiM];
 			paralst[idlst[i]].parameter[idphiM]=convert(tv,pk+0.5*T,T);
+			//paralst[idlst[i]].para0=para0.para0;
+			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 	}//for i
   }//else two groups
