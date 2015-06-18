@@ -379,6 +379,7 @@ j:	0		1		2		3		4		5
 				tmin=max(0.,tmin);
 				tmax=max(0.,tmax);
 				tmax=max(tmin+0.001,tmax);
+				//if(p6==7){tmin=90.;}//--test---
 				if (p6==5 ){//modified Mar11, 2014
 					//if(ng==1)tmax=min(0.8,tmax);
 					//else

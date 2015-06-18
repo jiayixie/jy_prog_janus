@@ -76,11 +76,11 @@ exit(0);
 */
 
   //----------------PARAMETERS-----------------------------------------
-  isoflag=1; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
+  isoflag=0; //isoflag==1: Vsv=Vsh, isoflag==0: Vsv!=Vsh
   Rsurflag=1; //surflag==1: open phase only. surfalg ==3 open phase and group, surflag==2: open group only; surflag=4: hv only; surflag=5:p+hv; surflag=6: g+hv; surflag=7: g+p+hv
   Lsurflag=1;
-  AziampRsurflag=0;
-  AziphiRsurflag=0;
+  AziampRsurflag=1;
+  AziphiRsurflag=1;
   AziampLsurflag=0;
   AziphiLsurflag=0;
   //after I have changed the way the misfit is computed (compute_misfitDISP), the inpamp & inpphi becomes useless
@@ -92,11 +92,11 @@ exit(0);
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
-  qpcri=900.;//900.;
-  qscri=250.;
+  qpcri=900.;//900.; //useless
+  qscri=250.; //useless
   Rmonoc=1;//useless
   Lmonoc=1;//useless
-  PosAnic=0; //*1
+  PosAnic=1; //*1
   flagupdaterho=0;
   //Rvmono.push_back(0);
   Rvmono.push_back(1);
@@ -110,8 +110,8 @@ exit(0);
   //Lvgrad.push_back(0);
   //Lvgrad.push_back(1);
   //Vposani.push_back(0);
-  //*Vposani.push_back(1);
-  //*Vposani.push_back(2);
+  Vposani.push_back(1);
+  Vposani.push_back(2);
   /*
   Viso.push_back(0);
   Viso.push_back(1);

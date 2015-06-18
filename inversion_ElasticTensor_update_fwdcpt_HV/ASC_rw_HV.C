@@ -115,7 +115,7 @@ int write_ASC(modeldef model,paradef para,  char *namemod, char *Rnamedisp,char 
 			p6=(int)para.para0[k][6];
 			if(p6==1){//vsv or L
 				effRA=(para.LoveRAparameter[k+1]-para.LoveRAparameter[k])/2./para.LoveRAparameter[k];	// in percent
-				effAZ=pow((pow(para.LoveAZparameter[k][0],2)+pow(para.LoveAZparameter[k][1],2)),0.5)/2./para.LoveRAparameter[k]; // in percent
+				effAZ=pow((pow(para.LoveAZparameter[k][0],2)+pow(para.LoveAZparameter[k][1],2)),0.5)/2./para.LoveRAparameter[k]; // in percent, G/2L
 				fprintf(outpara,"%10d %10d %20g %20g\n",i,j,effRA,effAZ);
 				break;
 			}

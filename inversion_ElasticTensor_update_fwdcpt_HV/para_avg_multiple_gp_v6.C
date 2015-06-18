@@ -318,12 +318,13 @@ vector<double> compute_paraavg(vector<paradef> paralst,vector<int> idlst, vector
                 stdlst.push_back(0.);
         }
 
-	
+	vector<double> tempV;
         for(j=0;j<Npara;j++){
+		tempV.clear();
                 for(i=0;i<Ngood;i++){
                         k=idlst[i];
-                        if(id==1)vavglst[j]+=paralst[k].parameter[j];
-                        else if(id==2)vavglst[j]+=paralst[k].LoveRAparameter[j];
+                        if(id==1){vavglst[j]+=paralst[k].parameter[j];tempV.push_back(paralst[k].parameter[j]);}
+                        else if(id==2){vavglst[j]+=paralst[k].LoveRAparameter[j];tempV.push_back(paralst[k].LoveRAparameter[j]);}
                 }
                 vavglst[j]/=Ngood;
         }//for j<Npara
@@ -363,12 +364,15 @@ vector<vector<double> > compute_paraavgAZ(vector<paradef> paralst,vector<int> id
 		vavglst.push_back(LAZp0);
         }
 
-	
+	vector<double> tempV1,tempV2;
+	tempV1.reserve(1000);tempV2.reserve(1000);
         for(j=0;j<Npara;j++){
+		tempV1.clear();tempV2.clear();
                 for(i=0;i<Ngood;i++){
                         k=idlst[i];
                         vavglst[j][0]+=paralst[k].LoveAZparameter[j][0];
 			vavglst[j][1]+=paralst[k].LoveAZparameter[j][1];                   
+			tempV1.push_back(paralst[k].LoveAZparameter[j][0]); tempV2.push_back(paralst[k].LoveAZparameter[j][1]);
                 }
                 vavglst[j][0]/=Ngood;
 		vavglst[j][0]/=Ngood;
@@ -390,11 +394,13 @@ vector<vector<double> > compute_paraavgAZ(vector<paradef> paralst,vector<int> id
   return vavglst;
 }//compute_paraavgAZ
 //--------------------------
-vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst, vector<int> AZcosidlstM,modeldef model, int flagupdaterho, paradef para0){
+vector<int> para_avg_multiple_gp(vector<int> idphilst,vector<int> idphiMlst, vector<paradef> &paralst, vector<paradef> &parabestlst, vector<paradef> &paraavglst, vector<paradef> &parastdlst, vector<vector<int> > &idlstlst, int flag, double &pkC, vector<int> AZcosidlst, vector<int> AZcosidlstM,modeldef model, int flagupdaterho, paradef para0){
   // in this function, if idphiM<0 then, won't do mantle group seperation based on mantle phi
   // flag indicate if average is for para.parameter(flag=1) or for para.parameter/LoveRAparameter/LoveAZparameter (flag=3)
-  // the newly added (May 14, 2015) para0 parameter is used to transfer the para0.para0 information
-  int i,j,k,size,idmin,Ngp,NgpM,igp,pflag,Ngood;
+  // the newly added (May 14, 2015) para0 parameter is used to transfer the para0.para0 information (actually, this is useless. previously, i was worrying that the periodicity in phi(180deg) will affect the Gc,s Bc,s Hc,s Ec,s parameters, but actually they will not be affected, that is phi, phi+/-180 give the same  Gc,s Bc,s Hc,s Ec,s for both elliptical and non-elliptical Hex tensors)
+  // on Jun 17, 2015, modified the idphi to idphilst. now, we will convert all the given phi parameters (based on idphilst). But there is a problem, right now, the Ngp(M) and indexflaglst[] is based purely on the last idphi (i.e., idphilst[size-1]). Actually, should consider Ngp=Ngp_node1*Ngp_node2*...*Ngp_nodeN, maybe do this later
+
+  int i,j,k,n,size,idmin,Ngp,NgpM,igp,pflag,Ngood,idphi,idphiM;
   vector<int> indexflaglst,indexflaglstM,idlst,idlstnew,idminlst;
   //vector<int> idlstnewtest;
   vector<double> philst,philstM;  
@@ -419,7 +425,6 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
  
   //--initialize the paralst and parastd --> will be handled by the function compute_paraavg
 
-  printf("idphi=%d\n",idphi);//--check--
 
   //--get the smallest misfit and get the index lst for model within misfit criteria-- this is just a groups of model with acceptable misfit; then after group seperation, we will re-select the model with higher criteria;(two criteria, one in seperate_gp[based on its dist to the avg phi value], one in the later part of this subroutine[based on the mismin of that phi gorup])
   mismin=1e10;
@@ -448,20 +453,25 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   indexflaglst=convert_AZpara(paralst, AZcosidlst,idlst,Ngood,Ngp,10.);
   }
   else{// else this group is TTI or TI/iso
+  /*
   //---get philst(only from mod with small misfit), and call function seperate_gp to group the philst
   //philst.clear();
-  if(idphi>=0){
+  if(idphilst.size()>0){
+  for(n=0;n<idphilst.size();n++){
+  idphi=idphilst[n];
   for(i=0;i<Ngood;i++){
 	k=idlst[i];
 	philst.push_back(paralst[k].parameter[idphi]);}  
 
   Ngp=0;
   seperate_gp(philst,Ngp,pkC,indexflaglst,5.,T);
+  }// for n
   }//if idphi>=0
   else{
     Ngp=1; // no idphi informatino, then do not seperate the group
     for(i=0;i<Ngood;i++)indexflaglst.push_back(1);
   }
+  */
   //--- put the modified (+/-T) phi back into the paralst; and compute the avg for all parameters for each gp(seperated based on philst)
   /*for(i=0;i<Ngood;i++){
 	// since I disabled the &vlst in the seperate_gp function, the philst is not changed, so no need to transfer its value back to paralst; I disabled it only b.c. of the memory problem correlated with the '&'
@@ -470,24 +480,28 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   //
 
   //--since philst is not transfered back, need to modify the phi values here
-  if(idphi>=0){
-  pk=pkC;
-  if(Ngp==1){//only one group
+  if(idphilst.size()>0){
+  for(n=0;n<idphilst.size();n++){
+    philst.clear();
+    idphi=idphilst[n];
+    for(i=0;i<Ngood;i++){
+        k=idlst[i];
+        philst.push_back(paralst[k].parameter[idphi]);}
+    Ngp=0;
+    seperate_gp(philst,Ngp,pkC,indexflaglst,5.,T);
+    pk=pkC;
+    if(Ngp==1){//only one group
 	for(i=0;i<Ngood;i++){
 		k=idlst[i];
 		tv=paralst[k].parameter[idphi];
 		paralst[k].parameter[idphi]=convert(tv,pk,T);		
-		//paralst[k].para0=para0.para0;
-		//Vpara2Lovepara(paralst[k],model,flagupdaterho);//---modified May 6, 2015
 	}//for i<Nv
-  }//if Ngp==1
-  else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
+    }//if Ngp==1
+    else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
  	for(i=0;i<Ngood;i++){
 		if(indexflaglst[i]==1){
 			tv=paralst[idlst[i]].parameter[idphi];
 			paralst[idlst[i]].parameter[idphi]=convert(tv,pk,T);
-			//paralst[idlst[i]].para0=para0.para0;
-			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 		else if (indexflaglst[i]==2){
 			tv=paralst[idlst[i]].parameter[idphi];
@@ -496,8 +510,14 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 	}//for i
-  }//else two groups
+    }//else two groups
+  }// for n<idphilst.size()
   }//if idphi>=0
+  else{
+    indexflaglst.clear();
+    Ngp=1; // no idphi informatino, then do not seperate the group
+    for(i=0;i<Ngood;i++)indexflaglst.push_back(1);
+  }//else
   //---
   }// else AZcosidlst.size()
 
@@ -507,45 +527,41 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
   }
   else{// else this group is TTI or TI/iso
   //## if want to seperate the model also based on mantle phi,then
-  if(idphiM>=0){ // do do group seperation for mantle
-  philstM.clear();
-  for(i=0;i<Ngood;i++){
+  if(idphiMlst.size()>0){ // do do group seperation for mantle
+  for(n=0;n<idphiMlst.size();n++){
+    idphiM=idphiMlst[n];
+    philstM.clear();
+    for(i=0;i<Ngood;i++){
 	k=idlst[i];
 	philstM.push_back(paralst[k].parameter[idphiM]);
-  }
-  NgpM=0;
-  seperate_gp(philstM,NgpM,pkM,indexflaglstM,5.,T);
-  /*for(i=0;i<Ngood;i++){
+    }
+    NgpM=0;
+    seperate_gp(philstM,NgpM,pkM,indexflaglstM,15.,T);
+    /*for(i=0;i<Ngood;i++){
 	k=idlst[i];
 	paralst[k].parameter[idphiM]=philstM[i];
-  }*/
-  pk=pkM;
-  if(Ngp==1){//only one group
+      }*/
+    pk=pkM;
+    if(Ngp==1){//only one group
 	for(i=0;i<Ngood;i++){
 		k=idlst[i];
 		tv=paralst[k].parameter[idphiM];
-		paralst[k].parameter[idphiM]=convert(tv,pk,T);		
-		//paralst[k].para0=para0.para0;
-		//Vpara2Lovepara(paralst[k],model,flagupdaterho);//---modified May 6, 2015
+		paralst[k].parameter[idphiM]=convert(tv,pk,T); 
 	}//for i<Nv
-  }//if Ngp==1
-  else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
+    }//if Ngp==1
+    else{//two groups, one with center value around pk, the other around pk+T*0.5 (pk+90)
  	for(i=0;i<Ngood;i++){
 		if(indexflaglstM[i]==1){
 			tv=paralst[idlst[i]].parameter[idphiM];
 			paralst[idlst[i]].parameter[idphiM]=convert(tv,pk,T);
-			//paralst[idlst[i]].para0=para0.para0;
-			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 		else if (indexflaglstM[i]==2){
 			tv=paralst[idlst[i]].parameter[idphiM];
 			paralst[idlst[i]].parameter[idphiM]=convert(tv,pk+0.5*T,T);
-			//paralst[idlst[i]].para0=para0.para0;
-			//Vpara2Lovepara(paralst[idlst[i]],model,flagupdaterho);//---modified May 6, 2015
 		}
 	}//for i
-  }//else two groups
-
+    }//else two groups
+  }// for n
   }//if idphiM>0 
   else{// do not do group seperation for mantle
 	indexflaglstM.clear();
@@ -564,7 +580,7 @@ vector<int> para_avg_multiple_gp(int idphi,int idphiM, vector<paradef> &paralst,
 		mismin=1e10;
 		idmin=-1;
 		for(k=0;k<Ngood;k++){
-			if(paralst[idlst[k]].misfit<mismin and indexflaglst[k]==i+1 and paralst[idlst[k]].misfit<mismin){
+			if(paralst[idlst[k]].misfit<mismin and indexflaglst[k]==i+1 and indexflaglstM[k]==j+1){
 				mismin=paralst[idlst[k]].misfit;
 				idmin=idlst[k];
 			}

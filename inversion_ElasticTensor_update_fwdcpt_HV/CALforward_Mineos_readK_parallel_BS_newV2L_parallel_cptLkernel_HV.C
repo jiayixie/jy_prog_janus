@@ -1140,7 +1140,7 @@ int ET2LoveCoeff(Matrix<double,6,6> ET,double RAcoeff[5],double AZcoeff[8][2]){
 //---------------------------------------
 //int Vpara2ET(vector<double> Vparameter, double[6][6] &ET, vector<double> eff_Vparameter){
 int Vpara2ET2LoveCoeff(vector<double> Vparameter, Matrix<double,6,6> &ET,double RAcoeff[8], double AZcoeff[8][2]){
-  // from Vparameter --> get TI ET, --> rotate TI ET --> ET --> RAcoeff&AZcoeff;
+  // from Vparameter --> get TI ET, --> rotate TI ET --> ET --> RAcoeff&AZcoeff; (RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s Bc,s Hc,s,theta,phi,rho)
   //Vparameter: (vsv,vsh,vpv,vph,eta,theta,phi,rho)
   //		 0   1   2   3    4   5    6   7   
   int i;

@@ -7,7 +7,7 @@
 // this version, output both extrinsic values, and apparent values
 // this version ,modified on Jan 20, 2014, output the info for vsv,vsh,vpv,vph,eta,theta,phi; while previous version output vsv,vsh,and vsRA
 // this version, modified on jan23, 2014, could deal with multi-phi situation. seperate the final average model into at most 2 groups based on the phi value distribution.
-// this version, use para_avg_multiple_gp_v2.C instead of para_avg_multiple_gp.C, could also deal with both crust and mantle phi; and the mantle phi seperation can be diabled by setting idphiM<0
+// this version, use para_avg_multiple_gp_v2.C instead of para_avg_multiple_gp.C, could also deal with both crust and mantle phi; and the mantle phi seperation can be diabled by setting idphiM<0, or in the current version , by setting idphiMlst[] empty
 
 // this version, use the para_avg_multiple_gp_v3.C, which enables the computation of parabest for each phi group, so there are multiple parabest output
 // this version, use para_avg_multiple_gp_v4.C that could fixed a bug (the v3 cannot identify multiple group for 0,90,180 situation)
@@ -79,11 +79,11 @@ default_random_engine generator (seed);
 	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
-	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani  vsvmin~phimin~vpvsmin~animin,  vsvmax~phimax~vpvsmax~animax];
-	  //stdlst[ithick]=[vsvstd~phistd]
+	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani,raEFF(%),azEFF(%)  vsvmin~phimin~vpvsmin~animin~raEFFmin~azEFFmin,  vsvmax~phimax~vpvsmax~animax~raEFFmax~azEFFmax];
+	  //stdlst[ithick]=[vsvstd~phistd~rhostd~vpvsstd~anistd~raEFFstd~azEFFstd]
 	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
 	  //Feb19, 2015, modified this function, added rho & vpvs
-
+	  //May 2015, added ani(Vs, inherent), raEFF, azEFF (effective radial and azimuthal anisotropy)
 	  vector<double> tv;
 	  vector<int> iv;
 	  double th,tth,fm1,fm2,dep;
@@ -93,11 +93,14 @@ default_random_engine generator (seed);
 	  char str[500];
 	  int i,j,Ncount,size,k,flag,Ngp,idmin,idmax;
 	  vector<vector<double> > tvlst;
-	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax;
-	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi;
+	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax,raEFFmin,raEFFmax,azEFFmin,azEFFmax;
+	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi,raEFF,azEFF,traEFF,tazEFF,G;
 	  double rho,vpvs,rhomin,rhomax,vpvsmin,vpvsmax,trho,tvpvs,tvpvs1,tvpvs2;
 	  vector<vector<double> > Deplst2;//record the end depth of each group for every model
 	  vector<vector<int> > IDlst2;// record the id (in laym0) of the end-depth of each group, for every model
+	  vector<double> Vparameter(8,0.);//added May29, will be used for tensor rotation
+	  double  RAparameter[8],AZparameter[8][2];
+	  Matrix<double,6,6> ET; //added May29, will be used for tensor rotation
 
 	  hlst.clear();vlst.clear();stdlst.clear();tvlst.clear();
 		  
@@ -191,6 +194,17 @@ default_random_engine generator (seed);
 					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
 
 				tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
+				//--- tensor rotation. added May29, will be used for tensor rotation
+				//--- compute the effective RA and AZ
+			 	Vparameter[0]=tvsv;Vparameter[1]=tvsh;Vparameter[2]=tvpv;Vparameter[3]=tvph;Vparameter[4]=teta;Vparameter[5]=ttheta;Vparameter[6]=tphi;Vparameter[7]=trho;
+				Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
+				G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
+				tazEFF=199.*G/2./RAparameter[0]; //100*G/2L
+				//if(dep1>1 and dep1<20){
+				//	printf("dep= %g G= %g L= %g sqrt(G/L)*100= %g\n",dep1,G,RAparameter[0],tazEFF);
+				//}
+				traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
+				//--
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
 				ani=ani+tani;
@@ -201,6 +215,8 @@ default_random_engine generator (seed);
 				phi=phi+tphi;
 				rho=rho+trho;
 				vpvs+=tvpvs;
+				raEFF+=traEFF; //added May 29, 2015
+				azEFF+=tazEFF;
 				Ncount++;	
 				if (tvsv>vsvmax)vsvmax=tvsv;
 				if(tvsv<vsvmin)vsvmin=tvsv;
@@ -216,11 +232,16 @@ default_random_engine generator (seed);
 				rhomin=(trho<rhomin?trho:rhomin);
 				vpvsmax=(tvpvs>vpvsmax?tvpvs:vpvsmax);
 				vpvsmin=(tvpvs<vpvsmin?tvpvs:vpvsmin);
-				//---tvlst: vsv,vsh ..., phi
+				raEFFmax=(traEFF>raEFFmax?traEFF:raEFFmax);//added May 29,2015
+				raEFFmin=(traEFF<raEFFmin?traEFF:raEFFmin);
+				azEFFmax=(tazEFF>azEFFmax?tazEFF:azEFFmax);
+				azEFFmin=(tazEFF<azEFFmin?tazEFF:azEFFmin);
+				//---tvlst: vsv,vsh ..., phi,rho,vpvs,ani,raEFF,azEFF
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
 				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi); 
 				tv.push_back(trho);tv.push_back(tvpvs);
 				tv.push_back(tani); // added May 7, 2015
+				tv.push_back(traEFF);tv.push_back(tazEFF); // added May 29, 2015
 				tvlst.push_back(tv);
 				break;
 			}//if dep>tth
@@ -246,7 +267,8 @@ default_random_engine generator (seed);
 		phi/=Ncount;
 		rho/=Ncount;
 		vpvs/=Ncount;
-		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi) or isnan((float)rho) or isnan((float)vpvs)){
+		raEFF/=Ncount;azEFF/=Ncount;
+		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi) or isnan((float)rho) or isnan((float)vpvs) or isnan((float)ani) or isnan((float)raEFF) or isnan((float)azEFF)){
 			printf("Hey, NaN happen!!! something wrong!!\n Ncount=%d th=%g tth=%g h0=%g h=%g\n",Ncount,th,tth,h0,h);
 			sprintf(str,"echo WRONG Ncount = %d >> point_finished_Ani.txt ",Ncount);
 			system(str);
@@ -258,12 +280,15 @@ default_random_engine generator (seed);
 		tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vpv);tv.push_back(vph);tv.push_back(eta);tv.push_back(theta);tv.push_back(phi);
 		tv.push_back(rho);tv.push_back(vpvs);
 		tv.push_back(ani);//added May 7, 2015
+		tv.push_back(raEFF);tv.push_back(azEFF);// added May 29, 2015
 		tv.push_back(vsvmin);tv.push_back(vshmin);tv.push_back(vpvmin);tv.push_back(vphmin);tv.push_back(etamin);tv.push_back(thetamin);tv.push_back(phimin);
 		tv.push_back(rhomin);tv.push_back(vpvsmin);
 		tv.push_back(animin);//added May 7, 2015
+		tv.push_back(raEFFmin);tv.push_back(azEFFmin);// added May 29, 2015
 		tv.push_back(vsvmax);tv.push_back(vshmax);tv.push_back(vpvmax);tv.push_back(vphmax);tv.push_back(etamax);tv.push_back(thetamax);tv.push_back(phimax);
 		tv.push_back(rhomax);tv.push_back(vpvsmax);
 		tv.push_back(animax);//added May 7, 2015
+		tv.push_back(raEFFmax);tv.push_back(azEFFmax);// added May 29, 2015
 
 		vlst.push_back(tv);
 		hlst.push_back(th);
@@ -304,6 +329,17 @@ default_random_engine generator (seed);
 		fm1=sqrt(fm1/Ncount);
 		fm2=sqrt(fm2/Ncount);
 		tv.push_back(fm1);tv.push_back(fm2);
+
+		fm1=0.;fm2=0.;fm3=0.;
+		for(i=0;i<Ncount;i++){
+                        fm1=fm1+pow(tvlst[i][9]-ani,2);
+                        fm2=fm2+pow(tvlst[i][10]-raEFF,2);
+                        fm3=fm3+pow(tvlst[i][11]-azEFF,2);
+                }
+                fm1=sqrt(fm1/Ncount);
+                fm2=sqrt(fm2/Ncount);
+                fm3=sqrt(fm3/Ncount);
+                tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
 
 		stdlst.push_back(tv);
 	  }//for th
@@ -634,11 +670,12 @@ int i,p6;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst,vector<int> AZcosidlstM){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, vector<int> idphiClst, vector<int> idphiMlst, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst,vector<int> AZcosidlstM){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
     //double T=180.;
+    int idphiC;
     double tphi,pkC;
     vector<vector<vector<double> > > Vkernel,Lkernel;
     vector<paradef> paraavglst,parastdlst,parabestlst;
@@ -650,7 +687,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
     vector<double> newmisfitlst;
     //--1. get the average para --
     modeltmp=model0;
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -667,7 +704,10 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 	int k1,k2;
  	k1=0;k2=0;
 	for(int j=0;j<paraall.size();j++){
-		if(idphiC>=0){
+	// Hey, is this part redundant? I have already converted the phi values in para_avg_multiple_gp, and transfereed it back  using &
+		if(idphiClst.size()>0){
+		for(int k=0;k<idphiClst.size();k++){
+		idphiC=idphiClst[k];
 		tphi=convert(paraall[j].parameter[idphiC],pkC,T);
 		if(ig==0){
 		  if(fabs(tphi-pkC)>=0.23*T){
@@ -687,6 +727,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 			printf("In CALavg_getposteria_v8.C, haven't considered the situation with Ngroup>2\n");
 			exit(0);
 		}
+		}// for k
 		}//idphiC>=0
 		  paraP=pararef;
                   paraP.parameter=paraall[j].parameter;
@@ -764,7 +805,7 @@ int main(int argc, char *argv[])
   vector<int> signall,iiterall,iaccpall,idlst;
   char inponm[300],dirbin[300],fbname[200],foutnm[300],fvsvnm[300],fvshnm[300],nodeid[10],outdir[300],str[200];
   char fvpvnm[300],fvphnm[300],fetanm[300],fthetanm[300],fphinm[300],fparanm[300],fmodBnm[300];
-  char faninm[300];
+  char faninm[300],fraEFFnm[300],fazEFFnm[300];
   char frhonm[300],fvpvsnm[300];
   //char fnmlst[7][300];
   vector<string> fnmlst;
@@ -806,7 +847,7 @@ int main(int argc, char *argv[])
 
   T=180.;
   //Rsurflag=5;
-  Lsurflag=1;AziampRsurflag=AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Lsurflag=1;AziampRsurflag=AziphiRsurflag=1;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -824,7 +865,8 @@ int main(int argc, char *argv[])
   npoint=0;
   //int ktopo;
   while(1){
-    int ig,idphiC,idphiM;
+    int ig;//,idphiC,idphiM;
+    vector<int> idphiClst,idphiMlst;
     vector<paradef> paraavglst,parastdlst;
     vector<vector<int> > idlstlst;
     vector<string> fnmlsttmp;
@@ -896,13 +938,15 @@ int main(int argc, char *argv[])
 
     //---get the phi id for both crust&mantle
     for(i=0;i<paraP.npara;i++){
-        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1){idphiC=i;break;}
+        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1)//{idphiC=i;break;}
+	{idphiClst.push_back(i);}
     }
-    if(i==paraP.npara){idphiC=-1;} 
-    /*for(i=0;i<paraP.npara;i++){
-        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2){idphiM=i;break;}
-    M}*/
-    idphiM=-1;    
+    //if(i==paraP.npara){idphiC=-1;} 
+    for(i=0;i<paraP.npara;i++){
+        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2)//{idphiM=i;break;}
+	{idphiMlst.push_back(i);}
+    }
+    //idphiM=-1;    
 
    //---get the AZcosidlst for crust
    for(i=0;i<paraP.npara;i++){
@@ -935,6 +979,8 @@ int main(int argc, char *argv[])
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(fraEFFnm,"%s/raEFF_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(fazEFFnm,"%s/azEFF_%.1f_%.1f.txt",outdir,lon,lat);
     }
     else if (RAflag==2){
     sprintf(fbname,"%s/ani_%s_%.1f_%.1f.bin_effTI",dirbin,nodeid,lon,lat);
@@ -951,6 +997,8 @@ int main(int argc, char *argv[])
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(fraEFFnm,"%s/raEFF_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(fazEFFnm,"%s/azEFF_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     }
     else{
       printf("### CALavg inproper value for the RAflag (should be 1 or 2)\n");
@@ -959,6 +1007,7 @@ int main(int argc, char *argv[])
     fnmlst.push_back(fvsvnm);fnmlst.push_back(fvshnm);fnmlst.push_back(fvpvnm);fnmlst.push_back(fvphnm);fnmlst.push_back(fetanm);fnmlst.push_back(fthetanm);fnmlst.push_back(fphinm);
     fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);
     fnmlst.push_back(faninm);//added May 7, 2015
+    fnmlst.push_back(fraEFFnm);fnmlst.push_back(fazEFFnm);//added May29, 2015
     Nparanm=fnmlst.size();
     ifstream mff(fbname);
     if (! mff.good()){
@@ -981,7 +1030,7 @@ int main(int argc, char *argv[])
       	flagreadLkernel=0;
       	//--recompute the paraall[].misfit based on each group's average para---
       	printf("recompute the paraall[].misfit =======\n");
-      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst,AZcosidlstM);
+      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiClst,idphiMlst,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst,AZcosidlstM);
       	//--write out the misfits---
       	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
       	if((fmis=fopen(str,"w"))==NULL){printf("### Cannot open %s to write new misfit!\n",str);exit(0);}
@@ -1011,14 +1060,14 @@ int main(int argc, char *argv[])
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
     modeltmp=model0;
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());
     for(int ig=0;ig<idlstlst.size();ig++){
 	parabest=parabestlst[ig];
 	idlst=idlstlst[ig];
-    	printf("size=%d\n",idlst.size());
+    	printf("phigp%d size=%d\n",ig,idlst.size());
 	paraavg=paraavglst[ig];
 	parastd=parastdlst[ig];
 

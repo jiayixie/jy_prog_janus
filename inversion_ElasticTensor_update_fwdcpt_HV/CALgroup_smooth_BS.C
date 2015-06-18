@@ -164,15 +164,17 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 		  } //for j
-		  /*-----test----- 2-layer theta---
+		  ///*-----test----- 2-layer theta---
 		  if(group.thick<100){
-	  	  if(i<nnlay/2.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+	  	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+		  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 		  //else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
-	  	  else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+	  	  //else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+		  else{tmptheta=0.;}
 		  }
 		  //if(i<nnlay/2)tmptheta=40.;
 		  //else tmptheta=10.;
-		  */
+		  //*/
 		  group.vsvvalue1.push_back(tmpvsv);
 		  group.vshvalue1.push_back(tmpvsh);
 		  group.vpvvalue1.push_back(tmpvpv);
@@ -197,13 +199,15 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 	  }//for j
-	  /*-----test----- 2-layer theta---
+	  ///*-----test----- 2-layer theta---
  	  if(group.thick<100.){
-	  if(i<nnlay/2.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+	  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 	  //else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
-	  else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+	  //else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+	  else{tmptheta=0.;}
 	  }
-	  */
+	  //*/
 	  group.vsvvalue1.push_back(tmpvsv);
 	  group.vshvalue1.push_back(tmpvsh);
 	  group.vpvvalue1.push_back(tmpvpv);
