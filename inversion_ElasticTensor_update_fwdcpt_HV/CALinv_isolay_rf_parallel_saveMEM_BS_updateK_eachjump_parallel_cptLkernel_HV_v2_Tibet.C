@@ -211,8 +211,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 		if(iiter%10000==0){
 			printf("iiter=%d iaccp=%d dtime=%.1f ijump=%d iloop=%d;  ",iiter,iaccp,(float)(time(0)-start),i,iloop);
 			//if((float)(time(0)-start)>3600.*2)
-			if((float)(time(0)-start)>3600.*2)
-			{	printf("exceed 2hr limit! break\n");
+			if((float)(time(0)-start)>3600.*1)
+			{	printf("exceed 1hr limit! break\n");
 				flagbreak=1;
 				break;} //break the search after 50min. modified Mar 13, 2014
 			printf("inv time used wtime=%.2fs cputime=%.2fs\n",omp_get_wtime()-start_walltime,get_cpu_time()-start_cputime);

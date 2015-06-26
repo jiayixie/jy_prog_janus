@@ -164,7 +164,7 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 		  } //for j
-		  ///*-----test----- 2-layer theta---
+		  /*-----test----- 2-layer theta---
 		  if(group.thick<100){
 	  	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 		  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
@@ -174,7 +174,7 @@ int updategroup(groupdef &group)
 		  }
 		  //if(i<nnlay/2)tmptheta=40.;
 		  //else tmptheta=10.;
-		  //*/
+		  */
 		  group.vsvvalue1.push_back(tmpvsv);
 		  group.vshvalue1.push_back(tmpvsh);
 		  group.vpvvalue1.push_back(tmpvpv);
@@ -199,7 +199,7 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 	  }//for j
-	  ///*-----test----- 2-layer theta---
+	  /*-----test----- 2-layer theta---
  	  if(group.thick<100.){
 	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 	  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
@@ -207,7 +207,7 @@ int updategroup(groupdef &group)
 	  //else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
 	  else{tmptheta=0.;}
 	  }
-	  //*/
+	  */
 	  group.vsvvalue1.push_back(tmpvsv);
 	  group.vshvalue1.push_back(tmpvsh);
 	  group.vpvvalue1.push_back(tmpvpv);
@@ -346,7 +346,11 @@ int updategroup(groupdef &group)
           group.phivalue1=group.phivalue;
           group.rhovalue1=group.rhovalue;
           group.nlay=group.np;
-
+	  //---modified Jun24, 2015. if the group is initially grid model (flag=6) (not from Bspline, flag=2), then need to set up the thickness
+	  group.thick1.clear();
+	  int N=group.nlay;
+	  for(int i=0;i<N-1;i++){group.thick1.push_back(group.thick/(N-1));}
+	  group.thick1.push_back(0.); //the last grid has thickness=0.
           return 1;
         }
          

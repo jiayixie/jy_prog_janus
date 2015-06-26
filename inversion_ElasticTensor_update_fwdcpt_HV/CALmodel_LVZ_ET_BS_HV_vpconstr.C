@@ -444,8 +444,8 @@ column:	0		1			2				3			4				5				....			N-1
 		  pflag=model.groups[iid].pflag=atoi(v[2].c_str());// type of input model: if not specified, vsv=vsh,vpv=vph,eta=1, and vp=vs*vpvs; 1--vs; 2--vsv,vsh; 3--vsv,vsh,vp; 4--vsv,vsh,vpv,vph; 5--vsv,vsh,vpv,vph,eta;
 		  model.groups[iid].flagcpttype=atoi(v[3].c_str());
 		  model.groups[iid].thick=atof(v[4].c_str());//h of each group
-		  if((model.groups[iid].flagcpttype==2 or model.groups[iid].flagcpttype==4) and (model.groups[iid].flag-1)*(model.groups[iid].flag-3)){// Lovepara/kernel, only for layered model or Bspline model that will be changed to point model(flag=3 NOT 2) ; BS
-			printf("##### readmod, wrong flagcpttype vs. flag! Lovepara/kernel, only for layered or Bspline (flag=3(Bsp2Point) not flag=2(Bsp)) model\ngroup%d, flagcpttype=%d, flag=%d\n",iid,model.groups[iid].flagcpttype,model.groups[iid].flag);
+		  if((model.groups[iid].flagcpttype==2 or model.groups[iid].flagcpttype==4) and (model.groups[iid].flag-1)*(model.groups[iid].flag-3)!=0){// Lovepara/kernel, only for layered model or Bspline model that will be changed to point model(flag=3 NOT 2)  ; BS
+			printf("##### readmod, wrong flagcpttype vs. flag! Lovepara/kernel, only for layered(flag=1) or Bspline (flag=3(Bsp2Point) not flag=2(Bsp)) model or gradient (flag=4) model\ngroup%d, flagcpttype=%d, flag=%d\n",iid,model.groups[iid].flagcpttype,model.groups[iid].flag);
 
 			exit(0);
 		  }

@@ -1051,13 +1051,15 @@ for i<para.npara
 	  // this categori is not well organized, may consider changing it in the future
 	  // vpvs scaling, this group can be isotropic or anisotropic
 	  // scale the the vpv based on 1st layer's vsv and vpv0/vsv0
-	  // for vsh, will keep the anisotropy constant
+	  // for vsh, will keep the anisotropy constant. the same as the input model value
 	  	if(p6==3){//vpv
 			c=model.groups[ng].vpvvalue[0]/model.groups[ng].vsvvalue[0];
 			newv=model.groups[ng].vsvvalue[nv]*c;
 		}
-		else if (p6==2){//vsh
-			newv=1000.;// will asgin the real newv in the returned gen_newpara function
+		else if (p6==2){//vsh, 
+		// will asgin the real newv in the returned gen_newpara function
+		// vsh = vsh_input[0]/vsv_input[0]*vsv
+			newv=1000.;
 		}		
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the vpvs scaling\n",p6);exit(0);}
 	  }
@@ -1126,7 +1128,7 @@ for i<para.npara
 		      	}//while
 			*/			      
 		    }//if p6==11
-	  	    else if (p6==2 and outpara.parameter[i]>900){// this is a vsh parameter that requires constant radial anisotropy, and the amplitude of RA is computed from the model
+	  	    else if (p6==2 and outpara.parameter[i]>900){// this is a vsh parameter that requires constant radial anisotropy, and the amplitude of RA is computed from the input model (tmodel)
 			c=tmodel.groups[ng].vshvalue[0]/tmodel.groups[ng].vsvvalue[0];
 			outpara.parameter[i]=outpara.parameter[i-1]*c;
 		    }//else if p6==2
