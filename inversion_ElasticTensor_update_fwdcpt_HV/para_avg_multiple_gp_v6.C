@@ -449,7 +449,7 @@ vector<int> para_avg_multiple_gp(vector<int> idphilst,vector<int> idphiMlst, vec
 
   //--- by default, a group (e.g., crust) can only be either TTI/TI/iso or AZcos, cannot be both at the same time
   if(AZcosidlst.size()>0){// if this group is AZcos
-  //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. Without this step, the averaged values. 
+  //---- convert the AZcos AZsin parameters; group the angle correlated with AZcos and AZsin, then recompute AZcos and AZsin. 
   indexflaglst=convert_AZpara(paralst, AZcosidlst,idlst,Ngood,Ngp,10.);
   }
   else{// else this group is TTI or TI/iso

@@ -7,7 +7,7 @@
 // this version, output both extrinsic values, and apparent values
 // this version ,modified on Jan 20, 2014, output the info for vsv,vsh,vpv,vph,eta,theta,phi; while previous version output vsv,vsh,and vsRA
 // this version, modified on jan23, 2014, could deal with multi-phi situation. seperate the final average model into at most 2 groups based on the phi value distribution.
-// this version, use para_avg_multiple_gp_v2.C instead of para_avg_multiple_gp.C, could also deal with both crust and mantle phi; and the mantle phi seperation can be diabled by setting idphiM<0
+// this version, use para_avg_multiple_gp_v2.C instead of para_avg_multiple_gp.C, could also deal with both crust and mantle phi; and the mantle phi seperation can be diabled by setting idphiM<0, or in the current version , by setting idphiMlst[] empty
 
 // this version, use the para_avg_multiple_gp_v3.C, which enables the computation of parabest for each phi group, so there are multiple parabest output
 // this version, use para_avg_multiple_gp_v4.C that could fixed a bug (the v3 cannot identify multiple group for 0,90,180 situation)
@@ -25,7 +25,7 @@
 // change the included files, keep them consistent with those in the Main code, changed the CALforward, CALinv, CALpara, gen_random, CALmodel
 
 // this version (HV), consider the newly added HV dispersion curves.  
-
+// this version (Tibet), use the para_avg_multiple_gp_v6.C whcih considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> FA, AMP --> convert FA --> AZcos, AZsin --> do avg
 
 #include<iostream>
 #include<algorithm>
@@ -51,13 +51,15 @@ default_random_engine generator (seed);
 #include"CALpara_isolay_BS_newV2L_changeEtaSpace_HV.C"
 #include"./CALgroup_smooth_BS.C"
 //#include"CALmodel_LVZ_ET_BS_HV.C"
-#include "CALmodel_LVZ_ET_BS_HV_vpconstr.C"
+#include "CALmodel_LVZ_ET_BS_HV_vpconstr_Tibet.C"
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
-#include "para_avg_multiple_gp_v5.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
+#include "para_avg_multiple_gp_v6.C"
+#include "cs2ap_model.C"
 
 //----------------------------------------------------------------
 	int para_best(vector<paradef> paralst,paradef &parabest){
@@ -74,14 +76,14 @@ default_random_engine generator (seed);
 	}//para_best
 
 //-----------------------------------------------------	
-	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
+	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth, vector<int> gplst)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
-	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani  vsvmin~phimin~vpvsmin~animin,  vsvmax~phimax~vpvsmax~animax];
-	  //stdlst[ithick]=[vsvstd~phistd]
+	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani,raEFF(%),azEFF(%)  vsvmin~phimin~vpvsmin~animin~raEFFmin~azEFFmin,  vsvmax~phimax~vpvsmax~animax~raEFFmax~azEFFmax];
+	  //stdlst[ithick]=[vsvstd~phistd~rhostd~vpvsstd~anistd~raEFFstd~azEFFstd]
 	  // Jan30, modified this function. previous version has problem at interfaces (single depth - two values)
 	  //Feb19, 2015, modified this function, added rho & vpvs
-
+	  //May 2015, added ani(Vs, inherent), raEFF, azEFF (effective radial and azimuthal anisotropy)
 	  vector<double> tv;
 	  vector<int> iv;
 	  double th,tth,fm1,fm2,dep;
@@ -91,13 +93,21 @@ default_random_engine generator (seed);
 	  char str[500];
 	  int i,j,Ncount,size,k,flag,Ngp,idmin,idmax;
 	  vector<vector<double> > tvlst;
-	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax;
-	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi;
+	  double vpvmin,vpvmax,vphmin,vphmax,etamin,etamax,thetamin,thetamax,phimin,phimax,raEFFmin,raEFFmax,azEFFmin,azEFFmax;
+	  double tvpv,tvph,teta,ttheta,tphi,vpv,vph,eta,theta,phi,raEFF,azEFF,traEFF,tazEFF,G;
 	  double rho,vpvs,rhomin,rhomax,vpvsmin,vpvsmax,trho,tvpvs,tvpvs1,tvpvs2;
 	  vector<vector<double> > Deplst2;//record the end depth of each group for every model
 	  vector<vector<int> > IDlst2;// record the id (in laym0) of the end-depth of each group, for every model
+	  vector<double> Vparameter(8,0.);//added May29, will be used for tensor rotation
+	  double  RAparameter[8],AZparameter[8][2];
+	  Matrix<double,6,6> ET; //added May29, will be used for tensor rotation
 
 	  hlst.clear();vlst.clear();stdlst.clear();tvlst.clear();
+
+	  int flagAZ=0;
+	  for(i=0;i<gplst.size();i++){
+		if(gplst[i]==ng)flagAZ=1;
+	  }
 		  
 	  size=modlst.size();
 	  Ngp=modlst[0].ngroup;	
@@ -127,7 +137,7 @@ default_random_engine generator (seed);
 
 	  flag=0;
 	  for(th=h0;th<=h+dth;th=th+dth){//thickness
-		if(th>h){//make sure that we do do any avg at depth==h
+		if(th>h){//make sure that we do do an avg at depth==h
 		  if(flag==0 and fabs(th-h-dth)>1e-4)
 			{flag=1;th=h;}
 		  else{break;}
@@ -188,11 +198,28 @@ default_random_engine generator (seed);
 				if(tvsv<0 or tvsv>5){
 					printf("test---Wrong velocity, th=%g, imod=%d, ilay=%d, tvsv=%g=[(%g-%g)/(%g)+%g]\n",th,i,j,tvsv,modlst[i].laym0.vsv[j+1],modlst[i].laym0.vsv[j],tth-dep1+modlst[i].laym0.thick[j],modlst[i].laym0.vsv[j]);continue;}
 
-				//tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
-				tani=(tvsh*tvsh-tvsv*tvsv)/(2*tvsv*tvsv);//gamma
-				ani=ani+tani;
+				tani=100*(tvsh-tvsv)/(sqrt((2*tvsv*tvsv+tvsh*tvsh)/3.0));
+				//--- tensor rotation. added May29, will be used for tensor rotation
+				//--- compute the effective RA and AZ
+			 	Vparameter[0]=tvsv;Vparameter[1]=tvsh;Vparameter[2]=tvpv;Vparameter[3]=tvph;Vparameter[4]=teta;Vparameter[5]=ttheta;Vparameter[6]=tphi;Vparameter[7]=trho;
+				//===modify here, take the AZcos AZsin situation into consideration===
+				if(flagAZ==1){ // this group contains AZcos AZsin, not a general tensor
+					tazEFF=100*ttheta/tvsv;
+					traEFF=100*(tvsh*tvsh-tvsv*tvsv)/(2.*tvsv*tvsv);
+				}
+				else{// general tensor case: iso, TI, TTI case
+					Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
+					G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
+					tazEFF=100.*G/2./RAparameter[0]; //100*G/2L
+				//if(dep1>1 and dep1<20){
+				//	printf("dep= %g G= %g L= %g sqrt(G/L)*100= %g\n",dep1,G,RAparameter[0],tazEFF);
+				//}
+					traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
+				}
+				//--
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
+				ani=ani+tani;
 				vpv=vpv+tvpv;
 				vph=vph+tvph;
 				eta=eta+teta;
@@ -200,6 +227,8 @@ default_random_engine generator (seed);
 				phi=phi+tphi;
 				rho=rho+trho;
 				vpvs+=tvpvs;
+				raEFF+=traEFF; //added May 29, 2015
+				azEFF+=tazEFF;
 				Ncount++;	
 				if (tvsv>vsvmax)vsvmax=tvsv;
 				if(tvsv<vsvmin)vsvmin=tvsv;
@@ -215,10 +244,16 @@ default_random_engine generator (seed);
 				rhomin=(trho<rhomin?trho:rhomin);
 				vpvsmax=(tvpvs>vpvsmax?tvpvs:vpvsmax);
 				vpvsmin=(tvpvs<vpvsmin?tvpvs:vpvsmin);
-				//---tvlst: vsv,vsh ..., phi
+				raEFFmax=(traEFF>raEFFmax?traEFF:raEFFmax);//added May 29,2015
+				raEFFmin=(traEFF<raEFFmin?traEFF:raEFFmin);
+				azEFFmax=(tazEFF>azEFFmax?tazEFF:azEFFmax);
+				azEFFmin=(tazEFF<azEFFmin?tazEFF:azEFFmin);
+				//---tvlst: vsv,vsh ..., phi,rho,vpvs,ani,raEFF,azEFF
 				tv.clear();tv.push_back(tvsv);tv.push_back(tvsh);//tv.push_back(tani);
 				tv.push_back(tvpv);tv.push_back(tvph);tv.push_back(teta);tv.push_back(ttheta);tv.push_back(tphi); 
-				tv.push_back(trho);tv.push_back(tvpvs);tv.push_back(tani);
+				tv.push_back(trho);tv.push_back(tvpvs);
+				tv.push_back(tani); // added May 7, 2015
+				tv.push_back(traEFF);tv.push_back(tazEFF); // added May 29, 2015
 				tvlst.push_back(tv);
 				break;
 			}//if dep>tth
@@ -244,21 +279,28 @@ default_random_engine generator (seed);
 		phi/=Ncount;
 		rho/=Ncount;
 		vpvs/=Ncount;
-		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi) or isnan((float)rho) or isnan((float)vpvs)){
+		raEFF/=Ncount;azEFF/=Ncount;
+		if (isnan((float)vsv) or isnan((float)vsh) or isnan((float)ani) or isnan((float)vpv) or isnan((float)vph) or isnan((float)eta) or isnan((float)theta) or isnan((float)phi) or isnan((float)rho) or isnan((float)vpvs) or isnan((float)ani) or isnan((float)raEFF) or isnan((float)azEFF)){
 			printf("Hey, NaN happen!!! something wrong!!\n Ncount=%d th=%g tth=%g h0=%g h=%g\n",Ncount,th,tth,h0,h);
 			sprintf(str,"echo WRONG Ncount = %d >> point_finished_Ani.txt ",Ncount);
 			system(str);
 			//exit(0);
 		}
-		//---vlst: vsv~phi~vpvs, vsvmin~phimin~vpvsmin, vsvmax~phimax~vpvsmax---
+		//---vlst: vsv~phi~vpvs~aniS, vsvmin~phimin~vpvsmin~animin, vsvmax~phimax~vpvsmax~animax---
 		tv.clear();
 		//tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vsvmin);tv.push_back(vsvmax);tv.push_back(vshmin);tv.push_back(vshmax);tv.push_back(ani);tv.push_back(animin);tv.push_back(animax);
 		tv.push_back(vsv);tv.push_back(vsh);tv.push_back(vpv);tv.push_back(vph);tv.push_back(eta);tv.push_back(theta);tv.push_back(phi);
-		tv.push_back(rho);tv.push_back(vpvs);tv.push_back(ani);
+		tv.push_back(rho);tv.push_back(vpvs);
+		tv.push_back(ani);//added May 7, 2015
+		tv.push_back(raEFF);tv.push_back(azEFF);// added May 29, 2015
 		tv.push_back(vsvmin);tv.push_back(vshmin);tv.push_back(vpvmin);tv.push_back(vphmin);tv.push_back(etamin);tv.push_back(thetamin);tv.push_back(phimin);
-		tv.push_back(rhomin);tv.push_back(vpvsmin);tv.push_back(animin);
+		tv.push_back(rhomin);tv.push_back(vpvsmin);
+		tv.push_back(animin);//added May 7, 2015
+		tv.push_back(raEFFmin);tv.push_back(azEFFmin);// added May 29, 2015
 		tv.push_back(vsvmax);tv.push_back(vshmax);tv.push_back(vpvmax);tv.push_back(vphmax);tv.push_back(etamax);tv.push_back(thetamax);tv.push_back(phimax);
-		tv.push_back(rhomax);tv.push_back(vpvsmax);tv.push_back(animax);
+		tv.push_back(rhomax);tv.push_back(vpvsmax);
+		tv.push_back(animax);//added May 7, 2015
+		tv.push_back(raEFFmax);tv.push_back(azEFFmax);// added May 29, 2015
 
 		vlst.push_back(tv);
 		hlst.push_back(th);
@@ -291,17 +333,26 @@ default_random_engine generator (seed);
 		fm2=sqrt(fm2/Ncount);
 		fm3=sqrt(fm3/Ncount);
 		tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
-		fm1=0.;fm2=0.;fm3=0.;
+		fm1=0.;fm2=0.;
 		for(i=0;i<Ncount;i++){
 			fm1=fm1+pow(tvlst[i][7]-rho,2);
 			fm2=fm2+pow(tvlst[i][8]-vpvs,2);
-			fm3=fm3+pow(tvlst[i][9]-ani,2);
 		}		
 		fm1=sqrt(fm1/Ncount);
 		fm2=sqrt(fm2/Ncount);
-		fm3=sqrt(fm3/Ncount);
-		tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
-		//printf("h=%g ani=%g dani=%g\n",th,ani,fm3);
+		tv.push_back(fm1);tv.push_back(fm2);
+
+		fm1=0.;fm2=0.;fm3=0.;
+		for(i=0;i<Ncount;i++){
+                        fm1=fm1+pow(tvlst[i][9]-ani,2);
+                        fm2=fm2+pow(tvlst[i][10]-raEFF,2);
+                        fm3=fm3+pow(tvlst[i][11]-azEFF,2);
+                }
+                fm1=sqrt(fm1/Ncount);
+                fm2=sqrt(fm2/Ncount);
+                fm3=sqrt(fm3/Ncount);
+                tv.push_back(fm1);tv.push_back(fm2);tv.push_back(fm3);
+
 		stdlst.push_back(tv);
 	  }//for th
         vector<vector<double> >().swap(tvlst);
@@ -389,9 +440,8 @@ default_random_engine generator (seed);
 	}//write_modavg
 //--------------------------------------------------
        //int model_avg2( const char *fvsvnm, const char *fvshnm,char *faninm, vector<modeldef> &modlstall, vector<int> &idlst)
-	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst)
+	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst, paradef para0)
 	{
-	  //--the current version only works for model with 3 groups, need to modify it to fit general cases.
 	  int size,i,n,k;
  	  paradef para;
 	  modeldef mod;
@@ -404,41 +454,53 @@ default_random_engine generator (seed);
 	  //vector<vector<double> > Animin,Animid,Animax;
 	  vector<double> h1lst,h2lst,h3lst,tv;
 	  vector<modeldef> modlst;
+	  vector<int> gplst;
 	  time_t start;
 	  //cout<<"---begin! "<<time(0)<<endl;
 	  start=time(0);
 	  size = idlst.size();  
 	  if(size<1){printf("##### in mod_avg, idlst is empty!\n");exit(0);}
+
+	  //--check if there are AZ parameters
+	  for(i=0;i<para0.npara;i++){
+		int p6=(int)para0.para0[i][6];
+		int p4=(int)para0.para0[i][4];
+		if(p6==10){
+			if(find(gplst.begin(),gplst.end(),p4)!=gplst.end())continue; //this gpid is already in gplst
+			else gplst.push_back(p4);
+		}
+	  }
+
 	  //printf("ok1\n");//--test--
 	  for (i=0;i<size;i++){
 		k=idlst[i];
 	 	modlst.push_back(modlstall[k]);
-		Hsed+=modlst[i].groups[0].thick; // THIS IS depth not thickness
-		Hmoho+=(modlst[i].groups[0].thick+modlst[i].groups[1].thick);//
-		Hmat+=(modlst[i].groups[0].thick+modlst[i].groups[1].thick+modlst[i].groups[2].thick);// the sum of group thickness should equal to model.tthick
+		Hsed=Hsed+modlst[i].groups[0].thick; // THIS IS thickness not depth
+		Hmoho=Hmoho+modlst[i].groups[1].thick;// Hmoho changes from thickness to depth later
+		Hmat=Hmat+modlst[i].groups[2].thick;
 	  	//sprintf(str,"echo %g %g >> temp_h.txt\n",modlst[i].groups[0].thick+modlst[i].groups[1].thick+modlst[i].groups[2].thick,modlst[i].tthick);
 		//system(str);
 	  }//for i
-	  Hsed=Hsed/size;// depth 
+	  Hsed=Hsed/size;
 	  Hmoho=Hmoho/size;
 	  Hmat=Hmat/size;
 	  //printf("ok2\n");//--test--
 	  for(i=0;i<size;i++){
-	 	fm1+=pow(modlst[i].groups[0].thick-Hsed,2);
-	 	fm2+=pow(modlst[i].groups[0].thick+modlst[i].groups[1].thick-Hmoho,2);
+	 	fm1=fm1+pow(modlst[i].groups[0].thick-Hsed,2);
+	 	fm2=fm2+pow(modlst[i].groups[1].thick-Hmoho,2);
 	  }
 	  //printf("ok3\n");//--test--
 	  Hsedstd=sqrt(fm1/size);
 	  Hmohostd=sqrt(fm2/size);
-	  depmax=Hmat;
-	  printf("test-- Depth (NOT thickness): Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
+	  Hmoho=Hmoho+Hsed; // *********  the previous Hmoho is the thickness of crust not the depth of Moho; modified on Oct 10, 2012; 
+	  depmax=Hmoho+Hmat;
+	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
-	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,min(Hsed/2.,0.1));
-	  //model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.1);
+	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05,gplst);
 	  cout<<"finish sed\n";//--test
-	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.);
+	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.,gplst);
 	  cout<<"finish cst\n";//---test
-	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.);
+	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.,gplst);
 	  cout<<"finish mant\n";//---test
 	  
 	  cout<<"---connect model min/mid/max time_used="<<time(0)-start<<"\n";//---test---
@@ -533,7 +595,7 @@ int get_posteriaDist(double depmin, double depmax, double depstep, vector<double
 		tphi=(phi[i]-phi[i-1])/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+phi[i-1];
 		tvpvs1=(vph[i]+vpv[i])/(vsh[i]+vsv[i]);
 		tvpvs2=(vph[i-1]+vpv[i-1])/(vsh[i-1]+vsv[i-1]);
-		tvpvs=(tvpvs1-tvpvs2)/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+tvpvs2;
+		tvpvs=(tvpvs2-tvpvs1)/(hlst[i]-hlst[i-1])*(h-hlst[i-1])+tvpvs1;
 		fprintf(out,"%8g %8g %8g %8g %8g %8g %8g %8g %8g",tvsv,tvsh,tvpv,tvph,teta,ttheta,tphi,trho,tvpvs);break;}
     }
   }
@@ -569,11 +631,12 @@ int i,p6;
 	Lovepara2Vpara(RApara,tmodel);
 	para2mod(RApara,tmodel,RAmodel);
 	updatemodel(RAmodel,flagupdaterho);
+	//--clear the AZ parameters
 	for(i=0;i<RApara.npara;i++)RApara.LoveAZparameter[i][0]=RApara.LoveAZparameter[i][1]=0.;
-        for(i=0;i<RApara.npara;i++){// clear the AZcos AZsin parameters, modified Apr 17, 2015
-                p6=(int)RApara.para0[i][6];
-                if((p6-10)*(p6-11)==0){RApara.parameter[i]=0.;}
-        }
+	for(i=0;i<RApara.npara;i++){// clear the AZcos AZsin parameters, modified Apr 17, 2015
+		p6=(int)RApara.para0[i][6];
+		if((p6-10)*(p6-11)==0){RApara.parameter[i]=0.;}
+	}
 	para1=RApara;
 	model0=RAmodel;
 	
@@ -608,6 +671,7 @@ int i,p6;
     	//---obtain Love kernel ---
 	sprintf(kernelnmR,"%s/LkernelRp1ani_%s.txt",dirlay,name);
 	sprintf(kernelnmL,"%s/LkernelLp1ani_%s.txt",dirlay,name);
+	sprintf(kernelnmRHV,"%s/LkernelRHVp1ani_%s.txt",dirlay,name);
 	//sprintf(kernelnmR,"%s/LkernelRp1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     	//sprintf(kernelnmL,"%s/LkernelLp1ani_%s_%.1f_%.1f.txt",dirlay,nodeid,lon,lat);
     	if(flagreadLkernel==1){
@@ -622,6 +686,7 @@ int i,p6;
           //Vkernel2Lkernel(para1,model0,Vkernel,Lkernel,flagupdaterho);
           //write_kernel(Lkernel,model0,para1,kernelnmR,kernelnmL,Rsurflag,Lsurflag);
           compute_Lkernel(para1,model0,Lkernel,PREM,Nprem,Rsurflag,Lsurflag,flagupdaterho,0);//modification Nov 23, 2014
+	  write_kernel(Lkernel,model0,para1,kernelnmR,kernelnmL,kernelnmRHV,Rsurflag,Lsurflag);
     	}//else
 	printf("end of kernel computation\n");
 	//--end of computing kernel
@@ -629,22 +694,24 @@ int i,p6;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, int idphiC, int idphiM, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, vector<int> idphiClst, vector<int> idphiMlst, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst,vector<int> AZcosidlstM){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
     //double T=180.;
+    int idphiC;
     double tphi,pkC;
     vector<vector<vector<double> > > Vkernel,Lkernel;
     vector<paradef> paraavglst,parastdlst,parabestlst;
     vector<vector<int> > idlstlst;
     vector<int> idminlst;
     paradef tpara,pararef,paraP;
-    modeldef modelref,modelP;
+    modeldef modelref,modelP,modeltmp;
     char name[100];
     vector<double> newmisfitlst;
     //--1. get the average para --
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC);
+    modeltmp=model0;
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -661,7 +728,10 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 	int k1,k2;
  	k1=0;k2=0;
 	for(int j=0;j<paraall.size();j++){
-		if(idphiC>=0){
+	// Hey, is this part redundant? I have already converted the phi values in para_avg_multiple_gp, and transfereed it back  using &
+		if(idphiClst.size()>0){
+		for(int k=0;k<idphiClst.size();k++){
+		idphiC=idphiClst[k];
 		tphi=convert(paraall[j].parameter[idphiC],pkC,T);
 		if(ig==0){
 		  if(fabs(tphi-pkC)>=0.23*T){
@@ -681,6 +751,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
 			printf("In CALavg_getposteria_v8.C, haven't considered the situation with Ngroup>2\n");
 			exit(0);
 		}
+		}// for k
 		}//idphiC>=0
 		  paraP=pararef;
                   paraP.parameter=paraall[j].parameter;
@@ -758,14 +829,14 @@ int main(int argc, char *argv[])
   vector<int> signall,iiterall,iaccpall,idlst;
   char inponm[300],dirbin[300],fbname[200],foutnm[300],fvsvnm[300],fvshnm[300],nodeid[10],outdir[300],str[200];
   char fvpvnm[300],fvphnm[300],fetanm[300],fthetanm[300],fphinm[300],fparanm[300],fmodBnm[300];
-  char faninm[300];
+  char faninm[300],fraEFFnm[300],fazEFFnm[300];
   char frhonm[300],fvpvsnm[300];
   //char fnmlst[7][300];
   vector<string> fnmlst;
   FILE *inpo, *out,*fmis;
-  int Nprem,npoint,i,j,RAflag,idmin,N;
+  int Nprem,npoint,i,j,RAflag,idmin,N,p6;
   double tvsv,tvsh,tani,T;
-  vector<double> anilst;	  
+  //vector<double> anilst;	  
   paradef paraavg,parabest,parastd;
   vector<paradef> parabestlst;
   vector<int> idminlst;
@@ -779,11 +850,17 @@ int main(int argc, char *argv[])
   char modnm1[200],fRdispnm[200],fLdispnm[200],fAZRdispnm[200],fAZLdispnm[200];
   vector<string> AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm;
   vector<string> Rdispnm,Ldispnm;
-  modeldef model0,modelP;
+  modeldef model0,modelP,modeltmp;
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
+  vector<int> AZcosidlst,AZcosidlstM;
 
-  if(argc!=14){
+  int Nres=3000;
+  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);AZcosidlstM.reserve(20);
+  parabestlst.reserve(10);
+  AziampRdispnm.reserve(10);AziphiRdispnm.reserve(10);AziampLdispnm.reserve(10);AziphiLdispnm.reserve(10);Rdispnm.reserve(10);Ldispnm.reserve(10);fnmlst.reserve(10);
+
+  if(argc!=13){
     printf("Usage: XX 1]point_file 2]bin_dir 3]out_dir\n1]point_file: nodeid lon lat\n2]bin_dir: bindir/ani(vsv)_nodeid_lon_lat.bin\n3]out_dir: outdir/vsv(vsh)_lon_lat.txt\n4]compute_avg for flat vel(1) or titled vel(2; the vel from the effective TI medium)\n");
     exit(0);
   }
@@ -793,9 +870,8 @@ int main(int argc, char *argv[])
   RAflag=atoi(argv[4]);
 
   T=180.;
-  //Rsurflag=5;Lsurflag=1;
-  AziampRsurflag=0;AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;
-  flagupdaterho=1;
+  //Rsurflag=5;
+  Lsurflag=1;AziampRsurflag=AziphiRsurflag=1;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -813,12 +889,14 @@ int main(int argc, char *argv[])
   npoint=0;
   //int ktopo;
   while(1){
-    int ig,idphiC,idphiM;
+    int ig;//,idphiC,idphiM;
+    vector<int> idphiClst,idphiMlst;
     vector<paradef> paraavglst,parastdlst;
     vector<vector<int> > idlstlst;
     vector<string> fnmlsttmp;
     vector<double> newmisfitlst;
 
+    paraavglst.reserve(10);parastdlst.reserve(10);idlstlst.reserve(10);fnmlsttmp.reserve(10);
 
     if(fscanf(inpo,"%s %f %f",&nodeid[0],&lon,&lat)==EOF)
     //if(fscanf(inpo,"%s %f %f %d",&nodeid[0],&lon,&lat,&ktopo)==EOF)
@@ -837,11 +915,9 @@ int main(int argc, char *argv[])
     sprintf(Lgpindir,argv[i++]);//
     sprintf(fparanm,argv[i++]);//
     Rsurflag=atoi(argv[i++]);
-    Lsurflag=atoi(argv[i++]);
-    printf("Rsurflag=%d, Lsurflag=%d\n",Rsurflag,Lsurflag);
 
     Rdispnm.clear();
-    sprintf(str,"%s/disp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Rphindir,lon,lat);
     Rdispnm.push_back(str);
     if(Rsurflag==5){
     sprintf(str,"%s/HV.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
@@ -849,27 +925,25 @@ int main(int argc, char *argv[])
     }
 
     Ldispnm.clear();
-    if(Lsurflag>0){
-    sprintf(str,"%s/disp.Lov_%.1f_%.1f.txt",Lphindir,lon,lat);
+    sprintf(str,"%s/dispISO_%.1f_%.1f.txt",Lphindir,lon,lat);
     Ldispnm.push_back(str);
-    AziampLdispnm.clear();
-    sprintf(str,"%s/aziamp_%.1f_%.1f.txt",Lphindir,lon,lat);
-    AziampLdispnm.push_back(str);
-
-    AziphiLdispnm.clear();
-    sprintf(str,"%s/aziphi_%.1f_%.1f.txt",Lphindir,lon,lat);
-    AziphiLdispnm.push_back(str);
-    }
 
     AziampRdispnm.clear();
-    sprintf(str,"%s/aziamp.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Rphindir,lon,lat);
     AziampRdispnm.push_back(str);
 
     AziphiRdispnm.clear();
-    sprintf(str,"%s/aziphi.Ray_%.1f_%.1f.txt",Rphindir,lon,lat);
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Rphindir,lon,lat);
     //sprintf(str,"%s/aziphi_restore_unc/aziphi_%.1f_%.1f.txt",Rphindir,lon,lat);//#############HEY TEMPERARY########## TEST
     AziphiRdispnm.push_back(str);
 
+    AziampLdispnm.clear();
+    sprintf(str,"%s/dispAMP_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziampLdispnm.push_back(str);
+
+    AziphiLdispnm.clear();
+    sprintf(str,"%s/dispPHI_%.1f_%.1f.txt",Lphindir,lon,lat);
+    AziphiLdispnm.push_back(str);
 
   
     initmodel(model0);
@@ -888,21 +962,33 @@ int main(int argc, char *argv[])
 
     //---get the phi id for both crust&mantle
     for(i=0;i<paraP.npara;i++){
-        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1){idphiC=i;break;}
+        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1)//{idphiC=i;break;}
+	{idphiClst.push_back(i);}
     }
-    if(i==paraP.npara){idphiC=-1;} 
-    /*for(i=0;i<paraP.npara;i++){
-        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2){idphiM=i;break;}
-    }*/
-    idphiM=-1;    
+    //if(i==paraP.npara){idphiC=-1;} 
+    for(i=0;i<paraP.npara;i++){
+        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2)//{idphiM=i;break;}
+	{idphiMlst.push_back(i);}
+    }
+    //idphiM=-1;    
 
+   //---get the AZcosidlst for crust
+   for(i=0;i<paraP.npara;i++){
+	p6=(int)paraP.para0[i][6];
+	if(p6==10 and (int)paraP.para0[i][4]==1){AZcosidlst.push_back(i);}
+   } 
+   //---get the AZcosidlst for mantle
+   for(i=0;i<paraP.npara;i++){
+	p6=(int)paraP.para0[i][6];
+	if(p6==10 and (int)paraP.para0[i][4]==2){AZcosidlstM.push_back(i);}
+   } 
   //---end of reading information
 
 
 
     initpara(paraavg);
     initpara(parabest);
-//    if(RAflag==1){
+    if(RAflag==1){
     sprintf(fbname,"%s/ani_%s_%.1f_%.1f.bin",dirbin,nodeid,lon,lat);
     sprintf(foutnm,"%s/post_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fvsvnm,"%s/vsv_%.1f_%.1f.txt",outdir,lon,lat);
@@ -915,10 +1001,11 @@ int main(int argc, char *argv[])
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(frhonm,"%s/rho_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt",outdir,lon,lat);
-    sprintf(faninm,"%s/anivs_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt",outdir,lon,lat);
-/*    }
+    sprintf(fraEFFnm,"%s/raEFF_%.1f_%.1f.txt",outdir,lon,lat);
+    sprintf(fazEFFnm,"%s/azEFF_%.1f_%.1f.txt",outdir,lon,lat);
+    }
     else if (RAflag==2){
     sprintf(fbname,"%s/ani_%s_%.1f_%.1f.bin_effTI",dirbin,nodeid,lon,lat);
     sprintf(foutnm,"%s/post_%.1f_%.1f.txt_effTI",outdir,lon,lat);
@@ -932,16 +1019,19 @@ int main(int argc, char *argv[])
     sprintf(fphinm,"%s/phi_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(frhonm,"%s/rho_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fvpvsnm,"%s/vpvs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
-    sprintf(faninm,"%s/anivs_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fparanm,"%s/para_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     sprintf(fmodBnm,"%s/modB_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(fraEFFnm,"%s/raEFF_%.1f_%.1f.txt_effTI",outdir,lon,lat);
+    sprintf(fazEFFnm,"%s/azEFF_%.1f_%.1f.txt_effTI",outdir,lon,lat);
     }
     else{
       printf("### CALavg inproper value for the RAflag (should be 1 or 2)\n");
       return 0;
-    }*/
+    }
     fnmlst.push_back(fvsvnm);fnmlst.push_back(fvshnm);fnmlst.push_back(fvpvnm);fnmlst.push_back(fvphnm);fnmlst.push_back(fetanm);fnmlst.push_back(fthetanm);fnmlst.push_back(fphinm);
-    fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);fnmlst.push_back(faninm);
+    fnmlst.push_back(frhonm);fnmlst.push_back(fvpvsnm);
+    fnmlst.push_back(faninm);//added May 7, 2015
+    fnmlst.push_back(fraEFFnm);fnmlst.push_back(fazEFFnm);//added May29, 2015
     Nparanm=fnmlst.size();
     ifstream mff(fbname);
     if (! mff.good()){
@@ -952,16 +1042,19 @@ int main(int argc, char *argv[])
     mff.close();
     printf("test-- begin read_bin\n");
     read_bin(modelall,paraall,fbname,signall,iiterall,iaccpall);
+    model_cs2ap(modelall,paraP);//in the modelall, new the theta[] stores amp instead of Acos, phi[] stores fast-axis instead of Asin
     N=paraall.size();
     printf("test-- finish read_bin\n");
     printf("test-- begin para_avg # of all models=%d\n",N);
+    newmisfitlst.reserve(N);
 
-    if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
+    if(0){//---test---
+    //if(RAflag==1){// recompute misfit based on the para (intrinsic); and write them out
       	flagreadVkernel=0;
       	flagreadLkernel=0;
       	//--recompute the paraall[].misfit based on each group's average para---
       	printf("recompute the paraall[].misfit =======\n");
-      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiC,idphiM,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid);
+      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiClst,idphiMlst,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst,AZcosidlstM);
       	//--write out the misfits---
       	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
       	if((fmis=fopen(str,"w"))==NULL){printf("### Cannot open %s to write new misfit!\n",str);exit(0);}
@@ -976,7 +1069,8 @@ int main(int argc, char *argv[])
 		//if((fscanf(fmis,"%g %g",&misfit,&oldmisfit))==EOF){printf("## strange end of file\n");exit(0);}
 		if((fscanf(fmis,"%f %f",&fnewmis,&foldmis))==EOF){printf("## strange end of file\n");exit(0);}
 		misfit=(double)fnewmis;oldmisfit=(double)foldmis;
-		newmisfitlst.push_back(misfit);
+		newmisfitlst.push_back(misfit); 
+		//newmisfitlst.push_back(oldmisfit); //---test---
 		//printf("%d new1 %f old1 %f old2 %f \n",j,misfit,oldmisfit,paraall[j].misfit);
 	}
 	fclose(fmis);
@@ -989,27 +1083,28 @@ int main(int argc, char *argv[])
 
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
-    idminlst=para_avg_multiple_gp(idphiC,idphiM,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC);
+    modeltmp=model0;
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());
     for(int ig=0;ig<idlstlst.size();ig++){
 	parabest=parabestlst[ig];
 	idlst=idlstlst[ig];
-    	printf("size=%d\n",idlst.size());
+    	printf("phigp%d size=%d\n",ig,idlst.size());
 	paraavg=paraavglst[ig];
 	parastd=parastdlst[ig];
 
 	if(RAflag==1){
-       	 	flagreadVkernel=0;
-       	 	flagreadLkernel=0;
+       	 	flagreadVkernel=flagreadLkernel=1;//--test---
+       	 	//flagreadVkernel=flagreadLkernel=0;
 		//compute the kernel for this para, compute its disp (RA and AZ), write the disp 
 		printf("compute_dispM_writeASC\n");//---test--
 		//exit(0);
 		sprintf(str,"avg_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);
 		paraavg=compute_dispM_writeASC(paraavg,paraP,modelP,PREM,inpamp,inpphi,Nprem,flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,str);
-       	 	flagreadVkernel=0;
-       	 	flagreadLkernel=0;
+       	 	flagreadVkernel=flagreadLkernel=1;//--test---
+       	 	//flagreadVkernel=flagreadLkernel=0;
 		sprintf(str,"best_%s_%.1f_%.1f.txt_phigp%d",nodeid,lon,lat,ig);
 		parabest=compute_dispM_writeASC(parabest,paraP,modelP,PREM,inpamp,inpphi,Nprem,flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,str);
 	}
@@ -1025,11 +1120,11 @@ int main(int argc, char *argv[])
 		sprintf(str,"%s_phigp%d",fnmlst[i].c_str(),ig);
 		fnmlsttmp.push_back(str);
 	}
-	model_avg2(fnmlsttmp,modelall,idlst);
+	model_avg2(fnmlsttmp,modelall,idlst,para1);
 	printf("Read bin in all phi_group%d, model_size=%d\n",ig,modelall.size());
 	sprintf(str,"%s_phigp%d",foutnm,ig);
 	if((out=fopen(str,"w"))==NULL){printf("### Cannot open %s to write!!\n",foutnm);exit(0);};
-	for(int j=0;j<idlst.size();j++){
+	for(int j=0;j<idlst.size();j++){// size of idlst = groups of model
 		i=idlst[j];
 		if(signall[i]==0){fprintf(out,"prior ");}
 	        else if(signall[i]==1){
@@ -1064,9 +1159,10 @@ int main(int argc, char *argv[])
     vector<int>().swap(idlst);
     
   }//while 1
-  printf("END of CALavg %s %.1f %.1f\n",nodeid,lon,lat);
+ 
   return 1;
 }
+
 
 
 

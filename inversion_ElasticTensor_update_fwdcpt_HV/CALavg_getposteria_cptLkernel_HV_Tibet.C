@@ -76,7 +76,7 @@ default_random_engine generator (seed);
 	}//para_best
 
 //-----------------------------------------------------	
-	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
+	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth, vector<int> gplst)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
 	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani,raEFF(%),azEFF(%)  vsvmin~phimin~vpvsmin~animin~raEFFmin~azEFFmin,  vsvmax~phimax~vpvsmax~animax~raEFFmax~azEFFmax];
@@ -103,6 +103,11 @@ default_random_engine generator (seed);
 	  Matrix<double,6,6> ET; //added May29, will be used for tensor rotation
 
 	  hlst.clear();vlst.clear();stdlst.clear();tvlst.clear();
+
+	  int flagAZ=0;
+	  for(i=0;i<gplst.size();i++){
+		if(gplst[i]==ng)flagAZ=1;
+	  }
 		  
 	  size=modlst.size();
 	  Ngp=modlst[0].ngroup;	
@@ -197,13 +202,20 @@ default_random_engine generator (seed);
 				//--- tensor rotation. added May29, will be used for tensor rotation
 				//--- compute the effective RA and AZ
 			 	Vparameter[0]=tvsv;Vparameter[1]=tvsh;Vparameter[2]=tvpv;Vparameter[3]=tvph;Vparameter[4]=teta;Vparameter[5]=ttheta;Vparameter[6]=tphi;Vparameter[7]=trho;
-				Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
-				G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
-				tazEFF=199.*G/2./RAparameter[0]; //100*G/2L
+				//===modify here, take the AZcos AZsin situation into consideration===
+				if(flagAZ==1){ // this group contains AZcos AZsin, not a general tensor
+					tazEFF=100*ttheta/tvsv;
+					traEFF=100*(tvsh*tvsh-tvsv*tvsv)/(2.*tvsv*tvsv);
+				}
+				else{// general tensor case: iso, TI, TTI case
+					Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
+					G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
+					tazEFF=100.*G/2./RAparameter[0]; //100*G/2L
 				//if(dep1>1 and dep1<20){
 				//	printf("dep= %g G= %g L= %g sqrt(G/L)*100= %g\n",dep1,G,RAparameter[0],tazEFF);
 				//}
-				traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
+					traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
+				}
 				//--
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
@@ -428,7 +440,7 @@ default_random_engine generator (seed);
 	}//write_modavg
 //--------------------------------------------------
        //int model_avg2( const char *fvsvnm, const char *fvshnm,char *faninm, vector<modeldef> &modlstall, vector<int> &idlst)
-	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst)
+	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst, paradef para0)
 	{
 	  int size,i,n,k;
  	  paradef para;
@@ -442,11 +454,23 @@ default_random_engine generator (seed);
 	  //vector<vector<double> > Animin,Animid,Animax;
 	  vector<double> h1lst,h2lst,h3lst,tv;
 	  vector<modeldef> modlst;
+	  vector<int> gplst;
 	  time_t start;
 	  //cout<<"---begin! "<<time(0)<<endl;
 	  start=time(0);
 	  size = idlst.size();  
 	  if(size<1){printf("##### in mod_avg, idlst is empty!\n");exit(0);}
+
+	  //--check if there are AZ parameters
+	  for(i=0;i<para0.npara;i++){
+		int p6=(int)para0.para0[i][6];
+		int p4=(int)para0.para0[i][4];
+		if(p6==10){
+			if(find(gplst.begin(),gplst.end(),p4)!=gplst.end())continue; //this gpid is already in gplst
+			else gplst.push_back(p4);
+		}
+	  }
+
 	  //printf("ok1\n");//--test--
 	  for (i=0;i<size;i++){
 		k=idlst[i];
@@ -472,11 +496,11 @@ default_random_engine generator (seed);
 	  depmax=Hmoho+Hmat;
 	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
-	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
+	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05,gplst);
 	  cout<<"finish sed\n";//--test
-	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.);
+	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.,gplst);
 	  cout<<"finish cst\n";//---test
-	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.);
+	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.,gplst);
 	  cout<<"finish mant\n";//---test
 	  
 	  cout<<"---connect model min/mid/max time_used="<<time(0)-start<<"\n";//---test---
@@ -1096,7 +1120,7 @@ int main(int argc, char *argv[])
 		sprintf(str,"%s_phigp%d",fnmlst[i].c_str(),ig);
 		fnmlsttmp.push_back(str);
 	}
-	model_avg2(fnmlsttmp,modelall,idlst);
+	model_avg2(fnmlsttmp,modelall,idlst,para1);
 	printf("Read bin in all phi_group%d, model_size=%d\n",ig,modelall.size());
 	sprintf(str,"%s_phigp%d",foutnm,ig);
 	if((out=fopen(str,"w"))==NULL){printf("### Cannot open %s to write!!\n",foutnm);exit(0);};
