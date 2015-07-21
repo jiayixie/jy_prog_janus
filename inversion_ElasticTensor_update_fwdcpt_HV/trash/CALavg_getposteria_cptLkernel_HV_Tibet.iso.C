@@ -26,6 +26,8 @@
 
 // this version (HV), consider the newly added HV dispersion curves.  
 // this version (Tibet), use the para_avg_multiple_gp_v6.C whcih considers the averaging for AZcos AZsin case. need to convert the fast-direction correlated with them before doing averaging. AZcos, AZsin --> FA, AMP --> convert FA --> AZcos, AZsin --> do avg
+// this version, iso, is used to get isotropic model
+
 
 #include<iostream>
 #include<algorithm>
@@ -58,8 +60,7 @@ default_random_engine generator (seed);
 #include "./BIN_rw_Love.C"
 #include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
-//#include "para_avg_multiple_gp_v6.C"
-#include "para_avg_multiple_gp_v6.prior.C"
+#include "para_avg_multiple_gp_v6.C"
 #include "cs2ap_model.C"
 
 //----------------------------------------------------------------
@@ -77,7 +78,7 @@ default_random_engine generator (seed);
 	}//para_best
 
 //-----------------------------------------------------	
-	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth, vector<int> gplst)
+	int model_avg_sub(vector<vector<double> > &vlst,vector<vector<double> > &stdlst,vector<double> &hlst,vector<modeldef> &modlst,int ng,double h0,double h,double dth)
 	{
 	  //h0=0;h=Hsed;hstd=hsedstd;dth=0.4;
 	  //vlst[ithick]=[vsv,vsh,vpv,vph,eta,theta,phi,rho,vpvs,ani,raEFF(%),azEFF(%)  vsvmin~phimin~vpvsmin~animin~raEFFmin~azEFFmin,  vsvmax~phimax~vpvsmax~animax~raEFFmax~azEFFmax];
@@ -104,11 +105,6 @@ default_random_engine generator (seed);
 	  Matrix<double,6,6> ET; //added May29, will be used for tensor rotation
 
 	  hlst.clear();vlst.clear();stdlst.clear();tvlst.clear();
-
-	  int flagAZ=0;
-	  for(i=0;i<gplst.size();i++){
-		if(gplst[i]==ng)flagAZ=1;
-	  }
 		  
 	  size=modlst.size();
 	  Ngp=modlst[0].ngroup;	
@@ -203,20 +199,13 @@ default_random_engine generator (seed);
 				//--- tensor rotation. added May29, will be used for tensor rotation
 				//--- compute the effective RA and AZ
 			 	Vparameter[0]=tvsv;Vparameter[1]=tvsh;Vparameter[2]=tvpv;Vparameter[3]=tvph;Vparameter[4]=teta;Vparameter[5]=ttheta;Vparameter[6]=tphi;Vparameter[7]=trho;
-				//===modify here, take the AZcos AZsin situation into consideration===
-				if(flagAZ==1){ // this group contains AZcos AZsin, not a general tensor
-					tazEFF=100*ttheta/tvsv;
-					traEFF=100*(tvsh*tvsh-tvsv*tvsv)/(2.*tvsv*tvsv);
-				}
-				else{// general tensor case: iso, TI, TTI case
-					Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
-					G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
-					tazEFF=100.*G/2./RAparameter[0]; //100*G/2L
+				Vpara2ET2LoveCoeff(Vparameter,ET,RAparameter,AZparameter);//--here RApara: LNCAF theta,phi,rho, AZpara:Gc,s Ec,s 0 Bc,s Hc,s theta,phi,rho
+				G=sqrt(pow(AZparameter[0][0],2)+pow(AZparameter[0][1],2));
+				tazEFF=199.*G/2./RAparameter[0]; //100*G/2L
 				//if(dep1>1 and dep1<20){
 				//	printf("dep= %g G= %g L= %g sqrt(G/L)*100= %g\n",dep1,G,RAparameter[0],tazEFF);
 				//}
-					traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
-				}
+				traEFF=100*(RAparameter[1]-RAparameter[0])/2./RAparameter[0];//100*(N-L)/2L
 				//--
 				vsv=vsv+tvsv;// modified on Aug27, 2012
 				vsh=vsh+tvsh;//
@@ -441,7 +430,7 @@ default_random_engine generator (seed);
 	}//write_modavg
 //--------------------------------------------------
        //int model_avg2( const char *fvsvnm, const char *fvshnm,char *faninm, vector<modeldef> &modlstall, vector<int> &idlst)
-	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst, paradef para0)
+	int model_avg2(vector<string> fnmlst, vector<modeldef> &modlstall, vector<int> &idlst)
 	{
 	  int size,i,n,k;
  	  paradef para;
@@ -455,23 +444,11 @@ default_random_engine generator (seed);
 	  //vector<vector<double> > Animin,Animid,Animax;
 	  vector<double> h1lst,h2lst,h3lst,tv;
 	  vector<modeldef> modlst;
-	  vector<int> gplst;
 	  time_t start;
 	  //cout<<"---begin! "<<time(0)<<endl;
 	  start=time(0);
 	  size = idlst.size();  
 	  if(size<1){printf("##### in mod_avg, idlst is empty!\n");exit(0);}
-
-	  //--check if there are AZ parameters
-	  for(i=0;i<para0.npara;i++){
-		int p6=(int)para0.para0[i][6];
-		int p4=(int)para0.para0[i][4];
-		if(p6==10){
-			if(find(gplst.begin(),gplst.end(),p4)!=gplst.end())continue; //this gpid is already in gplst
-			else gplst.push_back(p4);
-		}
-	  }
-
 	  //printf("ok1\n");//--test--
 	  for (i=0;i<size;i++){
 		k=idlst[i];
@@ -497,11 +474,11 @@ default_random_engine generator (seed);
 	  depmax=Hmoho+Hmat;
 	  printf("test-- Hsed=%g Hsedstd=%g Hmoho=%g Hmohostd=%g\n",Hsed,Hsedstd,Hmoho,Hmohostd);
 	  //printf("ok4\n");//--test--
-	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05,gplst);
+	  model_avg_sub(v1lst,std1lst,h1lst,modlst,0,0,Hsed+Hsedstd,0.05);
 	  cout<<"finish sed\n";//--test
-	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.,gplst);
+	  model_avg_sub(v2lst,std2lst,h2lst,modlst,1,Hsed-Hsedstd,Hmoho+Hmohostd,1.);
 	  cout<<"finish cst\n";//---test
-	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.,gplst);
+	  model_avg_sub(v3lst,std3lst,h3lst,modlst,2,Hmoho-Hmohostd,depmax,1.);
 	  cout<<"finish mant\n";//---test
 	  
 	  cout<<"---connect model min/mid/max time_used="<<time(0)-start<<"\n";//---test---
@@ -695,7 +672,7 @@ int i,p6;
  return 1;
 }
 //-----------------------------------
-vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, vector<int> idphiSlst,vector<int> idphiClst, vector<int> idphiMlst, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid,vector<int> AZcosidlstS, vector<int> AZcosidlst,vector<int> AZcosidlstM){
+vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef model0,vector<vector<double> > PREM,double lon, double lat, double T, double inpamp, double inpphi, vector<int> idphiClst, vector<int> idphiMlst, int Nprem, int flagupdaterho, int Rsurflag, int Lsurflag, int flagreadVkernel, int flagreadLkernel, int AziampRsurflag,int AziampLsurflag, int AziphiRsurflag, int AziphiLsurflag, char *dirlay, char *nodeid, vector<int> AZcosidlst,vector<int> AZcosidlstM){
 // compute Kernel for the avg para/model; then renew the paraall[].misfit based on the new kernel
 // input: idphiC, idphiM, paraall,model0,para0 (contains compelete info from the read in para,mod), PREM, Nprem, T,flags
 // return the paraall[].misfit
@@ -712,7 +689,7 @@ vector<double> recompute_misfit(vector<paradef> paraall, paradef para0, modeldef
     vector<double> newmisfitlst;
     //--1. get the average para --
     modeltmp=model0;
-    idminlst=para_avg_multiple_gp(idphiSlst,idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlstS,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,para0);
     //printf("phic=%g %g\n",paraavglst[0].parameter[idphiC],paraavglst[1].parameter[idphiC]);//===TEST===
     //exit(0);
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
@@ -854,10 +831,10 @@ int main(int argc, char *argv[])
   modeldef model0,modelP,modeltmp;
   paradef para0,para1,paraP;
   vector<vector<double> >  PREM;
-  vector<int> AZcosidlst,AZcosidlstM,AZcosidlstS;
+  vector<int> AZcosidlst,AZcosidlstM;
 
   int Nres=3000;
-  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);AZcosidlstM.reserve(20);AZcosidlstS.reserve(20);
+  modelall.reserve(Nres);paraall.reserve(Nres);signall.reserve(Nres);iiterall.reserve(Nres);iaccpall.reserve(Nres);idlst.reserve(Nres);idminlst.reserve(2);PREM.reserve(200);AZcosidlst.reserve(20);AZcosidlstM.reserve(20);
   parabestlst.reserve(10);
   AziampRdispnm.reserve(10);AziphiRdispnm.reserve(10);AziampLdispnm.reserve(10);AziphiLdispnm.reserve(10);Rdispnm.reserve(10);Ldispnm.reserve(10);fnmlst.reserve(10);
 
@@ -872,7 +849,7 @@ int main(int argc, char *argv[])
 
   T=180.;
   //Rsurflag=5;
-  Lsurflag=1;AziampRsurflag=AziphiRsurflag=1;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
+  Lsurflag=1;AziampRsurflag=AziphiRsurflag=0;AziampLsurflag=0;AziphiLsurflag=0;flagupdaterho=0;
   inpamp=0.25;
   inpphi=0.25;
   sprintf(PREMnm,"/home/jixi7887/progs/jy/Mineos/Mineos-Linux64-1_0_2/DEMO/models/ak135_iso_nowater.txt");
@@ -891,7 +868,7 @@ int main(int argc, char *argv[])
   //int ktopo;
   while(1){
     int ig;//,idphiC,idphiM;
-    vector<int> idphiClst,idphiMlst,idphiSlst;
+    vector<int> idphiClst,idphiMlst;
     vector<paradef> paraavglst,parastdlst;
     vector<vector<int> > idlstlst;
     vector<string> fnmlsttmp;
@@ -955,36 +932,29 @@ int main(int argc, char *argv[])
     //initpara(pararef);
 
     readdisp(model0,Rdispnm,Ldispnm,AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm,Rsurflag,Lsurflag,AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag);
+    for(i=0;i<model0.data.Ldisp.npper;i++){
+    //---!!!! manually make the Love wave uncertainty large ----
+        model0.data.Ldisp.unpvelo[i]=0.5;
+    }
+
     readmodAniso(model0,modnm);// both m.g.LV/Rv are filled regardless of flags. (readin iso model)
     readpara(para0,fparanm);
     mod2para(model0,para0,para1);////fill both para.R/Lpara0 (they could be inequal if Rf*Lf>0, they are equal if Rf*Lf=0)
     //checkParaModel(para1,model0,Viso); # if this para has been verified in the Main_*.C code, then probably do not need it here; b.c. I need to set Viso again here in this program, which may cause mistake
     Bsp2Point(model0,para1,modelP,paraP,flagupdaterho);   
 
-    //--- get the phi id for the sediment ---
-    for(i=0;i<paraP.npara;i++){
-        if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==0)//{idphiC=i;break;}
-	{idphiSlst.push_back(i);}
-    }
-    //---get the phi id for the crust---
+    //---get the phi id for both crust&mantle
     for(i=0;i<paraP.npara;i++){
         if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==1)//{idphiC=i;break;}
 	{idphiClst.push_back(i);}
     }
     //if(i==paraP.npara){idphiC=-1;} 
-    //---get the phi id for mantle---
     for(i=0;i<paraP.npara;i++){
         if((int)paraP.para0[i][6]==7 and (int)paraP.para0[i][4]==2)//{idphiM=i;break;}
 	{idphiMlst.push_back(i);}
     }
     //idphiM=-1;    
 
-    
-   //---get the AZcosidlst for sediment
-   for(i=0;i<paraP.npara;i++){
-	p6=(int)paraP.para0[i][6];
-	if(p6==10 and (int)paraP.para0[i][4]==0){AZcosidlstS.push_back(i);}
-   } 
    //---get the AZcosidlst for crust
    for(i=0;i<paraP.npara;i++){
 	p6=(int)paraP.para0[i][6];
@@ -1055,11 +1025,6 @@ int main(int argc, char *argv[])
     mff.close();
     printf("test-- begin read_bin\n");
     read_bin(modelall,paraall,fbname,signall,iiterall,iaccpall);
-    //----debug code -----
-    //for(i=0;i<paraall.size();i++){
-//	paraall[i].misfit=(modelall[i].data.Ldisp.misfit*0.5)+(modelall[i].data.Rdisp.misfit*0.3)+(modelall[i].data.AziampRdisp.misfit*0.1)+(modelall[i].data.AziphiRdisp.misfit*0.1);
-    //}
-    //
     model_cs2ap(modelall,paraP);//in the modelall, new the theta[] stores amp instead of Acos, phi[] stores fast-axis instead of Asin
     N=paraall.size();
     printf("test-- finish read_bin\n");
@@ -1072,7 +1037,7 @@ int main(int argc, char *argv[])
       	flagreadLkernel=0;
       	//--recompute the paraall[].misfit based on each group's average para---
       	printf("recompute the paraall[].misfit =======\n");
-      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiSlst,idphiClst,idphiMlst,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlstS,AZcosidlst,AZcosidlstM);
+      	newmisfitlst=recompute_misfit(paraall,paraP,modelP,PREM,lon,lat,T,inpamp,inpphi,idphiClst,idphiMlst,Nprem, flagupdaterho,Rsurflag,Lsurflag,flagreadVkernel,flagreadLkernel,AziampRsurflag,AziampLsurflag,AziphiRsurflag,AziphiLsurflag,dirlay,nodeid,AZcosidlst,AZcosidlstM);
       	//--write out the misfits---
       	sprintf(str,"%s/newmisfit_%.1f_%.1f.txt",outdir,lon,lat);
       	if((fmis=fopen(str,"w"))==NULL){printf("### Cannot open %s to write new misfit!\n",str);exit(0);}
@@ -1102,7 +1067,7 @@ int main(int argc, char *argv[])
     //--with the new paraall[].misfit, seperate the group, select model with small misfit ---
     printf("do the para_avg_multiple_gp again =====\n");
     modeltmp=model0;
-    idminlst=para_avg_multiple_gp(idphiSlst,idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlstS,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
+    idminlst=para_avg_multiple_gp(idphiClst,idphiMlst,paraall,parabestlst,paraavglst,parastdlst,idlstlst,3,pkC,AZcosidlst,AZcosidlstM,modeltmp,flagupdaterho,paraP);
 
     if(idminlst.size()<1){cout<<"### in para_avg, incorrect paralst.size()\n";exit(0);}
     printf("%d groups of model\nbegin to write out =====\n",idlstlst.size());
@@ -1138,7 +1103,7 @@ int main(int argc, char *argv[])
 		sprintf(str,"%s_phigp%d",fnmlst[i].c_str(),ig);
 		fnmlsttmp.push_back(str);
 	}
-	model_avg2(fnmlsttmp,modelall,idlst,para1);
+	model_avg2(fnmlsttmp,modelall,idlst);
 	printf("Read bin in all phi_group%d, model_size=%d\n",ig,modelall.size());
 	sprintf(str,"%s_phigp%d",foutnm,ig);
 	if((out=fopen(str,"w"))==NULL){printf("### Cannot open %s to write!!\n",foutnm);exit(0);};

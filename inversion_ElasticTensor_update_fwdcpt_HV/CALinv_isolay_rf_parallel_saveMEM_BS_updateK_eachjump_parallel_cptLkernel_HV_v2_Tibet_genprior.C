@@ -224,6 +224,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 			printf("inv time used wtime=%.2fs cputime=%.2fs\n",omp_get_wtime()-start_walltime,get_cpu_time()-start_cputime);
 		}
 	  	iiter++;
+		if(countacc>5000)break; //added Jul 21, 2015
 		//if (iaccp%500==0 and iaccp>0 and iaccp!=lastiaccp){// update the kernel after X step walk in the model space, what if this model is a strange model??
 		/*
 		 //----test prior------

@@ -428,7 +428,7 @@ vector<int> para_avg_multiple_gp(vector<int> idphiSlst,vector<int> idphilst,vect
 
 
   //--get the smallest misfit and get the index lst for model within misfit criteria-- this is just a groups of model with acceptable misfit; then after group seperation, we will re-select the model with higher criteria;(two criteria, one in seperate_gp[based on its dist to the avg phi value], one in the later part of this subroutine[based on the mismin of that phi gorup])
-  mismin=1e10;
+  /*mismin=1e10;
   for(i=0;i<size;i++){
 	if(paralst[i].misfit<mismin){idmin=i;mismin=paralst[i].misfit;}
   }
@@ -436,7 +436,8 @@ vector<int> para_avg_multiple_gp(vector<int> idphiSlst,vector<int> idphilst,vect
   printf("@@@ para_avg mismin=%g\n",mismin);
   //mismin=mismin+0.5;
   mismin=(mismin*2>(mismin+1.0))?mismin*2:(mismin+1.0); //arbitrary selection criteria
-  //mismin=1e10;
+  */
+  mismin=1e10;// this is for pior distribution generation
   printf("@@@ selection criter, misfit<%g\n",mismin);
   Ngood=0;
   idlst.clear();
@@ -608,7 +609,7 @@ vector<int> para_avg_multiple_gp(vector<int> idphiSlst,vector<int> idphilst,vect
 		//mismin=mismin+0.5;
 		mismin=(mismin*2>(mismin+1.0))?mismin*2:(mismin+0.5); //arbitrary selection criteria
   		//printf("@@@ selection criter, misfit<%g\n",mismin);
-		//mismin=1e10;//this is for prior distribution generation
+		mismin=1e10;//this is for prior distribution generation
 
   		//--prepare the new idlst
   		for(k=0;k<Ngood;k++){

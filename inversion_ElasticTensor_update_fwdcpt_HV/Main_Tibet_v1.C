@@ -32,8 +32,8 @@ default_random_engine generator (seed);
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
@@ -88,7 +88,10 @@ exit(0);
   inpphi=0.25;//useless 0.25; //the weight of the azi_aniso disp curve, ang part (0-1)
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
   //iitercri1= 20000;//50000;//100000;//12000 (mod1, 1cstlay)
-  iitercri1= 60000;//50000;//100000;//12000 (mod1, 1cstlay)
+  //iitercri1= 60000;//50000;//100000;//12000 (mod1, 1cstlay)
+  iitercri1= 80000;//50000;//100000;//12000 (mod1, 1cstlay)
+  //iitercri1 = 100000; //used Jul 14, 2015, after adding vpvs criteria
+  //iitercri1 = 200000; //used Jul 16, 2015, debug misfit in Ldisp
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;

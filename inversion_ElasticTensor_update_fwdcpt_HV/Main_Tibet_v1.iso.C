@@ -99,9 +99,10 @@ exit(0);
   Lmonoc=1;//useless
   PosAnic=0; //##//*1
   flagupdaterho=0;
-  //Rvmono.push_back(0);
+  Rvmono.push_back(0);
   Rvmono.push_back(1);
   Rvmono.push_back(2);
+  Lvmono.push_back(0);
   Lvmono.push_back(1);
   Lvmono.push_back(2);
   

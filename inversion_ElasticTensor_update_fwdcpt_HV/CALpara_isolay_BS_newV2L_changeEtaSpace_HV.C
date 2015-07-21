@@ -1021,13 +1021,16 @@ for i<para.npara
 	  //this kind of scaling need to be dealt with carefully. need to be careful about the updating order of the parameters. the parameters are ordered from vsv->eta, but when doing scaling, may need some later parameters to be updated 1st.
 	 	if(p6==4){//vph --> [(vph-vpv)/vpv]/[(vsh-vsv)/vsv]=c
 			if(ng==0){c=1.0;}//in sediment VpRA=VsRA;
-			else{c=0.5;}//in cst & mat VpRA=0.5*VsRA
+			else{c=1.0;}//in cst & mat VpRA(eff)=0.5*VsRA(eff) (this is actually for effective anisotropies, eff_eta and eff_vsRA, come from jiayi's 2012 JGR paper)
+					// another relationsihp is vpRA=vsRA . This comes from the crustal rock samples (from Brad, Sarah, Vera)
 			c=c*model.groups[ng].vpvvalue[nv]/model.groups[ng].vsvvalue[nv];
 			newv=c*(model.groups[ng].vshvalue[nv]-model.groups[ng].vsvvalue[nv])+model.groups[ng].vpvvalue[nv];
 		}
-		else if (p6==5){//eta --> eta=1.0-4.2*vsRA
+		else if (p6==5){//eta --> eta(eff)=1.0-4.2*vsRA(eff) (this is actually for effective anisotropies, eff_eta and eff_vsRA, come from jiayi's 2012 JGR paper)
+				// another relationsihp is eta=1.0-3.5*vsRA. This comes from the crustal rock samples (from Brad, Sarah, Vera)
 			c=(model.groups[ng].vshvalue[nv]-model.groups[ng].vsvvalue[nv])/model.groups[ng].vsvvalue[nv];
-			newv=1.0-4.2*c;
+			//newv=1.0-4.2*c;
+			newv=1.0-3.5*c;
 		}
 		//-------under construction -----
 		else if (p6==11){// Asin --> Asin/Acos=Asin[x]/Acos[x]; theta-Acos, phi-Asin
@@ -1050,16 +1053,21 @@ for i<para.npara
 	  else if (intflag==-5){
 	  // this categori is not well organized, may consider changing it in the future
 	  // vpvs scaling, this group can be isotropic or anisotropic
-	  // scale the the vpv based on 1st layer's vsv and vpv0/vsv0
+	  // for vpv, scale the the vpv based on 1st layer's vsv and vpv0/vsv0
 	  // for vsh, will keep the anisotropy constant. the same as the input model value
+	  // for eta, will set eta based on ACLN value, compute eta such that this group is elliptical
 	  	if(p6==3){//vpv
 			c=model.groups[ng].vpvvalue[0]/model.groups[ng].vsvvalue[0];
 			newv=model.groups[ng].vsvvalue[nv]*c;
 		}
 		else if (p6==2){//vsh, 
-		// will asgin the real newv in the returned gen_newpara function
+		// will asign the real newv in the returned gen_newpara function
 		// vsh = vsh_input[0]/vsv_input[0]*vsv
 			newv=1000.;
+		}
+		else if (p6==5){// eta,
+		// eta=0.5+0.5*(C-2L)/(A-2L), such that espsi=delta, elliptical
+			newv=0.5*(1+(pow(model.groups[ng].vpvvalue[nv],2)-2*pow(model.groups[ng].vsvvalue[nv],2))/(pow(model.groups[ng].vphvalue[nv],2)-2*pow(model.groups[ng].vsvvalue[nv],2)));
 		}		
 		else{printf("###inproper para.in, para with p6=%d should not apprear in the vpvs scaling\n",p6);exit(0);}
 	  }

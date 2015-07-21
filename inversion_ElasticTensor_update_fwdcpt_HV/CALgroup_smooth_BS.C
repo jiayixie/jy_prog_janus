@@ -130,6 +130,7 @@ int updategroup(groupdef &group)
 	  int i,j,nnlay,nBs;
 	  double tmpvsv,tmpvsh,tmpvpv,tmpvph,tmpeta,tmptheta,tmpphi,tmprho;
 	  double Htotal,dh;
+	  int flaglay=3;
           if((group.flag-2)*(group.flag-3)!=0){cout<<"wrong flag, here updating Bspline model, flag=2 or 3, group.flag="<<group.flag<<endl;return 0;} //; BS
 	  //if (group.thick1.size()+group.value1.size()!=0){cout<<"problem! the thick1 or value1 is not empty!"<<endl;return 0;}
 	  group.thick1.clear();
@@ -164,7 +165,19 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 		  } //for j
-		  ///*-----test----- 2-layer theta---
+	          ///*-----test----- 2-layer theta---
+        	  if(flaglay==2 and group.thick<90. and group.thick>10.){ // 2layer, not mantle, not sediment
+                	if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+                	else{tmptheta=0.;}
+
+	          }
+        	  else if (flaglay==3 and group.thick<90. and group.thick>10.){ // 3layer, not mantle, not sediment
+                	if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+                	else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
+                	else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+          	  }
+
+		  /*-----test----- 2-layer theta---
 		  if(group.thick<90. and group.thick>10.){ //not mantle, not sediment
 	  	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 		  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
@@ -174,7 +187,7 @@ int updategroup(groupdef &group)
 		  }
 		  //if(i<nnlay/2)tmptheta=40.;
 		  //else tmptheta=10.;
-		  //*/
+		  */
 		  group.vsvvalue1.push_back(tmpvsv);
 		  group.vshvalue1.push_back(tmpvsh);
 		  group.vpvvalue1.push_back(tmpvpv);
@@ -200,14 +213,17 @@ int updategroup(groupdef &group)
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 	  }//for j
 	  ///*-----test----- 2-layer theta---
-	  if(group.thick<90. and group.thick>10.){ //not mantle, not sediment
-	  //if(i<nnlay/3.){tmptheta=90.;}//{tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
-	  if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
-	  //else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
-	  //else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
-	  else{tmptheta=0.;}
+	  if(flaglay==2 and group.thick<90. and group.thick>10.){ // 2layer, not mantle, not sediment
+		if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+		else{tmptheta=0.;}
+		
 	  }
-	  //*/
+	  else if (flaglay==3 and group.thick<90. and group.thick>10.){ // 3layer, not mantle, not sediment
+		if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+		else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
+		else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
+	  }
+
 	  group.vsvvalue1.push_back(tmpvsv);
 	  group.vshvalue1.push_back(tmpvsh);
 	  group.vpvvalue1.push_back(tmpvpv);

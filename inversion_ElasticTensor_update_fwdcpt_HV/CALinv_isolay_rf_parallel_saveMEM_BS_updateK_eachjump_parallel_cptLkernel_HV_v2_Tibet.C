@@ -89,8 +89,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   const int Nacc_updateK_init = 505;//505;//505;//500; //500;
   //const int accpcri=5000; //5000;//3000;//5000 ;//3000;
   //const int Nacc_updateK_init = 700;//505;//505;//500; //500;
-  const int accpcri=2000; //5000;//3000;//5000 ;//3000;
-  //const int accpcri=5000; //5000;//3000;//5000 ;//3000;
+  //const int accpcri=2000; //5000;//3000;//5000 ;//3000;
+  const int accpcri=5000; //5000;//3000;//5000 ;//3000;
   const int Njump=ijumpcri; //set this to the times of the max_thread_num to max the efficiency of the code; Also, need to pay attetion if Njump is too small to be enough for the Monte-Carlo search. (usually, i require Njump>=5)
   int iloop=0;
 
@@ -210,8 +210,8 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	for(countitt=0;countitt<iitercri;countitt++){
 		if(iiter%10000==0){
 			printf("iiter=%d iaccp=%d dtime=%.1f ijump=%d iloop=%d;  ",iiter,iaccp,(float)(time(0)-start),i,iloop);
-			//if((float)(time(0)-start)>3600.*2)
-			if((float)(time(0)-start)>3600.*1)
+			if((float)(time(0)-start)>3600.*2)
+			//if((float)(time(0)-start)>3600.*1)
 			{	printf("exceed 1hr limit! break\n");
 				flagbreak=1;
 				break;} //break the search after 50min. modified Mar 13, 2014

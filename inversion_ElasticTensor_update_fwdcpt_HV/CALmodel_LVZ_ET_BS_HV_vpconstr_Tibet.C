@@ -866,14 +866,17 @@ int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<
         // * (optional) monotonic increasing of velocities, or some constrain on the velocities' vertical gradient (for vsv/h, vpv/h)
         // * higher bond on the velocities (for vsv/h, vpv/h)
         // * (optional) positive velocity gradient at the top of a group (for vsv/h, vpv/h)
-
+	// * vp/vs ranges between [1.65,1.85]
+	// * "optional" means this can be contraol from the input setting of Main program. For others, we can control from the flags in this function (e.g., flagsign)
+	//---
+	// based on my prior distribution analysis, the "sign" criteria will bias the prior anisotropy distribution, do not use it, set flagsign=0
         int i,j;
         bool cc=false;
-        double gradient;
+        double gradient,vpvs;
         vector<int>::iterator id;
-	int flagjump,flagsign,flagbond,flaggrad,flagmono;
-	flagjump=flagsign=flagbond=flaggrad=flagmono=1;
-	flagsign=0;
+	int flagjump,flagsign,flagbond,flaggrad,flagmono,flagvpvs;
+	flagjump=flagbond=flaggrad=flagmono=1;
+	flagsign=0;flagvpvs=1;
 	
         //-- * positive jump between each group (for vsv/h, vpv/h)
 	if(flagjump==1){
@@ -908,7 +911,20 @@ int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<
         }//for i<m.g.nlay
 	}
 	
-        //--------------optional criteria, seperate R and L ----------------
+	if(flagvpvs==1){
+	//-- * bound on the vp/vs value (inherent vp/vs for TTI model, in TI case, inherent vp/vs=apparent vp/vs)
+	//for(i=0;i<model.ngroup;i++){
+	for(i=1;i<model.ngroup;i++){ //######!!!!!! skip the sediment !!!!!!!!
+                for(j=0;j<model.groups[i].nlay;j++){
+			vpvs=(model.groups[i].vphvalue1[j]+model.groups[i].vpvvalue1[j])/(model.groups[i].vshvalue1[j]+model.groups[i].vsvvalue1[j]);
+			if((vpvs-1.65)*(vpvs-1.85)>0){
+				if(cc)printf("-- vpvs range[1.65,1.85] \n");
+				return 0;
+			}//if vpvs out of range
+		}
+	}//for i<m.ng
+	}
+        //--------------optional criteria, considering R and L separately ----------------
         if(Rflag>0){
 	if(flagmono==1){
         //-- * monotonic increasing of velocities, or some constrain on the velocities' vertical gradient (for vsv/h, vpv/h)

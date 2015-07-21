@@ -1,4 +1,6 @@
-int model_cs2ap(vector<modeldef> &modlst, paradef para){
+
+int model_cs2ap(vector<modeldef> &modlst, paradef para)
+{
   //---this is used to convert the Acos, Asin values to amp and fast-axis for each model (at appropriate depth)
   int i,j,k,N,p6,p4;
   int N1,N2,phiflag,igp,Ngp;
