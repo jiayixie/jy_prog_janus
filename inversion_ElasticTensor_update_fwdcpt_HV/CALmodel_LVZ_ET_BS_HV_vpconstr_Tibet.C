@@ -877,7 +877,7 @@ int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<
 	int flagjump,flagsign,flagbond,flaggrad,flagmono,flagvpvs;
 	flagjump=flagbond=flaggrad=flagmono=1;
 	flagsign=0;flagvpvs=1;
-	
+
         //-- * positive jump between each group (for vsv/h, vpv/h)
 	if(flagjump==1){
         for(i=0;i<model.ngroup-1;i++){

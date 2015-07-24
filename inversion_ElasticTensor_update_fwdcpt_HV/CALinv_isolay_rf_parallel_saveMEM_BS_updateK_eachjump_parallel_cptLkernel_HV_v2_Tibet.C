@@ -111,7 +111,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
   //num_threads(Njump)
   #pragma omp parallel default(none) shared(flagidphiC,flagbreak,idphiC,outbin,outbinRA,paralst,iloop,iiter,iaccp) private(para2,para1,tmodel,oldLL,oldRL,oldL,countitt,countacc,ibad,tflag,newL,newRL,newLL,newmisfit,now,prob,oldmisfit,prandom,refmodel,Vkernel,Lkernel,lastiaccp,refpara,Tacc,NKdid,p6) 
   {
-  printf("jump threads=%d\n",omp_get_num_threads());//--check---
+  //printf("jump threads=%d\n",omp_get_num_threads());//--check---
   #pragma omp for schedule(dynamic,1)
   for(int i=0;i<Njump;i++){
  	if(flagbreak==1)continue;
@@ -210,7 +210,7 @@ int do_inv_BS(const int num_thread,const int id,const double misfitcri, vector<p
 	for(countitt=0;countitt<iitercri;countitt++){
 		if(iiter%10000==0){
 			printf("iiter=%d iaccp=%d dtime=%.1f ijump=%d iloop=%d;  ",iiter,iaccp,(float)(time(0)-start),i,iloop);
-			if((float)(time(0)-start)>3600.*2)
+			if((float)(time(0)-start)>3600.*2.4)
 			//if((float)(time(0)-start)>3600.*1)
 			{	printf("exceed 1hr limit! break\n");
 				flagbreak=1;

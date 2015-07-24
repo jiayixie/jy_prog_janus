@@ -89,9 +89,10 @@ exit(0);
   //the weight of iso dispersion curve is 1-inpamp-inpphi  
   //iitercri1= 20000;//50000;//100000;//12000 (mod1, 1cstlay)
   //iitercri1= 60000;//50000;//100000;//12000 (mod1, 1cstlay)
-  iitercri1= 80000;//50000;//100000;//12000 (mod1, 1cstlay)
+  //iitercri1= 80000;//50000;//100000;//12000 (mod1, 1cstlay)
   //iitercri1 = 100000; //used Jul 14, 2015, after adding vpvs criteria
-  //iitercri1 = 200000; //used Jul 16, 2015, debug misfit in Ldisp
+  iitercri1 = 300000; //used Jul 16, 2015, debug misfit in Ldisp
+  //iitercri1 = 500000; //used Jul 21, 2015, for 3-lay all perturbed case
   ijumpcri1=10; //atoi(argv[10]); // set it to be the same as number_of_thread
   depcri1=20.0;
   depcri2=80.0;
