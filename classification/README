@@ -1,0 +1,5 @@
+Sep 11, 2015
+intended to write a K-mean clustering class
+however, just found that scipy has this method
+will use scipy directly
+
