@@ -185,7 +185,7 @@ C------------------------read in station coordinates----- from pathfile (mhr)
             read(7,2,end=999) iev(j),ista(j),evnam(j),
      1           stnam(j),evlat(j),evlon(j),stalat(j),stalon(j)
 		print *, iev(j),ista(j),' ',evnam(j),stnam(j),
-     1             evlat(j),evlon(j),stalat(j),stalon(j),stalon(j)
+     1             evlat(j),evlon(j),stalat(j),stalon(j)
      1               ," check"
             enddo
 999         close(7)
