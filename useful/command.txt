@@ -1,0 +1,8 @@
+lfs find /lustre/janus_scratch/jixi7887/ -type f -ctime +160 -print0 | xargs -0 touch
+# 160 in daysa
+#
+
+#----python notes
+#pandas:
+df.index;df.columns;df.values;df.describe();
+

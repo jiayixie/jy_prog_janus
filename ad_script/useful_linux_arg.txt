@@ -1,0 +1,7 @@
+module avail
+lfs find /lustre/janus_scratch/jixi7887/ -type f -ctime +160 -print0 | xargs
+-0 touch
+---
+mkdir .pip
+vi .pip/pip.config : /projects/jixi7887/.local
+
