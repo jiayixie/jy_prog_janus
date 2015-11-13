@@ -608,7 +608,7 @@ class noisetrace(obspy.core.trace.Trace):
         pos=pos[Tbeg-1:Tend]
         return neg, pos, Tbeg, Tend;
 
-    def plotftan(self, outputnm,sacname,plotflag=3):
+    def plotftan(self, outputnm,plotflag=1, sacname=''):
         """
         Plot ftan diagram:
         This function plot ftan diagram.
@@ -667,21 +667,22 @@ class noisetrace(obspy.core.trace.Trace):
                 gvel1_2=fparam.arr1_2[2,:fparam.nfout1_2]
                 phvel1_2=fparam.arr1_2[3,:fparam.nfout1_2]
                 #plb.figure()
-		plt.figure()
-                ax = plt.subplot()
+		#plt.figure(1)
+                #ax = plt.subplot()
                 p=plt.pcolormesh(obper1_2, v2, ampo_2, cmap='gist_rainbow',shading='gouraud')
-                ax.plot(obper1_2, gvel1_2, '--k', lw=3) #
+                plt.plot(obper1_2, gvel1_2, '--k', lw=3) #
                 if (fparam.preflag==True):
-                    ax.plot(obper1_2, phvel1_2, '--w', lw=3) #
-
+                    plt.plot(obper1_2, phvel1_2, '--w', lw=3) #
+		"""
+		"""
                 if (fparam.nfout2_2!=0):
                     obper2_2=fparam.arr2_2[1,:fparam.nfout2_2]
                     gvel2_2=fparam.arr2_2[2,:fparam.nfout2_2]
                     phvel2_2=fparam.arr2_2[3,:fparam.nfout2_2]
-                    ax.plot(obper2_2, gvel2_2, '-k', lw=3) #
+                    plt.plot(obper2_2, gvel2_2, '-k', lw=3) #
                     if (fparam.preflag==True):
-                        ax.plot(obper2_2, phvel2_2, '-w', lw=3) #
-                cb = plt.colorbar(p, ax=ax)
+                        plt.plot(obper2_2, phvel2_2, '-w', lw=3) #
+                #cb = plt.colorbar(p, ax=ax)
                 Tmin2=obper1_2[0]
                 Tmax2=obper1_2[fparam.nfout1_2-1]
                 vmin2= v2[fparam.ncol_2-1]
@@ -690,6 +691,9 @@ class noisetrace(obspy.core.trace.Trace):
                 plt.xlabel('Period(s)')
                 plt.ylabel('Velocity(km/s)')
                 plt.title('PMF FTAN Diagram '+sacname,fontsize=15)
+		print "here!"
+	        plt.savefig('test.png')
+		return
 
             if ( plotflag==3 ):
                 v1=dist/(fparam.tamp_1+np.arange(fparam.ncol_1)*dt)
@@ -698,16 +702,16 @@ class noisetrace(obspy.core.trace.Trace):
                 gvel1_1=fparam.arr1_1[2,:fparam.nfout1_1]
                 phvel1_1=fparam.arr1_1[3,:fparam.nfout1_1]
                 #plb.figure(num=None, figsize=(18, 16), dpi=80, facecolor='w', edgecolor='k')
-                ax = plt.subplot(2,1,1)
+                plt.subplot(2,1,1)
                 p=plt.pcolormesh(obper1_1, v1, ampo_1, cmap='gist_rainbow',shading='gouraud')
-                ax.plot(obper1_1, gvel1_1, '--k', lw=3) #
+                plt.plot(obper1_1, gvel1_1, '--k', lw=3) #
                 if (fparam.preflag==True):
-                    ax.plot(obper1_1, phvel1_1, '--w', lw=3) #
+                    plt.plot(obper1_1, phvel1_1, '--w', lw=3) #
                 if (fparam.nfout2_1!=0):
                     obper2_1=fparam.arr2_1[1,:fparam.nfout2_1]
                     gvel2_1=fparam.arr2_1[2,:fparam.nfout2_1]
                     phvel2_1=fparam.arr2_1[3,:fparam.nfout2_1]
-                    ax.plot(obper2_1, gvel2_1, '-k', lw=3) #
+                    plt.plot(obper2_1, gvel2_1, '-k', lw=3) #
                     if (fparam.preflag==True):
                         ax.plot(obper2_1, phvel2_1, '-w', lw=3) #
                 cb = plt.colorbar(p, ax=ax)
@@ -747,9 +751,8 @@ class noisetrace(obspy.core.trace.Trace):
                 plt.axis([Tmin2, Tmax2, vmin2, vmax2])
                 plt.xlabel('Period(s)')
                 plt.ylabel('Velocity(km/s)')
-                #plt.title('PMF FTAN Diagram '+sacname)
-                plt.title('PMF  '+sacname)
-	    plt.savefig(outputnm)
+                plt.title('PMF FTAN Diagram '+sacname)
+	    #ax.savefig(outputnm)
         except AttributeError:
             print 'Error: FTAN Parameters are not available!'
         return

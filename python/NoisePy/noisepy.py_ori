@@ -608,7 +608,7 @@ class noisetrace(obspy.core.trace.Trace):
         pos=pos[Tbeg-1:Tend]
         return neg, pos, Tbeg, Tend;
 
-    def plotftan(self, outputnm,sacname,plotflag=3):
+    def plotftan(self, outputnm,plotflag=1, sacname=''):
         """
         Plot ftan diagram:
         This function plot ftan diagram.
@@ -690,6 +690,9 @@ class noisetrace(obspy.core.trace.Trace):
                 plt.xlabel('Period(s)')
                 plt.ylabel('Velocity(km/s)')
                 plt.title('PMF FTAN Diagram '+sacname,fontsize=15)
+		print "here!"
+	        plt.savefig('test.ps')
+		return
 
             if ( plotflag==3 ):
                 v1=dist/(fparam.tamp_1+np.arange(fparam.ncol_1)*dt)
@@ -747,9 +750,8 @@ class noisetrace(obspy.core.trace.Trace):
                 plt.axis([Tmin2, Tmax2, vmin2, vmax2])
                 plt.xlabel('Period(s)')
                 plt.ylabel('Velocity(km/s)')
-                #plt.title('PMF FTAN Diagram '+sacname)
-                plt.title('PMF  '+sacname)
-	    plt.savefig(outputnm)
+                plt.title('PMF FTAN Diagram '+sacname)
+	    #ax.savefig(outputnm)
         except AttributeError:
             print 'Error: FTAN Parameters are not available!'
         return
