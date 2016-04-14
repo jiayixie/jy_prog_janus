@@ -222,10 +222,11 @@ sprintf(tmpstr,"if [ ! -d %s/binmod ]; then mkdir %s/binmod; fi",dirlay,dirlay);
     initpara(pararef);
   
     readdisp(model0,Rdispnm,Ldispnm,AziampRdispnm,AziphiRdispnm,AziampLdispnm,AziphiLdispnm,Rsurflag,Lsurflag,AziampRsurflag,AziphiRsurflag,AziampLsurflag,AziphiLsurflag); 
+    /*
     for(i=0;i<model0.data.Ldisp.npper;i++){
     //---!!!! manually make the Love wave uncertainty large ----
 	model0.data.Ldisp.unpvelo[i]=0.5;
-    }
+    }*/
     /*==check===
     //printf("test-- the number of AZ data: AZRamp.npper=%d AZRamp.pvel.size()=%d AZRamp.pvelo.size=%d\n",model0.data.AziampRdisp.npper,model0.data.AziampRdisp.pvel.size(),model0.data.AziampRdisp.pvelo.size());
     printf("the Rayleigh wave data:\n");

@@ -130,7 +130,8 @@ int updategroup(groupdef &group)
 	  int i,j,nnlay,nBs;
 	  double tmpvsv,tmpvsh,tmpvpv,tmpvph,tmpeta,tmptheta,tmpphi,tmprho;
 	  double Htotal,dh;
-	  int flaglay=3;
+	  int flaglay=4; // 2-- 2layer model with 0 dip in the lower 2/3 crust; 3-- 3layer model with free dip in all 3 layers of crust; 4-- 2layer model with free dip in 2 layers of crust (the discontinuity of dip is at 1/3 Moho).
+			//(in the para, dip0, dip2, dip4 are free para; so I set the constraints to dip here in this function. This is definitely not a good way to do it... i was just too lazy to change the code...)
           if((group.flag-2)*(group.flag-3)!=0){cout<<"wrong flag, here updating Bspline model, flag=2 or 3, group.flag="<<group.flag<<endl;return 0;} //; BS
 	  //if (group.thick1.size()+group.value1.size()!=0){cout<<"problem! the thick1 or value1 is not empty!"<<endl;return 0;}
 	  group.thick1.clear();
@@ -165,7 +166,7 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 		  } //for j
-	          ///*-----test----- 2-layer theta---
+	          ///*-----test----- 2-layer theta--- IN THE FUTURE, MODIFY THE CODE, PUT IT AS INPUT PARAMETER
         	  if(flaglay==2 and group.thick<90. and group.thick>10.){ // 2layer, not mantle, not sediment
                 	if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
                 	else{tmptheta=0.;}
@@ -176,6 +177,11 @@ int updategroup(groupdef &group)
                 	else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
                 	else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
           	  }
+		  else if (flaglay==4 and group.thick<90. and group.thick>10. ){
+                	if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+                	else {tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
+			
+		  }
 
 		  /*-----test----- 2-layer theta---
 		  if(group.thick<90. and group.thick>10.){ //not mantle, not sediment
@@ -212,7 +218,7 @@ int updategroup(groupdef &group)
 		    tmpphi=tmpphi+group.Bsplines[j*nnlay+i]*group.phivalue[j];
 		    tmprho=tmprho+group.Bsplines[j*nnlay+i]*group.rhovalue[j];
 	  }//for j
-	  ///*-----test----- 2-layer theta---
+	  ///*-----test----- 2-layer theta--- IN THE FUTURE, MODIFY THE CODE, PUT IT AS INPUT PARAMETER
 	  if(flaglay==2 and group.thick<90. and group.thick>10.){ // 2layer, not mantle, not sediment
 		if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
 		else{tmptheta=0.;}
@@ -223,6 +229,11 @@ int updategroup(groupdef &group)
 		else if (i<nnlay*2/3.){tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}
 		else {tmptheta=group.thetavalue[nBs-1];tmpphi=group.phivalue[nBs-1];}
 	  }
+          else if (flaglay==4 and group.thick<90. and group.thick>10. ){
+               if(i<nnlay/3.){tmptheta=group.thetavalue[0];tmpphi=group.phivalue[0];}
+               else {tmptheta=group.thetavalue[2];tmpphi=group.phivalue[2];}                       
+          }
+
 
 	  group.vsvvalue1.push_back(tmpvsv);
 	  group.vshvalue1.push_back(tmpvsh);
