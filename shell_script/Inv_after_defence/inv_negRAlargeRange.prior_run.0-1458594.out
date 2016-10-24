@@ -1,0 +1,1981 @@
+9633_96.0_33.0
+rm: No match.
+/lustre/janus_scratch/jixi7887/Tibet/inv_ET_BS/inv_Apr28data_v1/inv_AD_test.largerEtaRange_Tibet_v1_laytheta.20disc.XYdip.aug11.vpvs.3.AZmat4.5perc.negRA.prior/9633_96.0_33.0_inv_AD_test.largerEtaRange_Tibet_v1_laytheta.20disc.XYdip.aug11.vpvs.3.AZmat4.5perc.negRA.prior
+.
+ input model file:
+ ./MineosInputMod_0.txt
+ output file:
+ MineosInputMod_0_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.895u 0.001s 0:00.92 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_0.txt
+ output file:
+ MineosInputMod_0_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.863u 0.001s 0:04.89 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_77.txt
+ output file:
+ MineosInputMod_77_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.893u 0.001s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_95.txt
+ output file:
+ MineosInputMod_95_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.903u 0.002s 0:00.93 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_70.txt
+ output file:
+ MineosInputMod_70_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.961u 0.000s 0:00.98 97.9%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_85.txt
+ output file:
+ MineosInputMod_85_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.971u 0.003s 0:01.00 97.0%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_77.txt
+ output file:
+ MineosInputMod_77_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.876u 0.001s 0:04.89 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_95.txt
+ output file:
+ MineosInputMod_95_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.859u 0.004s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_70.txt
+ output file:
+ MineosInputMod_70_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.856u 0.001s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_85.txt
+ output file:
+ MineosInputMod_85_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.854u 0.002s 0:04.88 99.3%	0+0k 0+376io 0pf+0w
+ input model file:
+ ./MineosInputMod_98.txt
+ output file:
+ MineosInputMod_98_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.900u 0.000s 0:00.92 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_78.txt
+ output file:
+ MineosInputMod_78_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.892u 0.004s 0:00.92 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_86.txt
+ output file:
+ MineosInputMod_86_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.894u 0.001s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_71.txt
+ output file:
+ MineosInputMod_71_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.891u 0.004s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_78.txt
+ output file:
+ MineosInputMod_78_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.857u 0.001s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_98.txt
+ output file:
+ MineosInputMod_98_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.870u 0.002s 0:04.89 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_86.txt
+ output file:
+ MineosInputMod_86_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.852u 0.001s 0:04.87 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_71.txt
+ output file:
+ MineosInputMod_71_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.859u 0.000s 0:04.87 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_99.txt
+ output file:
+ MineosInputMod_99_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.891u 0.002s 0:00.91 97.8%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_87.txt
+ output file:
+ MineosInputMod_87_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.899u 0.002s 0:00.92 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_72.txt
+ output file:
+ MineosInputMod_72_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.918u 0.000s 0:00.93 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_79.txt
+ output file:
+ MineosInputMod_79_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.881u 0.000s 0:00.90 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_99.txt
+ output file:
+ MineosInputMod_99_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.600u 0.004s 0:04.62 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_87.txt
+ output file:
+ MineosInputMod_87_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.579u 0.000s 0:04.60 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_72.txt
+ output file:
+ MineosInputMod_72_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.585u 0.005s 0:04.62 99.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_79.txt
+ output file:
+ MineosInputMod_79_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.630u 0.001s 0:04.64 99.7%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_100.txt
+ output file:
+ MineosInputMod_100_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.848u 0.003s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_73.txt
+ output file:
+ MineosInputMod_73_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.868u 0.004s 0:00.89 96.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_88.txt
+ output file:
+ MineosInputMod_88_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.870u 0.002s 0:00.89 97.7%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_80.txt
+ output file:
+ MineosInputMod_80_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.855u 0.003s 0:00.88 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_100.txt
+ output file:
+ MineosInputMod_100_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.849u 0.006s 0:04.87 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_73.txt
+ output file:
+ MineosInputMod_73_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+ input model file:
+ ./MineosInputMod_88.txt
+ output file:
+ MineosInputMod_88_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.861u 0.003s 0:04.89 99.3%	0+0k 0+368io 0pf+0w
+4.860u 0.000s 0:04.91 98.9%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_80.txt
+ output file:
+ MineosInputMod_80_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.851u 0.000s 0:04.86 99.7%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_101.txt
+ output file:
+ MineosInputMod_101_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.882u 0.001s 0:00.90 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_74.txt
+ output file:
+ MineosInputMod_74_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+ input model file:
+ ./MineosInputMod_91.txt
+ output file:
+ MineosInputMod_91_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.884u 0.002s 0:00.90 97.7%	0+0k 0+344io 0pf+0w
+0.887u 0.000s 0:00.91 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_81.txt
+ output file:
+ MineosInputMod_81_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.883u 0.001s 0:00.90 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_101.txt
+ output file:
+ MineosInputMod_101_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.608u 0.000s 0:04.63 99.3%	0+0k 0+376io 0pf+0w
+ input model file:
+ ./MineosInputMod_91.txt
+ output file:
+ MineosInputMod_91_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.569u 0.000s 0:04.58 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_74.txt
+ output file:
+ MineosInputMod_74_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.575u 0.004s 0:04.61 99.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_81.txt
+ output file:
+ MineosInputMod_81_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.584u 0.004s 0:04.86 94.2%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_102.txt
+ output file:
+ MineosInputMod_102_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.891u 0.003s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_92.txt
+ output file:
+ MineosInputMod_92_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.899u 0.003s 0:00.92 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_84.txt
+ output file:
+ MineosInputMod_84_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.897u 0.002s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_102.txt
+ output file:
+ MineosInputMod_102_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.856u 0.003s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_92.txt
+ output file:
+ MineosInputMod_92_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.865u 0.000s 0:04.88 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_84.txt
+ output file:
+ MineosInputMod_84_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.857u 0.000s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_93.txt
+ output file:
+ MineosInputMod_93_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.893u 0.002s 0:00.92 96.7%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_93.txt
+ output file:
+ MineosInputMod_93_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.886u 0.001s 0:04.91 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_94.txt
+ output file:
+ MineosInputMod_94_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.893u 0.002s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_94.txt
+ output file:
+ MineosInputMod_94_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.892u 0.002s 0:04.92 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_0.txt
+ output file:
+ MineosInputMod_0_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.844u 0.000s 0:00.85 98.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_65.txt
+ output file:
+ MineosInputMod_65_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.880u 0.000s 0:00.89 98.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_11.txt
+ output file:
+ MineosInputMod_11_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.883u 0.001s 0:00.91 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_35.txt
+ output file:
+ MineosInputMod_35_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+ input model file:
+ ./MineosInputMod_44.txt
+ output file:
+ MineosInputMod_44_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+1.482u 0.004s 0:01.50 98.6%	0+0k 0+344io 0pf+0w
+1.491u 0.002s 0:01.50 99.3%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_22.txt
+ output file:
+ MineosInputMod_22_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+ input model file:
+ ./MineosInputMod_56.txt
+ output file:
+ MineosInputMod_56_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+1.484u 0.003s 0:01.51 98.0%	0+0k 0+344io 0pf+0w
+1.492u 0.000s 0:01.51 98.6%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_11.txt
+ output file:
+ MineosInputMod_11_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.648u 0.003s 0:04.67 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_65.txt
+ output file:
+ MineosInputMod_65_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.704u 0.000s 0:04.73 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_44.txt
+ output file:
+ MineosInputMod_44_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.640u 0.002s 0:04.66 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_56.txt
+ output file:
+ MineosInputMod_56_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.690u 0.001s 0:04.71 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_66.txt
+ output file:
+ MineosInputMod_66_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.842u 0.001s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_14.txt
+ output file:
+ MineosInputMod_14_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.854u 0.001s 0:00.87 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_0.txt
+ output file:
+ MineosInputMod_0_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.829u 0.000s 0:05.85 99.4%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_35.txt
+ output file:
+ MineosInputMod_35_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.357u 0.001s 0:05.38 99.4%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_45.txt
+ output file:
+ MineosInputMod_45_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.856u 0.000s 0:00.87 97.7%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_57.txt
+ output file:
+ MineosInputMod_57_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.839u 0.003s 0:00.85 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_36.txt
+ output file:
+ MineosInputMod_36_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.851u 0.001s 0:00.87 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_1.txt
+ output file:
+ MineosInputMod_1_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+1.397u 0.003s 0:01.45 95.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_22.txt
+ output file:
+ MineosInputMod_22_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+6.765u 0.005s 0:07.10 95.2%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_23.txt
+ output file:
+ MineosInputMod_23_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.924u 0.003s 0:00.94 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_14.txt
+ output file:
+ MineosInputMod_14_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.724u 0.004s 0:04.75 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_66.txt
+ output file:
+ MineosInputMod_66_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.844u 0.000s 0:04.87 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_45.txt
+ output file:
+ MineosInputMod_45_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.807u 0.000s 0:04.83 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_57.txt
+ output file:
+ MineosInputMod_57_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.776u 0.001s 0:04.80 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_15.txt
+ output file:
+ MineosInputMod_15_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.960u 0.002s 0:00.98 97.9%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_67.txt
+ output file:
+ MineosInputMod_67_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.923u 0.003s 0:00.94 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_36.txt
+ output file:
+ MineosInputMod_36_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.966u 0.000s 0:04.99 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_58.txt
+ output file:
+ MineosInputMod_58_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.904u 0.002s 0:00.92 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_46.txt
+ output file:
+ MineosInputMod_46_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+1.191u 0.000s 0:01.22 97.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_37.txt
+ output file:
+ MineosInputMod_37_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.910u 0.000s 0:00.92 98.9%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_1.txt
+ output file:
+ MineosInputMod_1_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.850u 0.000s 0:05.87 99.6%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_23.txt
+ output file:
+ MineosInputMod_23_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.129u 0.003s 0:05.15 99.4%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_2.txt
+ output file:
+ MineosInputMod_2_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.842u 0.002s 0:00.87 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_24.txt
+ output file:
+ MineosInputMod_24_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+1.133u 0.003s 0:01.15 98.2%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_15.txt
+ output file:
+ MineosInputMod_15_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.712u 0.003s 0:04.74 99.3%	0+0k 0+376io 0pf+0w
+ input model file:
+ ./MineosInputMod_67.txt
+ output file:
+ MineosInputMod_67_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.823u 0.005s 0:04.84 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_58.txt
+ output file:
+ MineosInputMod_58_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.723u 0.000s 0:04.75 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_16.txt
+ output file:
+ MineosInputMod_16_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.874u 0.004s 0:00.89 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_59.txt
+ output file:
+ MineosInputMod_59_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.843u 0.000s 0:00.85 98.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_37.txt
+ output file:
+ MineosInputMod_37_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.912u 0.002s 0:04.93 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_46.txt
+ output file:
+ MineosInputMod_46_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+6.036u 0.002s 0:06.06 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_38.txt
+ output file:
+ MineosInputMod_38_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.842u 0.000s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_2.txt
+ output file:
+ MineosInputMod_2_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.797u 0.000s 0:04.88 98.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_49.txt
+ output file:
+ MineosInputMod_49_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.854u 0.002s 0:00.87 97.7%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_24.txt
+ output file:
+ MineosInputMod_24_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.666u 0.005s 0:04.69 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_3.txt
+ output file:
+ MineosInputMod_3_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.849u 0.001s 0:00.87 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_25.txt
+ output file:
+ MineosInputMod_25_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.895u 0.003s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_16.txt
+ output file:
+ MineosInputMod_16_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.695u 0.000s 0:04.71 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_59.txt
+ output file:
+ MineosInputMod_59_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.730u 0.004s 0:04.75 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_17.txt
+ output file:
+ MineosInputMod_17_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.889u 0.005s 0:00.91 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_60.txt
+ output file:
+ MineosInputMod_60_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.903u 0.000s 0:00.92 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_38.txt
+ output file:
+ MineosInputMod_38_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.793u 0.002s 0:04.84 98.9%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_49.txt
+ output file:
+ MineosInputMod_49_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.856u 0.002s 0:04.87 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_39.txt
+ output file:
+ MineosInputMod_39_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.890u 0.005s 0:00.91 97.8%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_3.txt
+ output file:
+ MineosInputMod_3_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.855u 0.005s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_50.txt
+ output file:
+ MineosInputMod_50_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.905u 0.001s 0:00.92 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_25.txt
+ output file:
+ MineosInputMod_25_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.868u 0.002s 0:04.89 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_4.txt
+ output file:
+ MineosInputMod_4_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.888u 0.002s 0:00.91 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_28.txt
+ output file:
+ MineosInputMod_28_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.845u 0.002s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_17.txt
+ output file:
+ MineosInputMod_17_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.732u 0.000s 0:04.75 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_60.txt
+ output file:
+ MineosInputMod_60_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.714u 0.001s 0:04.74 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_18.txt
+ output file:
+ MineosInputMod_18_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.841u 0.002s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_63.txt
+ output file:
+ MineosInputMod_63_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.851u 0.000s 0:00.87 97.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_39.txt
+ output file:
+ MineosInputMod_39_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.647u 0.001s 0:04.67 99.3%	0+0k 0+376io 0pf+0w
+ input model file:
+ ./MineosInputMod_50.txt
+ output file:
+ MineosInputMod_50_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.618u 0.000s 0:04.63 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_42.txt
+ output file:
+ MineosInputMod_42_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.839u 0.002s 0:00.86 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_4.txt
+ output file:
+ MineosInputMod_4_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.582u 0.001s 0:04.60 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_51.txt
+ output file:
+ MineosInputMod_51_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.839u 0.003s 0:00.86 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_28.txt
+ output file:
+ MineosInputMod_28_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.586u 0.000s 0:04.60 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_7.txt
+ output file:
+ MineosInputMod_7_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.848u 0.001s 0:00.87 96.5%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_29.txt
+ output file:
+ MineosInputMod_29_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.842u 0.000s 0:00.86 97.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_18.txt
+ output file:
+ MineosInputMod_18_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.575u 0.001s 0:04.61 99.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_63.txt
+ output file:
+ MineosInputMod_63_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.589u 0.000s 0:04.61 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_21.txt
+ output file:
+ MineosInputMod_21_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.865u 0.001s 0:00.88 97.7%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_64.txt
+ output file:
+ MineosInputMod_64_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.894u 0.002s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_51.txt
+ output file:
+ MineosInputMod_51_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.634u 0.002s 0:04.66 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_42.txt
+ output file:
+ MineosInputMod_42_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.301u 0.000s 0:05.32 99.6%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_7.txt
+ output file:
+ MineosInputMod_7_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.608u 0.005s 0:04.64 99.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_52.txt
+ output file:
+ MineosInputMod_52_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.843u 0.000s 0:00.85 98.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_43.txt
+ output file:
+ MineosInputMod_43_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.841u 0.000s 0:00.85 98.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_8.txt
+ output file:
+ MineosInputMod_8_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.849u 0.000s 0:00.87 96.5%	0+0k 0+336io 0pf+0w
+ input model file:
+ ./MineosInputMod_29.txt
+ output file:
+ MineosInputMod_29_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+5.322u 0.000s 0:05.34 99.6%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_30.txt
+ output file:
+ MineosInputMod_30_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.839u 0.003s 0:00.85 97.6%	0+0k 0+352io 0pf+0w
+ input model file:
+ ./MineosInputMod_21.txt
+ output file:
+ MineosInputMod_21_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.716u 0.004s 0:04.74 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_64.txt
+ output file:
+ MineosInputMod_64_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.616u 0.003s 0:04.64 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_52.txt
+ output file:
+ MineosInputMod_52_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.671u 0.004s 0:04.69 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_43.txt
+ output file:
+ MineosInputMod_43_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.743u 0.001s 0:04.78 99.1%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_8.txt
+ output file:
+ MineosInputMod_8_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.713u 0.000s 0:04.73 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_53.txt
+ output file:
+ MineosInputMod_53_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.899u 0.001s 0:00.92 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_9.txt
+ output file:
+ MineosInputMod_9_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.908u 0.003s 0:00.93 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_30.txt
+ output file:
+ MineosInputMod_30_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.793u 0.008s 0:04.82 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_31.txt
+ output file:
+ MineosInputMod_31_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.903u 0.003s 0:00.93 96.7%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_53.txt
+ output file:
+ MineosInputMod_53_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.860u 0.000s 0:04.87 99.7%	0+0k 0+376io 0pf+0w
+ input model file:
+ ./MineosInputMod_9.txt
+ output file:
+ MineosInputMod_9_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.842u 0.000s 0:04.86 99.5%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_10.txt
+ output file:
+ MineosInputMod_10_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.898u 0.003s 0:00.93 95.6%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_31.txt
+ output file:
+ MineosInputMod_31_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.843u 0.001s 0:04.89 98.9%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_32.txt
+ output file:
+ MineosInputMod_32_T
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           2
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+0.891u 0.004s 0:00.91 97.8%	0+0k 0+344io 0pf+0w
+ input model file:
+ ./MineosInputMod_10.txt
+ output file:
+ MineosInputMod_10_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.855u 0.000s 0:04.88 99.3%	0+0k 0+368io 0pf+0w
+ input model file:
+ ./MineosInputMod_32.txt
+ output file:
+ MineosInputMod_32_S
+ eigenfunction file (output):
+ none
+ enter eps and wgrav
+  1.000000000000000E-010   1.00000000000000     
+ enter jcom (1=rad;2=tor;3=sph;4=ictor)
+           3
+ enter lmin,lmax,wmin,wmax,nmin,nmax
+           2        8000   10.0000000000000        166.700000000000                0           0
+4.855u 0.003s 0:04.87 99.5%	0+0k 0+368io 0pf+0w
+slurmstepd: error: *** JOB 1458594 ON himem01 CANCELLED AT 2016-05-30T13:14:19 DUE TO TIME LIMIT ***
