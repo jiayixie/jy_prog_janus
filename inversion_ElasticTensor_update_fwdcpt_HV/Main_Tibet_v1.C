@@ -32,8 +32,8 @@ default_random_engine generator (seed);
 #include"CALforward_Mineos_readK_parallel_BS_newV2L_parallel_cptLkernel_HV.C"
 #include "./ASC_rw_HV.C"
 #include "./BIN_rw_Love.C"
-#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
-//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
+//#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet_genprior.C"
+#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2_Tibet.C"
 //#include "CALinv_isolay_rf_parallel_saveMEM_BS_updateK_eachjump_parallel_cptLkernel_HV_v2.C"
 //#include "para_avg_multiple_gp_v4.C" 
 //#include "Test_fwd_cpt.C"
@@ -104,17 +104,18 @@ exit(0);
   PosAnic=1; //##//*1
   flagupdaterho=0;
   //Rvmono.push_back(0);
+  //Lvmono.push_back(0);
   Rvmono.push_back(1);
   Rvmono.push_back(2);
   Lvmono.push_back(1);
   Lvmono.push_back(2);
   
-  //Rvgrad.push_back(0); // require the 1st two values in that group are increasing
+  ////sedtti Rvgrad.push_back(0); // require the 1st two values in that group are increasing
   //Rvgrad.push_back(1);
   //Rvgrad.push_back(2);
-  //Lvgrad.push_back(0);
+  ////sedtti Lvgrad.push_back(0);
   //Lvgrad.push_back(1);
-  //Vposani.push_back(0);
+  ////sedtti Vposani.push_back(0);
   Vposani.push_back(1);
   Vposani.push_back(2);
   /*

@@ -384,6 +384,8 @@ j:	0		1		2		3		4		5
 					//if(ng==1)tmax=min(0.8,tmax);
 					//else
 					tmax=min(1.1,tmax);
+					if(ng<=1){// constrained to non-elliptical range in the sed&crust
+						tmax=min(0.8,tmax);}
 				}
 				// there was a constraint on the sedimental velocity, don't know why need it, so it's not added here;
 			}
@@ -688,11 +690,17 @@ for i<para.npara
 			  	{outmodel.groups[ng].thetavalue[nv]=newv;}
 		  	  }//p6=6 or 10	
 		  else if (p6==7 or p6==11){//phi or sin
-			  if(para.space1[i][2]<-1)
+			  if(para.space1[i][2]<-2) // ==-3 set phi to the value of the 1st layer in group 0
+			  {
+                                outmodel.groups[ng].phivalue[nv]=outmodel.groups[0].phivalue[0];
+                                para.parameter[i]=outmodel.groups[ng].phivalue[nv];
+                          }
+
+			  else if(para.space1[i][2]<-1) //==-2; set phi to the value of the 1st layer in that group
 			  {
 			  	outmodel.groups[ng].phivalue[nv]=outmodel.groups[ng].phivalue[0];
 				para.parameter[i]=outmodel.groups[ng].phivalue[nv];
-			  }	  
+			  }	
 			  else
 			  	{outmodel.groups[ng].phivalue[nv]=newv;}
 		  	  }//if p6==7 or 11

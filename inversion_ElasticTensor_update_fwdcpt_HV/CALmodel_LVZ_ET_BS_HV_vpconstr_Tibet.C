@@ -985,16 +985,27 @@ int goodmodel ( modeldef &model, vector<int> Rvmono, vector<int> Rvgrad, vector<
 	 // in goodmodel, we require that VsRA and VpRA have the same sign, so only need to check the sign of VsRA
 	  vector<int>::iterator id;
 	  int i,j;
+	  float maxRA;
 	  for(id=vmono.begin();id<vmono.end();id++){
 		j=*id;
+		// added May 18, 2016; in sediment, maxRA=30%; in crust and mantle, maxRA=10%
+		if(j==0){maxRA=0.3;} 
+		else{maxRA=0.1;}
 		for(i=0;i<model.groups[j].nlay;i++){
-			
-			if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] ){ //rm the VpRA>0 constraint, ---test---
+				
+			//---positive inherent anisotropy constraint
+			//if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] ){ //rm the VpRA>0 constraint, ---test---
+			if(model.groups[j].vshvalue1[i]<model.groups[j].vsvvalue1[i] or (model.groups[j].vshvalue1[i]-model.groups[j].vsvvalue1[i])/model.groups[j].vsvvalue1[i]>maxRA){ //rm the VpRA>0 constraint, ---test---
 				return 0;
 			}
 			if(model.groups[j].vphvalue1[i]<model.groups[j].vpvvalue1[i]){// added/modified May 4, 2015
 				return 0;
 			}
+			/*//-----negative inherent anisotropy constraint for sed & crust
+			if(j<=1){
+			if(model.groups[j].vshvalue1[i]>model.groups[j].vsvvalue1[i])return 0;
+			if(model.groups[j].vphvalue1[i]>model.groups[j].vpvvalue1[i])return 0;
+			}*/
 		}//for i
 	  }//for id
 	  return 1;
